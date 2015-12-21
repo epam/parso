@@ -1,0 +1,6 @@
+Number,Name,Type,Data length,Format,Label
+1,x1,Numeric,8,,
+2,x2,Numeric,8,,
+3,x3,Character,8,,
+4,x4,Character,8,,
+5,x5,Character,8,,

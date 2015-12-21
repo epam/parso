@@ -1,0 +1,4 @@
+Number,Name,Type,Data length,Format,Label
+1,Name,Character,32,,
+2,Path,Character,90,,
+3,index,Character,8,,
