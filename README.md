@@ -1,4 +1,4 @@
-# Parso Java library
+﻿# Parso Java library
 ## Overview
 Parso is a lightweight Java library that is designed to read SAS7BDAT datasets. The Parso interfaces are analogous to those that belong to libraries designed to read table-storing files, for example, CSVReader library. Despite its small size, the Parso library is the only full-featured open-source solution to process SAS7BDAT datasets, both uncompressed and CHAR-compressed. It is effective in processing clinical and statistical data, which is often stored in SAS7BDAT format. In addition, the Parso library allows users to convert data into CSV format.
 
@@ -30,7 +30,7 @@ If you use Maven, add the following dependency into the pom.xml file:
 <dependency>
     <groupId>com.epam</groupId>
     <artifactId>parso</artifactId>
-    <version>2.0</version>
+    <version>2.0-SNAPSHOT</version>
 </dependency>
 ```
 
