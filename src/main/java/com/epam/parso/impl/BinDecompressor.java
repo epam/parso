@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Implementation of the BIN compression algorithm which corresponds to the literal "SASYZCR2".
@@ -95,8 +94,7 @@ final class BinDecompressor implements Decompressor {
                     outRow = ensureCapacity(outRow, outOffset + length);
 
                     int backOffset = getOffsetForOneBytePattern(markerByte);
-                    System.arraycopy(outRow, outOffset - backOffset, outRow,
-                            outOffset, length);
+                    System.arraycopy(outRow, outOffset - backOffset, outRow, outOffset, length);
 
                     srcOffset++;
                     outOffset += length;
@@ -111,8 +109,7 @@ final class BinDecompressor implements Decompressor {
                     outRow = ensureCapacity(outRow, outOffset + length);
 
                     int backOffset = getOffsetForTwoBytesPattern(twoBytesMarker);
-                    System.arraycopy(outRow, outOffset - backOffset, outRow,
-                            outOffset, length);
+                    System.arraycopy(outRow, outOffset - backOffset, outRow, outOffset, length);
 
                     srcOffset += 2;
                     outOffset += length;
@@ -153,36 +150,26 @@ final class BinDecompressor implements Decompressor {
     }
 
     private boolean isShortRLE(byte firstByteofCB) {
-        return firstByteofCB >= 0x00 && firstByteofCB <= 0x05;
+        return (firstByteofCB >= 0x00 && firstByteofCB <= 0x06) || (firstByteofCB >= 0x0C && firstByteofCB <= 0x0F);
     }
 
     private int getLengthOfRLEPattern(byte firstByteofCB) {
-        if (firstByteofCB <= 0x05) {
-            return firstByteofCB + 3;
+        if ((firstByteofCB >= 0x00 && firstByteofCB <= 0x06) || (firstByteofCB >= 0x0C && firstByteofCB <= 0x0F)) {
+            return (firstByteofCB & 0xFF) + 3;
         }
         return 0;
     }
 
     private boolean isSingleByteMarker(byte firstByteofCB) {
-        List<Byte> trueValues = Arrays.asList(new Byte[]{0x02, 0x04, 0x06, 0x08, 0x0A});
-
-        return trueValues.contains(firstByteofCB);
+        return firstByteofCB >= 0x07 && firstByteofCB <= 0x0B;
     }
 
     private int getLengthOfOneBytePattern(byte firstByteofCB) {
-        return (isSingleByteMarker(firstByteofCB)) ? firstByteofCB + 14 : 0;
+        return (isSingleByteMarker(firstByteofCB)) ? (firstByteofCB & 0xFF) + 14 : 0;
     }
 
     private int getOffsetForOneBytePattern(byte firstByteofCB) {
-        if (firstByteofCB == 0x08) {
-            return 24;
-        }
-
-        if (firstByteofCB == 0x0A) {
-            return 40;
-        }
-
-        return 0;
+        return ((firstByteofCB & 0xFF) - 5) * 8;
     }
 
     private boolean isTwoBytesMarker(byte[] doubleBytesCB) {
@@ -194,8 +181,7 @@ final class BinDecompressor implements Decompressor {
     }
 
     private int getOffsetForTwoBytesPattern(byte[] doubleBytesCB) {
-        return 3 + (byte) (doubleBytesCB[0] & 0xF)
-                + (doubleBytesCB[1] * 16);
+        return 3 + (doubleBytesCB[0] & 0xF) + ((doubleBytesCB[1] & 0xFF) * 16);
     }
 
     private boolean isThreeBytesMarker(byte[] threeByteMarker) {
@@ -205,15 +191,15 @@ final class BinDecompressor implements Decompressor {
 
     private int getLengthOfThreeBytesPattern(int type, byte[] threeByteMarker) {
         if (type == 1) {
-            return 19 + (byte) (threeByteMarker[0] & 0xF) + (threeByteMarker[1] * 16);
+            return 19 + (threeByteMarker[0] & 0xF) + ((threeByteMarker[1] & 0xFF) * 16);
         } else if (type == 2) {
-            return (int) threeByteMarker[2] + 16;
+            return (threeByteMarker[2] & 0xFF) + 16;
         }
         return 0;
     }
 
     private int getOffsetForThreeBytesPattern(byte[] tripleBytesCB) {
-        return 3 + tripleBytesCB[0] & 0xF + (tripleBytesCB[1] * 16);
+        return 3 + (tripleBytesCB[0] & 0xF) + ((tripleBytesCB[1] & 0xFF) * 16);
     }
 
     private byte[] ensureCapacity(byte[] src, int capacity) {
