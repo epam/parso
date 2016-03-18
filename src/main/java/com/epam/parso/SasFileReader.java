@@ -40,6 +40,8 @@ public interface SasFileReader {
      *
      * @return an array of array objects whose elements can be objects of the following classes: double, long,
      * int, byte[], Date depending on the column they are in.
+     *
+     * @throws IOException if reading input stream is impossible.
      */
     Object[] readNext() throws IOException;
 

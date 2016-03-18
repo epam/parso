@@ -29,52 +29,52 @@ import java.util.List;
  */
 public class CSVMetadataWriterImpl extends AbstractCSVWriter implements CSVMetadataWriter {
     /**
-     * The id column header for metadata
+     * The id column header for metadata.
      */
     private static final String COLUMN_HEADING_ID = "Number";
 
     /**
-     * The name column header for metadata
+     * The name column header for metadata.
      */
     private static final String COLUMN_HEADING_NAME = "Name";
 
     /**
-     * The type column header for metadata
+     * The type column header for metadata.
      */
     private static final String COLUMN_HEADING_TYPE = "Type";
 
     /**
-     * The data length column header for metadata
+     * The data length column header for metadata.
      */
     private static final String COLUMN_HEADING_DATA_LENGTH = "Data length";
 
     /**
-     * The format column header for metadata
+     * The format column header for metadata.
      */
     private static final String COLUMN_HEADING_FORMAT = "Format";
 
     /**
-     * The label column header for metadata
+     * The label column header for metadata.
      */
     private static final String COLUMN_HEADING_LABEL = "Label";
 
     /**
-     * Constant containing Number type name
+     * Constant containing Number type name.
      */
     private static final String JAVA_NUMBER_CLASS_NAME = "java.lang.Number";
 
     /**
-     * Constant containing String type name
+     * Constant containing String type name.
      */
     private static final String JAVA_STRING_CLASS_NAME = "java.lang.String";
 
     /**
-     * Representation of Number type in metadata
+     * Representation of Number type in metadata.
      */
     private static final String OUTPUT_NUMBER_TYPE_NAME = "Numeric";
 
     /**
-     * Representation of String type in metadata
+     * Representation of String type in metadata.
      */
     private static final String OUTPUT_STRING_TYPE_NAME = "Character";
 

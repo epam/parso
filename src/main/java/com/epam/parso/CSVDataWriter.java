@@ -16,14 +16,12 @@
 
 package com.epam.parso;
 
-import com.epam.parso.impl.SasFileReaderImpl;
-
 import java.io.IOException;
 import java.util.List;
 
 public interface CSVDataWriter {
     /**
-     * The method to export a row from sas7bdat file (stored as an object of the {@link SasFileReaderImpl} class)
+     * The method to export a row from sas7bdat file (stored as an object of the {@link com.epam.parso.impl.SasFileReaderImpl} class)
      * using writer.
      *
      * @param columns the {@link Column} class variables list that stores columns description from the sas7bdat file.
@@ -33,7 +31,7 @@ public interface CSVDataWriter {
     void writeRow(List<Column> columns, Object[] row) throws IOException;
 
     /**
-     * The method to export a parsed sas7bdat file (stored as an object of the {@link SasFileReaderImpl} class)
+     * The method to export a parsed sas7bdat file (stored as an object of the {@link com.epam.parso.impl.SasFileReaderImpl} class)
      * using writer.
      *
      * @param columns the {@link Column} class variables list that stores columns description from the sas7bdat file.

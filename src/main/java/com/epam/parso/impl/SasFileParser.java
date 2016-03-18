@@ -18,13 +18,10 @@ package com.epam.parso.impl;
 
 import com.epam.parso.Column;
 import com.epam.parso.SasFileProperties;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
@@ -33,7 +30,7 @@ import java.util.*;
  * This is a class that parses sas7bdat files. When parsing a sas7bdat file, to interact with the library,
  * do not use this class but use {@link SasFileReaderImpl} instead.
  */
-class SasFileParser {
+public class SasFileParser {
     private static final Logger LOGGER = LoggerFactory.getLogger(SasFileParser.class);
     /**
      * The mapping of subheader signatures to the corresponding elements in {@link SasFileParser.SUBHEADER_INDEXES}.
@@ -77,7 +74,7 @@ class SasFileParser {
     /**
      * The input stream through which the sas7bdat is read.
      */
-    private final InputStream sasFileStream;
+    private final DataInputStream sasFileStream;
     /**
      * The flag of data output in binary or string format
      */
@@ -164,7 +161,10 @@ class SasFileParser {
      * Last read row from sas7bdat file.
      */
     private Object[] currentRow;
-
+    /**
+     * True if stream is at the end of file.
+     */
+    private boolean eof;
     /**
      * The constructor that reads metadata from the sas7bdat, parses it and puts the results in
      * {@link SasFileParser#sasFileProperties}.
@@ -172,7 +172,7 @@ class SasFileParser {
      * @param builder the container with properties information.
      */
     private SasFileParser(Builder builder) {
-        sasFileStream = builder.sasFileStream;
+        sasFileStream = new DataInputStream(builder.sasFileStream);
         encoding = builder.encoding;
         byteOutput = builder.byteOutput;
 
@@ -206,12 +206,11 @@ class SasFileParser {
         processSasFileHeader();
         cachedPage = new byte[sasFileProperties.getPageLength()];
         while (!endOfMetadata) {
-            int bytes = IOUtils.read(sasFileStream, cachedPage, 0, sasFileProperties.getPageLength());
-            if (bytes == 0) {
+            try {
+                sasFileStream.readFully(cachedPage, 0, sasFileProperties.getPageLength());
+            } catch (EOFException ex) {
+                eof = true;
                 break;
-            }
-            if (bytes != sasFileProperties.getPageLength()) {
-                LOGGER.error("Failed to read page from file");
             }
             endOfMetadata = processSasFilePageMeta();
         }
@@ -278,8 +277,10 @@ class SasFileParser {
 
         if (sasFileStream != null) {
             int bytesLeft = sasFileProperties.getHeaderLength() - currentFilePosition;
-            if (IOUtils.skip(sasFileStream, bytesLeft) != bytesLeft) {
-                LOGGER.error("Failed to read whole page");
+
+            long actuallySkipped = 0;
+            while (actuallySkipped < bytesLeft) {
+                actuallySkipped += sasFileStream.skip(bytesLeft - actuallySkipped);
             }
             currentFilePosition = 0;
         }
@@ -442,7 +443,7 @@ class SasFileParser {
      * @throws IOException if reading from the {@link SasFileParser#sasFileStream} stream is impossible.
      */
     Object[] readNext() throws IOException {
-        if (currentRowInFileIndex++ >= sasFileProperties.getRowCount()) {
+        if (currentRowInFileIndex++ >= sasFileProperties.getRowCount() || eof) {
             return null;
         }
         int bitOffset = sasFileProperties.isU64() ? SasFileConstants.PAGE_BIT_OFFSET_X64 :
@@ -495,26 +496,33 @@ class SasFileParser {
      * @throws IOException if reading from the {@link SasFileParser#sasFileStream} stream is impossible.
      */
     private void readNextPage() throws IOException {
+        processNextPage();
+        while (currentPageType != SasFileConstants.PAGE_META_TYPE && currentPageType != SasFileConstants.PAGE_MIX_TYPE &&
+                currentPageType != SasFileConstants.PAGE_DATA_TYPE) {
+            if(eof) {
+                return;
+            }
+            processNextPage();
+        }
+    }
+
+    private void processNextPage() throws IOException {
+        int bitOffset = sasFileProperties.isU64() ? SasFileConstants.PAGE_BIT_OFFSET_X64
+                : SasFileConstants.PAGE_BIT_OFFSET_X86;
         currentPageDataSubheaderPointers.clear();
 
-        int bytes = IOUtils.read(sasFileStream, cachedPage, 0, sasFileProperties.getPageLength());
-        if (bytes == 0) {
+        try {
+            sasFileStream.readFully(cachedPage, 0, sasFileProperties.getPageLength());
+        } catch (EOFException ex) {
+            //TODO: Figure it out without Exception, which is pretty expensive
+            eof = true;
             return;
         }
 
-        if (bytes != sasFileProperties.getPageLength()) {
-            LOGGER.error("Failed to read page from file");
-        }
         readPageHeader();
         if (currentPageType == SasFileConstants.PAGE_META_TYPE) {
             List<SubheaderPointer> subheaderPointers = new ArrayList<SubheaderPointer>();
-            int bitOffset = sasFileProperties.isU64() ? SasFileConstants.PAGE_BIT_OFFSET_X64 : SasFileConstants
-                    .PAGE_BIT_OFFSET_X86;
             processPageMetadata(bitOffset, subheaderPointers);
-        }
-        if (currentPageType != SasFileConstants.PAGE_META_TYPE && currentPageType != SasFileConstants.PAGE_MIX_TYPE &&
-                currentPageType != SasFileConstants.PAGE_DATA_TYPE) {
-            readNextPage();
         }
     }
 
@@ -622,11 +630,12 @@ class SasFileParser {
                 byte[] temp = new byte[length[i]];
                 long actuallySkipped = 0;
                 while (actuallySkipped < offset[i] - currentFilePosition) {
-                    actuallySkipped += IOUtils.skip(sasFileStream, offset[i] - currentFilePosition - actuallySkipped);
+                    actuallySkipped += sasFileStream.skip(offset[i] - currentFilePosition - actuallySkipped);
                 }
-                int bytesRead = IOUtils.read(sasFileStream, temp, 0, length[i]);
-                if (bytesRead > 0 && bytesRead < length[i]) {
-                    LOGGER.error("Failed to read bytes from sas7bdat file");
+                try {
+                    sasFileStream.readFully(temp, 0, length[i]);
+                } catch (EOFException e) {
+                    eof = true;
                 }
                 currentFilePosition = (int) (long) offset[i] + length[i];
                 vars.add(temp);
@@ -891,6 +900,8 @@ class SasFileParser {
 
         /**
          * The function to create variable of SasFileParser class using current builder.
+         *
+         * @return newly built SasFileParser
          */
         SasFileParser build() {
             return new SasFileParser(this);

@@ -20,11 +20,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TestUtils {
     private static final Logger logger = LoggerFactory.getLogger(TestUtils.class);
+
+    public static InputStream getResourceAsStream(String fileName) {
+        return TestUtils.class.getClassLoader().getResourceAsStream(fileName);
+    }
 
     public static List<File> getSas7bdatFilesList(String fileOrFolderName) {
         List<File> filesList = new ArrayList<File>();

@@ -36,7 +36,7 @@ public class Column {
     private final String label;
 
     /**
-     * The column format
+     * The column format.
      */
     private final String format;
 

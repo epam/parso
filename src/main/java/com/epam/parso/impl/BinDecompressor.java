@@ -16,19 +16,18 @@
 
 package com.epam.parso.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Arrays;
 
 /**
  * Implementation of the BIN compression algorithm which corresponds to the literal "SASYZCR2".
  * Refer the documentation for further details.
  * It follows the general contract provided by the interface <code>Decompressor</code>.
+ *
+ * History
+ *   01.08.2015 (Gabor Bakos): Replaced the implementation to an alternative
  */
 final class BinDecompressor implements Decompressor {
     static final BinDecompressor INSTANCE = new BinDecompressor();
-    private static final Logger LOGGER = LoggerFactory.getLogger(BinDecompressor.class);
 
     private BinDecompressor() {
         // prevent multiple instances
@@ -39,6 +38,8 @@ final class BinDecompressor implements Decompressor {
      * Next, each block is preceded by a marker which may consist of one, two or three bytes.
      * This marker contains the information which compression is used (BIN or simple RLE) and
      * the block length.
+     * <p>
+     * Based on http://www.drdobbs.com/a-simple-data-compression-technique/184402606?pgno=2
      *
      * @param pageoffset   the offset of bytes array in <code>page</code> that contains compressed data.
      * @param srcLength    the length of bytes array that contains compressed data.
@@ -47,185 +48,71 @@ final class BinDecompressor implements Decompressor {
      * @return decompressed row
      */
     @Override
-    public byte[] decompressRow(int pageoffset, int srcLength, int resultLength, byte[] page) {
+    public byte[] decompressRow(final int pageoffset, final int srcLength, final int resultLength, final byte[] page) {
 
         byte[] srcRow = Arrays.copyOfRange(page, pageoffset, srcLength + pageoffset);
         byte[] outRow = new byte[resultLength];
         int srcOffset = 0;
         int outOffset = 0;
+        int ctrlBits = 0, ctrlMask = 0;
+        while (srcOffset < srcLength) {
+            if ((ctrlMask >>= 1) == 0) {
+                ctrlBits = (((srcRow[srcOffset]) & 0xff) << 8) | (srcRow[srcOffset + 1] & 0xff);
+                srcOffset += 2;
+                ctrlMask = 0x8000;
+            }
 
-        while (srcOffset < srcRow.length - 2) {
+            // just copy this char if control bit is zero
+            if ((ctrlBits & ctrlMask) == 0) {
+                outRow[outOffset++] = srcRow[srcOffset++];
+                continue;
+            }
 
-            //read the two bytes prefix and interpret it as a 16-bit string.
-            byte[] prefixBits = bytesAsBits(srcRow, srcOffset);
+            // undo the compression code
+            final int cmd = (srcRow[srcOffset] >> 4) & 0x0F;
+            int cnt = srcRow[srcOffset++] & 0x0F;
 
-            srcOffset += 2;
-            for (int bitIndex = 0; (bitIndex < 16) && (srcOffset < srcRow.length); bitIndex++) {
-
-                // if the byte for this chunk is set to 0, then just copy one
-                // byte as is. This byte is not relevant for the compression
-                if (prefixBits[bitIndex] == 0) {
-                    outRow = ensureCapacity(outRow, outOffset);
-                    outRow[outOffset] = srcRow[srcOffset];
-                    srcOffset++;
-                    outOffset++;
-                    continue;
-                }
-
-                byte markerByte = srcRow[srcOffset];
-                byte nextByte = srcRow[srcOffset + 1]; // the second byte may play different roles
-
-                if (isShortRLE(markerByte)) {
-                    int length = getLengthOfRLEPattern(markerByte);
-                    outRow = ensureCapacity(outRow, outOffset + length);
-
-                    byte[] pattern = cloneByte(nextByte, length);
-
-                    System.arraycopy(pattern, 0, outRow, outOffset, length);
-                    outOffset += length;
-                    srcOffset += 2;
-                    continue;
-                }
-
-                if (isSingleByteMarker(markerByte)
-                        && !(((byte) (nextByte & (byte) 0xF0)) == (((byte) (nextByte << 4)) & (byte) 0xF0))) {
-
-                    int length = getLengthOfOneBytePattern(markerByte);
-                    outRow = ensureCapacity(outRow, outOffset + length);
-
-                    int backOffset = getOffsetForOneBytePattern(markerByte);
-                    System.arraycopy(outRow, outOffset - backOffset, outRow, outOffset, length);
-
-                    srcOffset++;
-                    outOffset += length;
-                    continue;
-                }
-
-                byte[] twoBytesMarker = Arrays.copyOfRange(srcRow, srcOffset,
-                        srcOffset + 2);
-                if (isTwoBytesMarker(twoBytesMarker)) {
-                    int length = getLengthOfTwoBytesPattern(twoBytesMarker);
-
-                    outRow = ensureCapacity(outRow, outOffset + length);
-
-                    int backOffset = getOffsetForTwoBytesPattern(twoBytesMarker);
-                    System.arraycopy(outRow, outOffset - backOffset, outRow, outOffset, length);
-
-                    srcOffset += 2;
-                    outOffset += length;
-                    continue;
-                }
-
-                byte[] threeBytesMarker = Arrays.copyOfRange(srcRow, srcOffset,
-                        srcOffset + 3);
-
-                if (isThreeBytesMarker(threeBytesMarker)) {
-                    int type = (byte) ((threeBytesMarker[0] >> 4) & (byte) 0x0F);
-                    int backOffset = 0;
-                    if (type == 2) {
-                        backOffset = getOffsetForThreeBytesPattern(threeBytesMarker);
+            switch (cmd) {
+                case 0: // short rle
+                    cnt += 3;
+                    for (int i = cnt; i-- > 0; ) {
+                        outRow[outOffset + i] = srcRow[srcOffset];
                     }
-                    int length = getLengthOfThreeBytesPattern(
-                            type, threeBytesMarker);
-                    outRow = ensureCapacity(outRow, outOffset + length);
+                    srcOffset++;
+                    outOffset += cnt;
+                    break;
 
-                    byte[] pattern;
-                    if (type == 1) { //RLE pattern
-                        pattern = cloneByte(threeBytesMarker[2], length);
-                    } else { //Base-offset pattern
-                        pattern = Arrays.copyOfRange(outRow, outOffset - backOffset,
-                                outOffset - backOffset + length);
+                case 1: // long rle
+                    cnt += ((srcRow[srcOffset++] & 0xff) << 4);
+                    cnt += 19;
+                    for (int i = cnt; i-- > 0; ) {
+                        outRow[outOffset + i] = srcRow[srcOffset];
                     }
+                    srcOffset++;
+                    outOffset += cnt;
+                    break;
 
-                    System.arraycopy(pattern, 0, outRow, outOffset, length);
-                    srcOffset += 3;
-                    outOffset += length;
-                } else {
-                    LOGGER.error("Unknown marker {} at offset {}", srcRow[srcOffset], srcOffset);
-                    return srcRow;
-                }
+                case 2: // long pattern
+                    int ofs = cnt + 3;
+                    ofs += ((srcRow[srcOffset++] & 0xff) << 4);
+                    cnt = srcRow[srcOffset++] & 0xff;
+                    cnt += 16;
+                    for (int i = cnt; i-- > 0; ) {
+                        outRow[outOffset + i] = outRow[outOffset - ofs + i];
+                    }
+                    outOffset += cnt;
+                    break;
+
+                default: // short pattern
+                    ofs = cnt + 3;
+                    ofs += ((srcRow[srcOffset++] & 0xff) << 4);
+                    for (int i = cmd; i-- > 0; ) {
+                        outRow[outOffset + i] = outRow[outOffset - ofs + i];
+                    }
+                    outOffset += cmd;
+                    break;
             }
         }
         return outRow;
-    }
-
-    private boolean isShortRLE(byte firstByteofCB) {
-        return (firstByteofCB >= 0x00 && firstByteofCB <= 0x06) || (firstByteofCB >= 0x0C && firstByteofCB <= 0x0F);
-    }
-
-    private int getLengthOfRLEPattern(byte firstByteofCB) {
-        if ((firstByteofCB >= 0x00 && firstByteofCB <= 0x06) || (firstByteofCB >= 0x0C && firstByteofCB <= 0x0F)) {
-            return (firstByteofCB & 0xFF) + 3;
-        }
-        return 0;
-    }
-
-    private boolean isSingleByteMarker(byte firstByteofCB) {
-        return firstByteofCB >= 0x07 && firstByteofCB <= 0x0B;
-    }
-
-    private int getLengthOfOneBytePattern(byte firstByteofCB) {
-        return (isSingleByteMarker(firstByteofCB)) ? (firstByteofCB & 0xFF) + 14 : 0;
-    }
-
-    private int getOffsetForOneBytePattern(byte firstByteofCB) {
-        return ((firstByteofCB & 0xFF) - 5) * 8;
-    }
-
-    private boolean isTwoBytesMarker(byte[] doubleBytesCB) {
-        return (byte) ((doubleBytesCB[0] >> 4) & 0xF) > 2;
-    }
-
-    private int getLengthOfTwoBytesPattern(byte[] doubleBytesCB) {
-        return (byte) ((doubleBytesCB[0] >> 4) & 0xF);
-    }
-
-    private int getOffsetForTwoBytesPattern(byte[] doubleBytesCB) {
-        return 3 + (doubleBytesCB[0] & 0xF) + ((doubleBytesCB[1] & 0xFF) * 16);
-    }
-
-    private boolean isThreeBytesMarker(byte[] threeByteMarker) {
-        byte flag = (byte) (threeByteMarker[0] >> 4);
-        return ((flag & 0xF) == 2) || ((flag & 0xF) == 1);
-    }
-
-    private int getLengthOfThreeBytesPattern(int type, byte[] threeByteMarker) {
-        if (type == 1) {
-            return 19 + (threeByteMarker[0] & 0xF) + ((threeByteMarker[1] & 0xFF) * 16);
-        } else if (type == 2) {
-            return (threeByteMarker[2] & 0xFF) + 16;
-        }
-        return 0;
-    }
-
-    private int getOffsetForThreeBytesPattern(byte[] tripleBytesCB) {
-        return 3 + (tripleBytesCB[0] & 0xF) + ((tripleBytesCB[1] & 0xFF) * 16);
-    }
-
-    private byte[] ensureCapacity(byte[] src, int capacity) {
-        if (capacity >= src.length) {
-            return Arrays.copyOf(src, Math.max(capacity, 2 * src.length));
-        }
-        return src;
-    }
-
-    private byte[] bytesAsBits(byte[] src, int offset) {
-        byte[] result = new byte[16];
-
-        for (int i = 0; i < 2; i++) {
-            byte b = src[offset + i];
-            for (int bit = 0; bit <= 7; bit++) {
-                //we read the bits from right to left,
-                // so the index in the result array is (7-bit) + offset
-                result[8 * i + (7 - bit)] = (byte) (((b & (1 << bit)) == 0) ? 0 : 1);
-            }
-        }
-        return result;
-    }
-
-    private byte[] cloneByte(byte b, int length) {
-        byte[] result = new byte[length];
-        Arrays.fill(result, b);
-        return result;
     }
 }

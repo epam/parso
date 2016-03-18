@@ -21,7 +21,7 @@ import java.io.Writer;
 
 /**
  * This is a class to store functions which are used in classes {@link CSVMetadataWriterImpl} and
- * {@link CSVDataWriterImpl}
+ * {@link CSVDataWriterImpl}.
  */
 abstract class AbstractCSVWriter {
     /**
@@ -30,7 +30,7 @@ abstract class AbstractCSVWriter {
     private static final String DEFAULT_DELIMITER = ",";
 
     /**
-     * The default endline for csv file
+     * The default endline for csv file.
      */
     private static final String DEFAULT_ENDLINE = "\n";
 

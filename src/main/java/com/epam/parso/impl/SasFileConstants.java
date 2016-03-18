@@ -16,8 +16,6 @@
 
 package com.epam.parso.impl;
 
-import com.epam.parso.Column;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -648,7 +646,7 @@ interface SasFileConstants {
      * - with the length of COLUMN_FORMAT_OFFSET_LENGTH bytes,
      * - at an offset calculated as {@link SasFileConstants#COLUMN_FORMAT_OFFSET_OFFSET} bytes +
      * + 3 * the size of value types (int or long depending on {@link SasFileConstants#ALIGN_2_VALUE}) from
-     * the beginning of the {@link SasFileParser.FormatAndLabelSubheader} subheader
+     * the beginning of the {@link SasFileParser.FormatAndLabelSubheader} subheader.
      */
     int COLUMN_FORMAT_OFFSET_LENGTH = 2;
 
@@ -657,7 +655,7 @@ interface SasFileConstants {
      * - with the length of {@link SasFileConstants#COLUMN_FORMAT_LENGTH_LENGTH} bytes,
      * - at an offset calculated as COLUMN_FORMAT_LENGTH_OFFSET bytes + the size of three value types
      * (int or long depending on {@link SasFileConstants#ALIGN_2_VALUE}) from the beginning of
-     * the {@link SasFileParser.FormatAndLabelSubheader} subheader
+     * the {@link SasFileParser.FormatAndLabelSubheader} subheader.
      */
     long COLUMN_FORMAT_LENGTH_OFFSET = 26L;
 
@@ -666,7 +664,7 @@ interface SasFileConstants {
      * - with the length of COLUMN_FORMAT_LENGTH_LENGTH bytes,
      * - at an offset calculated as {@link SasFileConstants#COLUMN_FORMAT_LENGTH_OFFSET} bytes +
      * 3 * the size of value types (int or long depending on {@link SasFileConstants#ALIGN_2_VALUE})
-     * from the beginning of the {@link SasFileParser.FormatAndLabelSubheader} subheader
+     * from the beginning of the {@link SasFileParser.FormatAndLabelSubheader} subheader.
      */
     int COLUMN_FORMAT_LENGTH_LENGTH = 2;
 
@@ -677,7 +675,7 @@ interface SasFileConstants {
      * - with the length of {@link SasFileConstants#COLUMN_LABEL_TEXT_SUBHEADER_INDEX_LENGTH} bytes,
      * - at an offset calculated as COLUMN_LABEL_TEXT_SUBHEADER_INDEX_OFFSET bytes +
      * + 3 * the size of value types (int or long depending on {@link SasFileConstants#ALIGN_2_VALUE}) from
-     * the beginning of the {@link SasFileParser.FormatAndLabelSubheader} subheader
+     * the beginning of the {@link SasFileParser.FormatAndLabelSubheader} subheader.
      */
     long COLUMN_LABEL_TEXT_SUBHEADER_INDEX_OFFSET = 28L;
 
@@ -688,7 +686,7 @@ interface SasFileConstants {
      * - with the length of COLUMN_LABEL_TEXT_SUBHEADER_INDEX_LENGTH bytes,
      * - at an offset equal to {@link SasFileConstants#COLUMN_LABEL_TEXT_SUBHEADER_INDEX_OFFSET} bytes +
      * + 3 * the size of value types (int or long depending on {@link SasFileConstants#ALIGN_2_VALUE})
-     * from the beginning of the {@link SasFileParser.FormatAndLabelSubheader} subheader
+     * from the beginning of the {@link SasFileParser.FormatAndLabelSubheader} subheader.
      */
     int COLUMN_LABEL_TEXT_SUBHEADER_INDEX_LENGTH = 2;
 
@@ -698,7 +696,7 @@ interface SasFileConstants {
      * - with the length of {@link SasFileConstants#COLUMN_LABEL_OFFSET_LENGTH} bytes.
      * - at an offset equal to COLUMN_LABEL_OFFSET_OFFSET bytes + 3 * the size of value types (int or long
      * depending on {@link SasFileConstants#ALIGN_2_VALUE}) from the beginning of
-     * the {@link SasFileParser.FormatAndLabelSubheader} subheader,
+     * the {@link SasFileParser.FormatAndLabelSubheader} subheader.
      */
     long COLUMN_LABEL_OFFSET_OFFSET = 30L;
 
@@ -708,7 +706,7 @@ interface SasFileConstants {
      * - with the length of COLUMN_LABEL_OFFSET_LENGTH bytes.
      * - at an offset equal to {@link SasFileConstants#COLUMN_LABEL_OFFSET_OFFSET} bytes + 3 * the size
      * of value types(int or long depending on {@link SasFileConstants#ALIGN_2_VALUE}) from the beginning of the
-     * {@link SasFileParser.FormatAndLabelSubheader} subheader,
+     * {@link SasFileParser.FormatAndLabelSubheader} subheader.
      */
     int COLUMN_LABEL_OFFSET_LENGTH = 2;
 
@@ -717,7 +715,7 @@ interface SasFileConstants {
      * - with the length of {@link SasFileConstants#COLUMN_LABEL_LENGTH_LENGTH} bytes.
      * - at an offset calculated as COLUMN_LABEL_LENGTH_OFFSET bytes +
      * 3 * the size of value types (int or long depending on {@link SasFileConstants#ALIGN_2_VALUE})
-     * from the beginning of the {@link SasFileParser.FormatAndLabelSubheader} subheader,
+     * from the beginning of the {@link SasFileParser.FormatAndLabelSubheader} subheader.
      */
     long COLUMN_LABEL_LENGTH_OFFSET = 32L;
 
@@ -726,7 +724,7 @@ interface SasFileConstants {
      * - with the length of COLUMN_LABEL_LENGTH_LENGTH bytes.
      * - at an offset calculated as {@link SasFileConstants#COLUMN_LABEL_LENGTH_OFFSET} bytes +
      * 3 * the size of value types(int or long depending on {@link SasFileConstants#ALIGN_2_VALUE}) from
-     * the beginning of the {@link SasFileParser.FormatAndLabelSubheader} subheader,
+     * the beginning of the {@link SasFileParser.FormatAndLabelSubheader} subheader.
      */
     int COLUMN_LABEL_LENGTH_LENGTH = 2;
 

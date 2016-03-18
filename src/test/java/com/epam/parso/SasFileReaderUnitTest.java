@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import static com.epam.parso.TestUtils.getResourceAsStream;
 import static org.fest.assertions.Assertions.assertThat;
 
 public class SasFileReaderUnitTest {
@@ -118,14 +119,14 @@ public class SasFileReaderUnitTest {
 
     @Test
     public void testMetadata() {
-        InputStream fileInputStream = this.getClass().getClassLoader().getResourceAsStream(fileName);
+        InputStream fileInputStream = getResourceAsStream(fileName);
         long programStart = System.currentTimeMillis();
         SasFileReader sasFileReader = new SasFileReaderImpl(fileInputStream);
         logger.info("Processing file {}", fileName);
         CSVReader controlReader = null;
         Writer writer = new StringWriter();
         try {
-            controlReader = new CSVReader(new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream(
+            controlReader = new CSVReader(new InputStreamReader(getResourceAsStream(
                     fileName.replace(".sas7bdat", "").replace("sas7bdat", "csv") + "_meta.csv")));
             CSVMetadataWriter csvMetadataWriter = new CSVMetadataWriterImpl(writer);
             csvMetadataWriter.writeMetadata(sasFileReader.getColumns());
@@ -142,10 +143,10 @@ public class SasFileReaderUnitTest {
     @Test
     public void testData() {
         long programStart = System.currentTimeMillis();
-        InputStream fileInputStream = this.getClass().getClassLoader().getResourceAsStream(fileName);
+        InputStream fileInputStream = getResourceAsStream(fileName);
         logger.info("Processing file {}", fileName);
         Writer writer = new StringWriter();
-        InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getClassLoader().
+        InputStreamReader inputStreamReader = new InputStreamReader(
                 getResourceAsStream(fileName.toLowerCase().replace("sas7bdat", "csv")));
         try {
             SasFileReader sasFileReader = new SasFileReaderImpl(fileInputStream);
@@ -195,7 +196,7 @@ public class SasFileReaderUnitTest {
 
     @Test
     public void testStringValue() throws IOException {
-        InputStream is = this.getClass().getClassLoader().getResourceAsStream("sas7bdat/mixed_data_one.sas7bdat");
+        InputStream is = getResourceAsStream("sas7bdat/mixed_data_one.sas7bdat");
         SasFileReader reader = new SasFileReaderImpl(is);
         
         Object[] data = reader.readNext();
