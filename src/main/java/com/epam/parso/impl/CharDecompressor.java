@@ -54,6 +54,9 @@ final class CharDecompressor implements Decompressor {
             int countOfBytesToCopy;
             switch (controlByte) {
                 case 0x00:
+                case 0x10:
+                case 0x20:
+                case 0x30:
                     if (currentByteIndex != length - 1) {
                         countOfBytesToCopy = (page[offset + currentByteIndex + 1] & 0xFF) + 64 + endOfFirstByte * 256;
                         System.arraycopy(page, offset + currentByteIndex + 2, resultByteArray,
