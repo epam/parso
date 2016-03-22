@@ -30,7 +30,7 @@ If you use Maven, add the following dependency into the pom.xml file:
 <dependency>
     <groupId>com.epam</groupId>
     <artifactId>parso</artifactId>
-    <version>2.0-SNAPSHOT</version>
+    <version>2.0</version>
 </dependency>
 ```
 
