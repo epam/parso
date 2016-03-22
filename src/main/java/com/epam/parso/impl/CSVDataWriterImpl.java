@@ -23,7 +23,13 @@ import java.io.IOException;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Collections;
+import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * This is a class to export the sas7bdat file data into the CSV format.
@@ -113,7 +119,7 @@ public class CSVDataWriterImpl extends AbstractCSVWriter implements CSVDataWrite
     /**
      * The mapping between date formats in sas7bdat files and SimpleDateFormat.
      */
-    private static final Map<String, String> dateOutputFormatStrings;
+    private static final Map<String, String> DATE_OUTPUT_FORMAT_STRINGS;
 
     static {
         Map<String, String> tmpMap = new HashMap<String, String>();
@@ -122,7 +128,7 @@ public class CSVDataWriterImpl extends AbstractCSVWriter implements CSVDataWrite
         tmpMap.put(DATE_FORMAT_DDMMYY, "dd/MM/yyyy");
         tmpMap.put(DATE_FORMAT, "ddMMMyyyy");
         tmpMap.put(DATE_TIME_FORMAT, "yyyy-MM-dd HH:mm:ss");
-        dateOutputFormatStrings = Collections.synchronizedMap(tmpMap);
+        DATE_OUTPUT_FORMAT_STRINGS = Collections.synchronizedMap(tmpMap);
     }
 
     /**
@@ -160,13 +166,13 @@ public class CSVDataWriterImpl extends AbstractCSVWriter implements CSVDataWrite
      *
      * @param currentDate the date to convert.
      * @param format      the string with the format that must belong to the set of
-     *                    {@link CSVDataWriterImpl#dateOutputFormatStrings} mapping keys.
+     *                    {@link CSVDataWriterImpl#DATE_OUTPUT_FORMAT_STRINGS} mapping keys.
      * @return the string that corresponds to the date in the format used.
      */
     private static String convertDateElementToString(Date currentDate, String format) {
         SimpleDateFormat dateFormat;
         String valueToPrint = "";
-        dateFormat = new SimpleDateFormat(dateOutputFormatStrings.get(format));
+        dateFormat = new SimpleDateFormat(DATE_OUTPUT_FORMAT_STRINGS.get(format));
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         if (currentDate.getTime() != 0) {
             valueToPrint = dateFormat.format(currentDate.getTime());
@@ -236,22 +242,23 @@ public class CSVDataWriterImpl extends AbstractCSVWriter implements CSVDataWrite
             return;
         }
 
+        Writer writer = getWriter();
         for (int currentColumnIndex = 0; currentColumnIndex < columns.size(); currentColumnIndex++) {
             if (row[currentColumnIndex] != null) {
                 if (row[currentColumnIndex].getClass().getName().compareTo(
                         (new byte[0]).getClass().getName()) == 0) {
-                    checkSurroundByQuotesAndWrite(writer, delimiter,
+                    checkSurroundByQuotesAndWrite(writer, getDelimiter(),
                             new String((byte[]) row[currentColumnIndex], ENCODING));
                 } else {
                     processEntry(columns, row, currentColumnIndex);
                 }
             }
             if (currentColumnIndex != columns.size() - 1) {
-                writer.write(delimiter);
+                writer.write(getDelimiter());
             }
         }
 
-        writer.write(endline);
+        writer.write(getEndline());
         writer.flush();
     }
 
@@ -276,22 +283,30 @@ public class CSVDataWriterImpl extends AbstractCSVWriter implements CSVDataWrite
 
     /**
      * The method to output the column names using the {@link CSVDataWriterImpl#delimiter} delimiter
-     * using {@link CSVDataWriterImpl#writer}
+     * using {@link CSVDataWriterImpl#writer}.
      *
      * @param columns the list of column names.
      * @throws IOException appears if the output into writer is impossible.
      */
     @Override
     public void writeColumnNames(List<Column> columns) throws IOException {
+        Writer writer = getWriter();
         for (int i = 0; i < columns.size(); i++) {
-            checkSurroundByQuotesAndWrite(writer, delimiter, columns.get(i).getName());
+            checkSurroundByQuotesAndWrite(writer, getDelimiter(), columns.get(i).getName());
             if (i != columns.size() - 1) {
-                writer.write(delimiter);
+                writer.write(getDelimiter());
             }
         }
-        writer.write(endline);
+        writer.write(getEndline());
     }
 
+    /**
+     * Checks current entry type and write it into csv according to check result.
+     * @param columns list of sas7bdat file columns.
+     * @param row current processing row.
+     * @param currentColumnIndex index of current entry in row;
+     * @throws IOException appears if the output into writer is impossible.
+     */
     private void processEntry(List<Column> columns, Object[] row, int currentColumnIndex) throws IOException {
         if (!String.valueOf(row[currentColumnIndex]).contains(DOUBLE_INFINITY_STRING)) {
             String valueToPrint;
@@ -309,7 +324,7 @@ public class CSVDataWriterImpl extends AbstractCSVWriter implements CSVDataWrite
                 }
             }
 
-            checkSurroundByQuotesAndWrite(writer, delimiter, valueToPrint);
+            checkSurroundByQuotesAndWrite(getWriter(), getDelimiter(), valueToPrint);
         }
     }
 }

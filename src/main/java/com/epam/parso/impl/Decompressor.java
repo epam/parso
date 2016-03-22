@@ -16,6 +16,9 @@
 
 package com.epam.parso.impl;
 
+/**
+ * Interface which should be implemented in all data decompressors.
+ */
 interface Decompressor {
 
     /**

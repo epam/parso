@@ -26,11 +26,19 @@ import org.slf4j.LoggerFactory;
  *
  */
 final class CharDecompressor implements Decompressor {
+    /**
+     * Unambiguous class instance.
+     */
     static final CharDecompressor INSTANCE = new CharDecompressor();
+    /**
+     * Object for writing logs.
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(CharDecompressor.class);
 
+    /**
+     * Empty private constructor for preventing multiple instances.
+     */
     private CharDecompressor() {
-        //prevent multiple instances
     }
 
     /**

@@ -19,6 +19,9 @@ package com.epam.parso;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Interface for exporting metadata from sas7bdat file to csv.
+ */
 public interface CSVMetadataWriter {
     /**
      * The method to export a parsed sas7bdat file metadata using writer.

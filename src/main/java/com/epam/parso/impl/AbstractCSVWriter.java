@@ -37,17 +37,17 @@ abstract class AbstractCSVWriter {
     /**
      * The variable to output csv file.
      */
-    final Writer writer;
+    private final Writer writer;
 
     /**
-     * The delimiter for csv file
+     * The delimiter for csv file.
      */
-    String delimiter = DEFAULT_DELIMITER;
+    private String delimiter = DEFAULT_DELIMITER;
 
     /**
-     * The endline for csv file
+     * The endline for csv file.
      */
-    String endline = DEFAULT_ENDLINE;
+    private String endline = DEFAULT_ENDLINE;
 
     /**
      * The constructor that defines writer variable to output result csv file.
@@ -104,6 +104,12 @@ abstract class AbstractCSVWriter {
         }
     }
 
+    /**
+     * The method to check if string contains as a substring at least one string from list.
+     * @param inputString string which is checked for containing string from the list.
+     * @param items list of strings.
+     * @return true if at least one of strings from the list is a substring of original string.
+     */
     private static boolean stringContainsItemFromList(String inputString, String... items) {
         for (String item : items) {
             if (inputString.contains(item)) {
@@ -111,5 +117,29 @@ abstract class AbstractCSVWriter {
             }
         }
         return false;
+    }
+
+    /**
+     * Writer getter.
+     * @return the variable to output csv file.
+     */
+    public Writer getWriter() {
+        return writer;
+    }
+
+    /**
+     * Delimiter getter.
+     * @return the delimiter for csv file.
+     */
+    public String getDelimiter() {
+        return delimiter;
+    }
+
+    /**
+     * Endline getter.
+     * @return the endline for csv file.
+     */
+    public String getEndline() {
+        return endline;
     }
 }

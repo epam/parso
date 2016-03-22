@@ -27,10 +27,15 @@ import java.util.Arrays;
  *   01.08.2015 (Gabor Bakos): Replaced the implementation to an alternative
  */
 final class BinDecompressor implements Decompressor {
+    /**
+     * Unambiguous class instance.
+     */
     static final BinDecompressor INSTANCE = new BinDecompressor();
 
+    /**
+     * Empty private constructor for preventing multiple instances.
+     */
     private BinDecompressor() {
-        // prevent multiple instances
     }
 
     /**
@@ -56,7 +61,9 @@ final class BinDecompressor implements Decompressor {
         int outOffset = 0;
         int ctrlBits = 0, ctrlMask = 0;
         while (srcOffset < srcLength) {
-            if ((ctrlMask >>= 1) == 0) {
+
+            ctrlMask >>= 1;
+            if (ctrlMask == 0) {
                 ctrlBits = (((srcRow[srcOffset]) & 0xff) << 8) | (srcRow[srcOffset + 1] & 0xff);
                 srcOffset += 2;
                 ctrlMask = 0x8000;
@@ -75,7 +82,7 @@ final class BinDecompressor implements Decompressor {
             switch (cmd) {
                 case 0: // short rle
                     cnt += 3;
-                    for (int i = cnt; i-- > 0; ) {
+                    for (int i = 0; i < cnt; i++) {
                         outRow[outOffset + i] = srcRow[srcOffset];
                     }
                     srcOffset++;
@@ -85,7 +92,7 @@ final class BinDecompressor implements Decompressor {
                 case 1: // long rle
                     cnt += ((srcRow[srcOffset++] & 0xff) << 4);
                     cnt += 19;
-                    for (int i = cnt; i-- > 0; ) {
+                    for (int i = 0; i < cnt; i++) {
                         outRow[outOffset + i] = srcRow[srcOffset];
                     }
                     srcOffset++;
@@ -97,18 +104,14 @@ final class BinDecompressor implements Decompressor {
                     ofs += ((srcRow[srcOffset++] & 0xff) << 4);
                     cnt = srcRow[srcOffset++] & 0xff;
                     cnt += 16;
-                    for (int i = cnt; i-- > 0; ) {
-                        outRow[outOffset + i] = outRow[outOffset - ofs + i];
-                    }
+                    System.arraycopy(outRow, outOffset - ofs, outRow, outOffset, cnt);
                     outOffset += cnt;
                     break;
 
                 default: // short pattern
                     ofs = cnt + 3;
                     ofs += ((srcRow[srcOffset++] & 0xff) << 4);
-                    for (int i = cmd; i-- > 0; ) {
-                        outRow[outOffset + i] = outRow[outOffset - ofs + i];
-                    }
+                    System.arraycopy(outRow, outOffset - ofs, outRow, outOffset, cmd);
                     outOffset += cmd;
                     break;
             }

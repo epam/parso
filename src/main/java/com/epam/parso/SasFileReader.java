@@ -19,6 +19,9 @@ package com.epam.parso;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Main interface for working with library.
+ */
 public interface SasFileReader {
     /**
      * The function to get the {@link Column} list from {@link SasFileReader}.

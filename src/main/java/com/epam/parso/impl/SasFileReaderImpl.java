@@ -30,10 +30,15 @@ import java.util.List;
  * A class to read sas7bdat files transferred to the input stream and then to get metadata and file data.
  * This class is used as a wrapper for SasFileParser.
  */
-
 public class SasFileReaderImpl implements SasFileReader {
+    /**
+     * Object for writing logs.
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(SasFileReaderImpl.class);
 
+    /**
+     * Object for parsing sas7bdat file.
+     */
     private final SasFileParser sasFileParser;
 
     /**
@@ -47,8 +52,8 @@ public class SasFileReaderImpl implements SasFileReader {
     }
 
     /**
-     * Builds an object of the SasFileReaderImpl class from the file contained in the input stream with the encoding defined
-     * in the 'encoding' variable.
+     * Builds an object of the SasFileReaderImpl class from the file contained in the input stream with the encoding
+     * defined in the 'encoding' variable.
      * Reads only metadata (properties and column information) of the sas7bdat file.
      *
      * @param inputStream - an input stream which should contain a correct sas7bdat file.
@@ -59,8 +64,8 @@ public class SasFileReaderImpl implements SasFileReader {
     }
 
     /**
-     * Builds an object of the SasFileReaderImpl class from the file contained in the input stream with a flag of the binary
-     * or string format of the data output.
+     * Builds an object of the SasFileReaderImpl class from the file contained in the input stream with a flag of
+     * the binary or string format of the data output.
      * Reads only metadata (properties and column information) of the sas7bdat file.
      *
      * @param inputStream - an input stream which should contain a correct sas7bdat file.
@@ -95,8 +100,8 @@ public class SasFileReaderImpl implements SasFileReader {
                 result[i] = readNext();
             } catch (IOException e) {
                 if (LOGGER.isWarnEnabled()) {
-                    LOGGER.warn("I/O exception, skipping the rest of the file. " +
-                            "Rows read: " + i + ". Expected number of rows from metadata: " + rowNum, e);
+                    LOGGER.warn("I/O exception, skipping the rest of the file. "
+                            + "Rows read: " + i + ". Expected number of rows from metadata: " + rowNum, e);
                 }
                 break;
             }

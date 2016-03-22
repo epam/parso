@@ -117,6 +117,10 @@ public class CSVMetadataWriterImpl extends AbstractCSVWriter implements CSVMetad
      */
     @Override
     public void writeMetadata(List<Column> columns) throws IOException {
+        Writer writer = getWriter();
+        String delimiter = getDelimiter();
+        String endline = getEndline();
+
         writer.write(COLUMN_HEADING_ID);
         writer.write(delimiter);
         writer.write(COLUMN_HEADING_NAME);
@@ -176,7 +180,7 @@ public class CSVMetadataWriterImpl extends AbstractCSVWriter implements CSVMetad
         constructPropertiesString("Row Count: ", sasFileProperties.getRowCount());
         constructPropertiesString("Mix Page Row Count: ", sasFileProperties.getMixPageRowCount());
         constructPropertiesString("Columns Count: ", sasFileProperties.getColumnsCount());
-        writer.flush();
+        getWriter().flush();
     }
 
     /**
@@ -187,6 +191,6 @@ public class CSVMetadataWriterImpl extends AbstractCSVWriter implements CSVMetad
      * @throws IOException appears if the output into writer is impossible.
      */
     private void constructPropertiesString(String propertyName, Object property) throws IOException {
-        writer.write(propertyName + String.valueOf(property) + "\n");
+        getWriter().write(propertyName + String.valueOf(property) + "\n");
     }
 }

@@ -21,54 +21,68 @@ import com.epam.parso.SasFileProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+
+import java.io.DataInputStream;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.EOFException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Date;
 
 /**
  * This is a class that parses sas7bdat files. When parsing a sas7bdat file, to interact with the library,
  * do not use this class but use {@link SasFileReaderImpl} instead.
  */
-public class SasFileParser {
+public final class SasFileParser {
+    /**
+     * Object for writing logs.
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(SasFileParser.class);
     /**
-     * The mapping of subheader signatures to the corresponding elements in {@link SasFileParser.SUBHEADER_INDEXES}.
+     * The mapping of subheader signatures to the corresponding elements in {@link SubheaderIndexes}.
      * Depending on the value at the {@link SasFileConstants#ALIGN_2_OFFSET} offset, signatures take 4 bytes
      * for 32-bit version sas7bdat files and 8 bytes for the 64-bit version files.
      */
-    private static final Map<Long, SUBHEADER_INDEXES> SUBHEADER_SIGNATURE_TO_INDEX;
+    private static final Map<Long, SubheaderIndexes> SUBHEADER_SIGNATURE_TO_INDEX;
     /**
      * The mapping of the supported string literals to the compression method they mean.
      */
-    private static final Map<String, Decompressor> literalsToDecompressor = new HashMap<String, Decompressor>();
+    private static final Map<String, Decompressor> LITERALS_TO_DECOMPRESSOR = new HashMap<String, Decompressor>();
 
     static {
-        Map<Long, SUBHEADER_INDEXES> tmpMap = new HashMap<Long, SUBHEADER_INDEXES>();
-        tmpMap.put((long) 0xF7F7F7F7, SUBHEADER_INDEXES.ROW_SIZE_SUBHEADER_INDEX);
-        tmpMap.put((long) 0xF6F6F6F6, SUBHEADER_INDEXES.COLUMN_SIZE_SUBHEADER_INDEX);
-        tmpMap.put((long) 0xFFFFFC00, SUBHEADER_INDEXES.SUBHEADER_COUNTS_SUBHEADER_INDEX);
-        tmpMap.put((long) 0xFFFFFFFD, SUBHEADER_INDEXES.COLUMN_TEXT_SUBHEADER_INDEX);
-        tmpMap.put((long) 0xFFFFFFFF, SUBHEADER_INDEXES.COLUMN_NAME_SUBHEADER_INDEX);
-        tmpMap.put((long) 0xFFFFFFFC, SUBHEADER_INDEXES.COLUMN_ATTRIBUTES_SUBHEADER_INDEX);
-        tmpMap.put((long) 0xFFFFFBFE, SUBHEADER_INDEXES.FORMAT_AND_LABEL_SUBHEADER_INDEX);
-        tmpMap.put((long) 0xFFFFFFFE, SUBHEADER_INDEXES.COLUMN_LIST_SUBHEADER_INDEX);
-        tmpMap.put(0x00000000F7F7F7F7L, SUBHEADER_INDEXES.ROW_SIZE_SUBHEADER_INDEX);
-        tmpMap.put(0x00000000F6F6F6F6L, SUBHEADER_INDEXES.COLUMN_SIZE_SUBHEADER_INDEX);
-        tmpMap.put(0xF7F7F7F700000000L, SUBHEADER_INDEXES.ROW_SIZE_SUBHEADER_INDEX);
-        tmpMap.put(0xF6F6F6F600000000L, SUBHEADER_INDEXES.COLUMN_SIZE_SUBHEADER_INDEX);
-        tmpMap.put(0x00FCFFFFFFFFFFFFL, SUBHEADER_INDEXES.SUBHEADER_COUNTS_SUBHEADER_INDEX);
-        tmpMap.put(0xFDFFFFFFFFFFFFFFL, SUBHEADER_INDEXES.COLUMN_TEXT_SUBHEADER_INDEX);
-        tmpMap.put(0xFFFFFFFFFFFFFFFFL, SUBHEADER_INDEXES.COLUMN_NAME_SUBHEADER_INDEX);
-        tmpMap.put(0xFCFFFFFFFFFFFFFFL, SUBHEADER_INDEXES.COLUMN_ATTRIBUTES_SUBHEADER_INDEX);
-        tmpMap.put(0xFEFBFFFFFFFFFFFFL, SUBHEADER_INDEXES.FORMAT_AND_LABEL_SUBHEADER_INDEX);
-        tmpMap.put(0xFEFFFFFFFFFFFFFFL, SUBHEADER_INDEXES.COLUMN_LIST_SUBHEADER_INDEX);
+        Map<Long, SubheaderIndexes> tmpMap = new HashMap<Long, SubheaderIndexes>();
+        tmpMap.put((long) 0xF7F7F7F7, SubheaderIndexes.ROW_SIZE_SUBHEADER_INDEX);
+        tmpMap.put((long) 0xF6F6F6F6, SubheaderIndexes.COLUMN_SIZE_SUBHEADER_INDEX);
+        tmpMap.put((long) 0xFFFFFC00, SubheaderIndexes.SUBHEADER_COUNTS_SUBHEADER_INDEX);
+        tmpMap.put((long) 0xFFFFFFFD, SubheaderIndexes.COLUMN_TEXT_SUBHEADER_INDEX);
+        tmpMap.put((long) 0xFFFFFFFF, SubheaderIndexes.COLUMN_NAME_SUBHEADER_INDEX);
+        tmpMap.put((long) 0xFFFFFFFC, SubheaderIndexes.COLUMN_ATTRIBUTES_SUBHEADER_INDEX);
+        tmpMap.put((long) 0xFFFFFBFE, SubheaderIndexes.FORMAT_AND_LABEL_SUBHEADER_INDEX);
+        tmpMap.put((long) 0xFFFFFFFE, SubheaderIndexes.COLUMN_LIST_SUBHEADER_INDEX);
+        tmpMap.put(0x00000000F7F7F7F7L, SubheaderIndexes.ROW_SIZE_SUBHEADER_INDEX);
+        tmpMap.put(0x00000000F6F6F6F6L, SubheaderIndexes.COLUMN_SIZE_SUBHEADER_INDEX);
+        tmpMap.put(0xF7F7F7F700000000L, SubheaderIndexes.ROW_SIZE_SUBHEADER_INDEX);
+        tmpMap.put(0xF6F6F6F600000000L, SubheaderIndexes.COLUMN_SIZE_SUBHEADER_INDEX);
+        tmpMap.put(0x00FCFFFFFFFFFFFFL, SubheaderIndexes.SUBHEADER_COUNTS_SUBHEADER_INDEX);
+        tmpMap.put(0xFDFFFFFFFFFFFFFFL, SubheaderIndexes.COLUMN_TEXT_SUBHEADER_INDEX);
+        tmpMap.put(0xFFFFFFFFFFFFFFFFL, SubheaderIndexes.COLUMN_NAME_SUBHEADER_INDEX);
+        tmpMap.put(0xFCFFFFFFFFFFFFFFL, SubheaderIndexes.COLUMN_ATTRIBUTES_SUBHEADER_INDEX);
+        tmpMap.put(0xFEFBFFFFFFFFFFFFL, SubheaderIndexes.FORMAT_AND_LABEL_SUBHEADER_INDEX);
+        tmpMap.put(0xFEFFFFFFFFFFFFFFL, SubheaderIndexes.COLUMN_LIST_SUBHEADER_INDEX);
         SUBHEADER_SIGNATURE_TO_INDEX = Collections.unmodifiableMap(tmpMap);
     }
 
     static {
-        literalsToDecompressor.put(SasFileConstants.COMPRESS_CHAR_IDENTIFYING_STRING, CharDecompressor.INSTANCE);
-        literalsToDecompressor.put(SasFileConstants.COMPRESS_BIN_IDENTIFYING_STRING, BinDecompressor.INSTANCE);
+        LITERALS_TO_DECOMPRESSOR.put(SasFileConstants.COMPRESS_CHAR_IDENTIFYING_STRING, CharDecompressor.INSTANCE);
+        LITERALS_TO_DECOMPRESSOR.put(SasFileConstants.COMPRESS_BIN_IDENTIFYING_STRING, BinDecompressor.INSTANCE);
     }
 
     /**
@@ -76,7 +90,7 @@ public class SasFileParser {
      */
     private final DataInputStream sasFileStream;
     /**
-     * The flag of data output in binary or string format
+     * The flag of data output in binary or string format.
      */
     private final Boolean byteOutput;
     /**
@@ -114,13 +128,13 @@ public class SasFileParser {
      */
     private final List<Column> columns = new ArrayList<Column>();
     /**
-     * The mapping between elements from {@link SasFileParser.SUBHEADER_INDEXES} and classes corresponding
+     * The mapping between elements from {@link SubheaderIndexes} and classes corresponding
      * to each subheader. This is necessary because defining the subheader type being processed is dynamic.
      * Every class has an overridden function that processes the related subheader type.
      */
-    private final Map<SUBHEADER_INDEXES, ProcessingSubheader> subheaderIndexToClass;
+    private final Map<SubheaderIndexes, ProcessingSubheader> subheaderIndexToClass;
     /**
-     * Default encoding for output strings
+     * Default encoding for output strings.
      */
     private String encoding = "ASCII";
     /**
@@ -176,16 +190,16 @@ public class SasFileParser {
         encoding = builder.encoding;
         byteOutput = builder.byteOutput;
 
-        Map<SUBHEADER_INDEXES, ProcessingSubheader> tmpMap = new HashMap<SUBHEADER_INDEXES, ProcessingSubheader>();
-        tmpMap.put(SUBHEADER_INDEXES.ROW_SIZE_SUBHEADER_INDEX, new RowSizeSubheader());
-        tmpMap.put(SUBHEADER_INDEXES.COLUMN_SIZE_SUBHEADER_INDEX, new ColumnSizeSubheader());
-        tmpMap.put(SUBHEADER_INDEXES.SUBHEADER_COUNTS_SUBHEADER_INDEX, new SubheaderCountsSubheader());
-        tmpMap.put(SUBHEADER_INDEXES.COLUMN_TEXT_SUBHEADER_INDEX, new ColumnTextSubheader());
-        tmpMap.put(SUBHEADER_INDEXES.COLUMN_NAME_SUBHEADER_INDEX, new ColumnNameSubheader());
-        tmpMap.put(SUBHEADER_INDEXES.COLUMN_ATTRIBUTES_SUBHEADER_INDEX, new ColumnAttributesSubheader());
-        tmpMap.put(SUBHEADER_INDEXES.FORMAT_AND_LABEL_SUBHEADER_INDEX, new FormatAndLabelSubheader());
-        tmpMap.put(SUBHEADER_INDEXES.COLUMN_LIST_SUBHEADER_INDEX, new ColumnListSubheader());
-        tmpMap.put(SUBHEADER_INDEXES.DATA_SUBHEADER_INDEX, new DataSubheader());
+        Map<SubheaderIndexes, ProcessingSubheader> tmpMap = new HashMap<SubheaderIndexes, ProcessingSubheader>();
+        tmpMap.put(SubheaderIndexes.ROW_SIZE_SUBHEADER_INDEX, new RowSizeSubheader());
+        tmpMap.put(SubheaderIndexes.COLUMN_SIZE_SUBHEADER_INDEX, new ColumnSizeSubheader());
+        tmpMap.put(SubheaderIndexes.SUBHEADER_COUNTS_SUBHEADER_INDEX, new SubheaderCountsSubheader());
+        tmpMap.put(SubheaderIndexes.COLUMN_TEXT_SUBHEADER_INDEX, new ColumnTextSubheader());
+        tmpMap.put(SubheaderIndexes.COLUMN_NAME_SUBHEADER_INDEX, new ColumnNameSubheader());
+        tmpMap.put(SubheaderIndexes.COLUMN_ATTRIBUTES_SUBHEADER_INDEX, new ColumnAttributesSubheader());
+        tmpMap.put(SubheaderIndexes.FORMAT_AND_LABEL_SUBHEADER_INDEX, new FormatAndLabelSubheader());
+        tmpMap.put(SubheaderIndexes.COLUMN_LIST_SUBHEADER_INDEX, new ColumnListSubheader());
+        tmpMap.put(SubheaderIndexes.DATA_SUBHEADER_INDEX, new DataSubheader());
         subheaderIndexToClass = Collections.unmodifiableMap(tmpMap);
 
         try {
@@ -248,8 +262,8 @@ public class SasFileParser {
                 SasFileConstants.PAGE_SIZE_OFFSET + align1,
                 SasFileConstants.PAGE_COUNT_OFFSET + align1, SasFileConstants.SAS_RELEASE_OFFSET + totalAlign,
                 SasFileConstants.SAS_SERVER_TYPE_OFFSET + totalAlign,
-                SasFileConstants.OS_VERSION_NUMBER_OFFSET + totalAlign, SasFileConstants.OS_MAKER_OFFSET +
-                totalAlign, SasFileConstants.OS_NAME_OFFSET + totalAlign};
+                SasFileConstants.OS_VERSION_NUMBER_OFFSET + totalAlign, SasFileConstants.OS_MAKER_OFFSET
+                + totalAlign, SasFileConstants.OS_NAME_OFFSET + totalAlign};
         Integer[] length = {SasFileConstants.ENDIANNESS_LENGTH, SasFileConstants.DATASET_LENGTH, SasFileConstants
                 .FILE_TYPE_LENGTH, SasFileConstants.DATE_CREATED_LENGTH,
                 SasFileConstants.DATE_MODIFIED_LENGTH, SasFileConstants.HEADER_SIZE_LENGTH, SasFileConstants
@@ -294,6 +308,7 @@ public class SasFileParser {
      * the method calls the function to process the page.
      *
      * @throws IOException if reading from the {@link SasFileParser#sasFileStream} stream is impossible.
+     * @return true if all metadata is read.
      */
     private boolean processSasFilePageMeta() throws IOException {
         int bitOffset = sasFileProperties.isU64() ? SasFileConstants.PAGE_BIT_OFFSET_X64 : SasFileConstants
@@ -304,8 +319,7 @@ public class SasFileParser {
             processPageMetadata(bitOffset, subheaderPointers);
         }
         return currentPageType == SasFileConstants.PAGE_DATA_TYPE || currentPageType == SasFileConstants
-                .PAGE_MIX_TYPE ||
-                currentPageDataSubheaderPointers.size() != 0;
+                .PAGE_MIX_TYPE || currentPageDataSubheaderPointers.size() != 0;
     }
 
     /**
@@ -327,10 +341,10 @@ public class SasFileParser {
             subheaderPointers.add(currentSubheaderPointer);
             if (currentSubheaderPointer.compression != SasFileConstants.TRUNCATED_SUBHEADER_ID) {
                 long subheaderSignature = readSubheaderSignature(currentSubheaderPointer.offset);
-                SUBHEADER_INDEXES subheaderIndex = chooseSubheaderClass(subheaderSignature,
+                SubheaderIndexes subheaderIndex = chooseSubheaderClass(subheaderSignature,
                         currentSubheaderPointer.compression, currentSubheaderPointer.type);
                 if (subheaderIndex != null) {
-                    if (subheaderIndex != SUBHEADER_INDEXES.DATA_SUBHEADER_INDEX) {
+                    if (subheaderIndex != SubheaderIndexes.DATA_SUBHEADER_INDEX) {
                         LOGGER.debug("Subheader process function name: {}", subheaderIndex);
                         subheaderIndexToClass.get(subheaderIndex).processSubheader(
                                 subheaderPointers.get(subheaderPointerIndex).offset,
@@ -371,15 +385,14 @@ public class SasFileParser {
      *                           {@link SasFileParser#SUBHEADER_SIGNATURE_TO_INDEX} mapping
      * @param compression        the type of subheader compression ({@link SubheaderPointer#compression})
      * @param type               the subheader type ({@link SubheaderPointer#type})
-     * @return an element from the  {@link SasFileParser.SUBHEADER_INDEXES} enumeration that defines the type of
+     * @return an element from the  {@link SubheaderIndexes} enumeration that defines the type of
      * the current subheader
      */
-    private SUBHEADER_INDEXES chooseSubheaderClass(long subheaderSignature, int compression, int type) {
-        SUBHEADER_INDEXES subheaderIndex = SUBHEADER_SIGNATURE_TO_INDEX.get(subheaderSignature);
+    private SubheaderIndexes chooseSubheaderClass(long subheaderSignature, int compression, int type) {
+        SubheaderIndexes subheaderIndex = SUBHEADER_SIGNATURE_TO_INDEX.get(subheaderSignature);
         if (sasFileProperties.isCompressed() && subheaderIndex == null && (compression == SasFileConstants
-                .COMPRESSED_SUBHEADER_ID ||
-                compression == 0) && type == SasFileConstants.COMPRESSED_SUBHEADER_TYPE) {
-            subheaderIndex = SUBHEADER_INDEXES.DATA_SUBHEADER_INDEX;
+                .COMPRESSED_SUBHEADER_ID || compression == 0) && type == SasFileConstants.COMPRESSED_SUBHEADER_TYPE) {
+            subheaderIndex = SubheaderIndexes.DATA_SUBHEADER_INDEX;
         }
         return subheaderIndex;
     }
@@ -397,8 +410,8 @@ public class SasFileParser {
             throws IOException {
         int intOrLongLength = sasFileProperties.isU64() ? SasFileConstants.BYTES_IN_LONG : SasFileConstants
                 .BYTES_IN_INT;
-        int subheaderPointerLength = sasFileProperties.isU64() ? SasFileConstants.SUBHEADER_POINTER_LENGTH_X64 :
-                SasFileConstants.SUBHEADER_POINTER_LENGTH_X86;
+        int subheaderPointerLength = sasFileProperties.isU64() ? SasFileConstants.SUBHEADER_POINTER_LENGTH_X64
+                : SasFileConstants.SUBHEADER_POINTER_LENGTH_X86;
         long totalOffset = subheaderPointerOffset + subheaderPointerLength * ((long) subheaderPointerIndex);
         Long[] offset = {totalOffset, totalOffset + intOrLongLength, totalOffset + 2L * intOrLongLength,
                 totalOffset + 2L * intOrLongLength + 1};
@@ -427,7 +440,7 @@ public class SasFileParser {
             return null;
         }
 
-        for (String supported : literalsToDecompressor.keySet()) {
+        for (String supported : LITERALS_TO_DECOMPRESSOR.keySet()) {
             if (src.contains(supported)) {
                 return supported;
             }
@@ -446,13 +459,13 @@ public class SasFileParser {
         if (currentRowInFileIndex++ >= sasFileProperties.getRowCount() || eof) {
             return null;
         }
-        int bitOffset = sasFileProperties.isU64() ? SasFileConstants.PAGE_BIT_OFFSET_X64 :
-                SasFileConstants.PAGE_BIT_OFFSET_X86;
+        int bitOffset = sasFileProperties.isU64() ? SasFileConstants.PAGE_BIT_OFFSET_X64
+                : SasFileConstants.PAGE_BIT_OFFSET_X86;
         switch (currentPageType) {
             case SasFileConstants.PAGE_META_TYPE:
                 SubheaderPointer currentSubheaderPointer =
                         currentPageDataSubheaderPointers.get(currentRowOnPageIndex++);
-                subheaderIndexToClass.get(SUBHEADER_INDEXES.DATA_SUBHEADER_INDEX).processSubheader(
+                subheaderIndexToClass.get(SubheaderIndexes.DATA_SUBHEADER_INDEX).processSubheader(
                         currentSubheaderPointer.offset, currentSubheaderPointer.length);
                 if (currentRowOnPageIndex == currentPageDataSubheaderPointers.size()) {
                     readNextPage();
@@ -460,13 +473,13 @@ public class SasFileParser {
                 }
                 break;
             case SasFileConstants.PAGE_MIX_TYPE:
-                int subheaderPointerLength = sasFileProperties.isU64() ?
-                        SasFileConstants.SUBHEADER_POINTER_LENGTH_X64 : SasFileConstants.SUBHEADER_POINTER_LENGTH_X86;
-                int alignCorrection = (bitOffset + SasFileConstants.SUBHEADER_POINTERS_OFFSET +
-                        currentPageSubheadersCount * subheaderPointerLength) % SasFileConstants.BITS_IN_BYTE;
-                currentRow = processByteArrayWithData(bitOffset + SasFileConstants.SUBHEADER_POINTERS_OFFSET +
-                        alignCorrection + currentPageSubheadersCount * subheaderPointerLength +
-                        currentRowOnPageIndex++ * sasFileProperties.getRowLength(), sasFileProperties.getRowLength());
+                int subheaderPointerLength = sasFileProperties.isU64() ? SasFileConstants.SUBHEADER_POINTER_LENGTH_X64
+                        : SasFileConstants.SUBHEADER_POINTER_LENGTH_X86;
+                int alignCorrection = (bitOffset + SasFileConstants.SUBHEADER_POINTERS_OFFSET
+                        + currentPageSubheadersCount * subheaderPointerLength) % SasFileConstants.BITS_IN_BYTE;
+                currentRow = processByteArrayWithData(bitOffset + SasFileConstants.SUBHEADER_POINTERS_OFFSET
+                        + alignCorrection + currentPageSubheadersCount * subheaderPointerLength
+                        + currentRowOnPageIndex++ * sasFileProperties.getRowLength(), sasFileProperties.getRowLength());
                 if (currentRowOnPageIndex == Math.min(sasFileProperties.getRowCount(),
                         sasFileProperties.getMixPageRowCount())) {
                     readNextPage();
@@ -474,8 +487,8 @@ public class SasFileParser {
                 }
                 break;
             case SasFileConstants.PAGE_DATA_TYPE:
-                currentRow = processByteArrayWithData(bitOffset + SasFileConstants.SUBHEADER_POINTERS_OFFSET +
-                        currentRowOnPageIndex++ * sasFileProperties.getRowLength(), sasFileProperties.getRowLength());
+                currentRow = processByteArrayWithData(bitOffset + SasFileConstants.SUBHEADER_POINTERS_OFFSET
+                        + currentRowOnPageIndex++ * sasFileProperties.getRowLength(), sasFileProperties.getRowLength());
                 if (currentRowOnPageIndex == currentPageBlockCount) {
                     readNextPage();
                     currentRowOnPageIndex = 0;
@@ -497,15 +510,19 @@ public class SasFileParser {
      */
     private void readNextPage() throws IOException {
         processNextPage();
-        while (currentPageType != SasFileConstants.PAGE_META_TYPE && currentPageType != SasFileConstants.PAGE_MIX_TYPE &&
-                currentPageType != SasFileConstants.PAGE_DATA_TYPE) {
-            if(eof) {
+        while (currentPageType != SasFileConstants.PAGE_META_TYPE && currentPageType != SasFileConstants.PAGE_MIX_TYPE
+                && currentPageType != SasFileConstants.PAGE_DATA_TYPE) {
+            if (eof) {
                 return;
             }
             processNextPage();
         }
     }
 
+    /**
+     * Put next page to cache and read it's header.
+     * @throws IOException if reading from the {@link SasFileParser#sasFileStream} string is impossible.
+     */
     private void processNextPage() throws IOException {
         int bitOffset = sasFileProperties.isU64() ? SasFileConstants.PAGE_BIT_OFFSET_X64
                 : SasFileConstants.PAGE_BIT_OFFSET_X86;
@@ -514,7 +531,6 @@ public class SasFileParser {
         try {
             sasFileStream.readFully(cachedPage, 0, sasFileProperties.getPageLength());
         } catch (EOFException ex) {
-            //TODO: Figure it out without Exception, which is pretty expensive
             eof = true;
             return;
         }
@@ -530,7 +546,7 @@ public class SasFileParser {
      * The method to read page metadata and store it in {@link SasFileParser#currentPageType},
      * {@link SasFileParser#currentPageBlockCount} and {@link SasFileParser#currentPageSubheadersCount}.
      *
-     * @throws IOException
+     * @throws IOException if reading from the {@link SasFileParser#sasFileStream} string is impossible.
      */
     private void readPageHeader() throws IOException {
         int bitOffset = sasFileProperties.isU64() ? SasFileConstants.PAGE_BIT_OFFSET_X64 : SasFileConstants
@@ -562,7 +578,7 @@ public class SasFileParser {
         byte[] temp, source;
         int offset;
         if (sasFileProperties.isCompressed() && rowLength < sasFileProperties.getRowLength()) {
-            Decompressor decompressor = literalsToDecompressor.get(sasFileProperties.getCompressionMethod());
+            Decompressor decompressor = LITERALS_TO_DECOMPRESSOR.get(sasFileProperties.getCompressionMethod());
             source = decompressor.decompressRow((int) rowOffset, (int) rowLength,
                     (int) sasFileProperties.getRowLength(), cachedPage);
             offset = 0;
@@ -571,8 +587,8 @@ public class SasFileParser {
             offset = (int) rowOffset;
         }
 
-        for (int currentColumnIndex = 0; currentColumnIndex < sasFileProperties.getColumnsCount() &&
-                columnsDataLength.get(currentColumnIndex) != 0; currentColumnIndex++) {
+        for (int currentColumnIndex = 0; currentColumnIndex < sasFileProperties.getColumnsCount()
+                && columnsDataLength.get(currentColumnIndex) != 0; currentColumnIndex++) {
             int length = columnsDataLength.get(currentColumnIndex);
             if (columns.get(currentColumnIndex).getType() == Number.class) {
                 temp = Arrays.copyOfRange(source, offset + (int) (long) columnsDataOffset.get(currentColumnIndex),
@@ -771,9 +787,8 @@ public class SasFileParser {
      */
     private Date bytesToDateTime(byte[] bytes) {
         double doubleSeconds = byteArrayToByteBuffer(bytes).getDouble();
-        return Double.isNaN(doubleSeconds) ? null :
-                new Date((long) ((doubleSeconds - SasFileConstants.START_DATES_SECONDS_DIFFERENCE)
-                        * SasFileConstants.MILLISECONDS_IN_SECONDS));
+        return Double.isNaN(doubleSeconds) ? null : new Date((long) ((doubleSeconds
+                - SasFileConstants.START_DATES_SECONDS_DIFFERENCE) * SasFileConstants.MILLISECONDS_IN_SECONDS));
     }
 
     /**
@@ -786,10 +801,10 @@ public class SasFileParser {
      */
     private Date bytesToDate(byte[] bytes) {
         double doubleDays = byteArrayToByteBuffer(bytes).getDouble();
-        return Double.isNaN(doubleDays) ? null :
-                new Date((long) ((doubleDays - SasFileConstants.START_DATES_DAYS_DIFFERENCE)
-                        * SasFileConstants.SECONDS_IN_MINUTE * SasFileConstants.MINUTES_IN_HOUR
-                        * SasFileConstants.HOURS_IN_DAY * SasFileConstants.MILLISECONDS_IN_SECONDS));
+        return Double.isNaN(doubleDays) ? null : new Date((long) ((doubleDays
+                - SasFileConstants.START_DATES_DAYS_DIFFERENCE)
+                * SasFileConstants.SECONDS_IN_MINUTE * SasFileConstants.MINUTES_IN_HOUR
+                * SasFileConstants.HOURS_IN_DAY * SasFileConstants.MILLISECONDS_IN_SECONDS));
     }
 
     /**
@@ -804,8 +819,8 @@ public class SasFileParser {
     private byte[] trimBytesArray(byte[] source, int offset, int length) {
         int lengthFromBegin;
         for (lengthFromBegin = offset + length; lengthFromBegin > offset; lengthFromBegin--) {
-            if (source[lengthFromBegin - 1] != ' ' && source[lengthFromBegin - 1] != '\0' &&
-                    source[lengthFromBegin - 1] != '\t') {
+            if (source[lengthFromBegin - 1] != ' ' && source[lengthFromBegin - 1] != '\0'
+                    && source[lengthFromBegin - 1] != '\t') {
                 break;
             }
         }
@@ -817,6 +832,10 @@ public class SasFileParser {
         }
     }
 
+    /**
+     * Columns getter.
+     * @return columns list.
+     */
     List<Column> getColumns() {
         return columns;
     }
@@ -833,16 +852,65 @@ public class SasFileParser {
     /**
      * Enumeration of all subheader types used in sas7bdat files.
      */
-    private enum SUBHEADER_INDEXES {
-        ROW_SIZE_SUBHEADER_INDEX, COLUMN_SIZE_SUBHEADER_INDEX, SUBHEADER_COUNTS_SUBHEADER_INDEX,
-        COLUMN_TEXT_SUBHEADER_INDEX, COLUMN_NAME_SUBHEADER_INDEX, COLUMN_ATTRIBUTES_SUBHEADER_INDEX,
-        FORMAT_AND_LABEL_SUBHEADER_INDEX, COLUMN_LIST_SUBHEADER_INDEX, DATA_SUBHEADER_INDEX
+    private enum SubheaderIndexes {
+        /**
+         * Index which define row size subheader, which contains rows size in bytes and the number of rows.
+         */
+        ROW_SIZE_SUBHEADER_INDEX,
+
+        /**
+         * Index which define column size subheader, which contains columns count.
+         */
+        COLUMN_SIZE_SUBHEADER_INDEX,
+
+        /**
+         * Index which define subheader counts subheader, which contains currently not used data.
+         */
+        SUBHEADER_COUNTS_SUBHEADER_INDEX,
+
+        /**
+         * Index which define column text subheader, which contains type of file compression
+         * and info about columns (name, label, format).
+         */
+        COLUMN_TEXT_SUBHEADER_INDEX,
+
+        /**
+         * Index which define column name subheader, which contains column names.
+         */
+        COLUMN_NAME_SUBHEADER_INDEX,
+
+        /**
+         * Index which define column attributes subheader, which contains column attributes, such as type.
+         */
+        COLUMN_ATTRIBUTES_SUBHEADER_INDEX,
+
+        /**
+         * Index which define format and label subheader, which contains info about format of objects in column
+         * and tooltip text for columns.
+         */
+        FORMAT_AND_LABEL_SUBHEADER_INDEX,
+
+        /**
+         * Index which define column list subheader, which contains currently not used data.
+         */
+        COLUMN_LIST_SUBHEADER_INDEX,
+
+        /**
+         * Index which define data subheader, which contains sas7bdat file rows data.
+         */
+        DATA_SUBHEADER_INDEX
     }
 
     /**
      * The interface that is implemented by all classes that process subheaders.
      */
     private interface ProcessingSubheader {
+        /**
+         * Method which should be overwritten in implementing this interface classes.
+         * @param subheaderOffset offset in bytes from the beginning of subheader.
+         * @param subheaderLength length of subheader in bytes.
+         * @throws IOException if reading from the {@link SasFileParser#sasFileStream} stream is impossible.
+         */
         void processSubheader(long subheaderOffset, long subheaderLength) throws IOException;
     }
 
@@ -1105,15 +1173,13 @@ public class SasFileParser {
             int i;
             for (i = 0; i < columnNamePointersCount; i++) {
                 Long[] offset = {subheaderOffset + intOrLongLength + SasFileConstants.COLUMN_NAME_POINTER_LENGTH * (i
-                        + 1) +
-                        SasFileConstants.COLUMN_NAME_TEXT_SUBHEADER_OFFSET,
-                        subheaderOffset + intOrLongLength + SasFileConstants.COLUMN_NAME_POINTER_LENGTH * (i + 1) +
-                                SasFileConstants.COLUMN_NAME_OFFSET_OFFSET,
-                        subheaderOffset + intOrLongLength + SasFileConstants.COLUMN_NAME_POINTER_LENGTH * (i + 1) +
-                                SasFileConstants.COLUMN_NAME_LENGTH_OFFSET};
+                        + 1) + SasFileConstants.COLUMN_NAME_TEXT_SUBHEADER_OFFSET,
+                        subheaderOffset + intOrLongLength + SasFileConstants.COLUMN_NAME_POINTER_LENGTH * (i + 1)
+                                + SasFileConstants.COLUMN_NAME_OFFSET_OFFSET,
+                        subheaderOffset + intOrLongLength + SasFileConstants.COLUMN_NAME_POINTER_LENGTH * (i + 1)
+                                + SasFileConstants.COLUMN_NAME_LENGTH_OFFSET};
                 Integer[] length = {SasFileConstants.COLUMN_NAME_TEXT_SUBHEADER_LENGTH, SasFileConstants
-                        .COLUMN_NAME_OFFSET_LENGTH,
-                        SasFileConstants.COLUMN_NAME_LENGTH_LENGTH};
+                        .COLUMN_NAME_OFFSET_LENGTH, SasFileConstants.COLUMN_NAME_LENGTH_LENGTH};
                 List<byte[]> vars = getBytesFromFile(offset, length);
 
                 int textSubheaderIndex = bytesToShort(vars.get(0));
@@ -1145,15 +1211,14 @@ public class SasFileParser {
         public void processSubheader(long subheaderOffset, long subheaderLength) throws IOException {
             int intOrLongLength = sasFileProperties.isU64() ? SasFileConstants.BYTES_IN_LONG : SasFileConstants
                     .BYTES_IN_INT;
-            long columnAttributesVectorsCount = (subheaderLength - 2 * intOrLongLength - 12) /
-                    (intOrLongLength + 8);
+            long columnAttributesVectorsCount = (subheaderLength - 2 * intOrLongLength - 12) / (intOrLongLength + 8);
             for (int i = 0; i < columnAttributesVectorsCount; i++) {
-                Long[] offset = {subheaderOffset + intOrLongLength + SasFileConstants.COLUMN_DATA_OFFSET_OFFSET +
-                        i * (intOrLongLength + 8),
-                        subheaderOffset + 2 * intOrLongLength + SasFileConstants.COLUMN_DATA_LENGTH_OFFSET +
-                                i * (intOrLongLength + 8),
-                        subheaderOffset + 2 * intOrLongLength + SasFileConstants.COLUMN_TYPE_OFFSET +
-                                i * (intOrLongLength + 8)};
+                Long[] offset = {subheaderOffset + intOrLongLength + SasFileConstants.COLUMN_DATA_OFFSET_OFFSET
+                        + i * (intOrLongLength + 8),
+                        subheaderOffset + 2 * intOrLongLength + SasFileConstants.COLUMN_DATA_LENGTH_OFFSET
+                                + i * (intOrLongLength + 8),
+                        subheaderOffset + 2 * intOrLongLength + SasFileConstants.COLUMN_TYPE_OFFSET
+                                + i * (intOrLongLength + 8)};
                 Integer[] length = {intOrLongLength, SasFileConstants.COLUMN_DATA_LENGTH_LENGTH, SasFileConstants
                         .COLUMN_TYPE_LENGTH};
                 List<byte[]> vars = getBytesFromFile(offset, length);
@@ -1192,8 +1257,8 @@ public class SasFileParser {
         public void processSubheader(long subheaderOffset, long subheaderLength) throws IOException {
             int intOrLongLength = sasFileProperties.isU64() ? SasFileConstants.BYTES_IN_LONG : SasFileConstants
                     .BYTES_IN_INT;
-            Long[] offset = {subheaderOffset + SasFileConstants.COLUMN_FORMAT_TEXT_SUBHEADER_INDEX_OFFSET + 3 *
-                    intOrLongLength,
+            Long[] offset = {subheaderOffset + SasFileConstants.COLUMN_FORMAT_TEXT_SUBHEADER_INDEX_OFFSET + 3
+                    * intOrLongLength,
                     subheaderOffset + SasFileConstants.COLUMN_FORMAT_OFFSET_OFFSET + 3 * intOrLongLength,
                     subheaderOffset + SasFileConstants.COLUMN_FORMAT_LENGTH_OFFSET + 3 * intOrLongLength,
                     subheaderOffset + SasFileConstants.COLUMN_LABEL_TEXT_SUBHEADER_INDEX_OFFSET + 3 * intOrLongLength,

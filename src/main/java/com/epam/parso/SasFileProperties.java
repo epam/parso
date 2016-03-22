@@ -114,7 +114,7 @@ public class SasFileProperties {
     private long columnsCount;
 
     /**
-     * SasFileProperties constructor which create class variable
+     * SasFileProperties constructor which create class variable.
      *
      */
     public SasFileProperties() {
