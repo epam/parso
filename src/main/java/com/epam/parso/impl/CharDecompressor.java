@@ -61,10 +61,10 @@ final class CharDecompressor implements Decompressor {
             int endOfFirstByte = page[offset + currentByteIndex] & 0x0F;
             int countOfBytesToCopy;
             switch (controlByte) {
-                case (byte) 0x30://intentional fall through
-                case (byte) 0x20://intentional fall through
-                case (byte) 0x10://intentional fall through
-                case (byte) 0x00:
+                case 0x30://intentional fall through
+                case 0x20://intentional fall through
+                case 0x10://intentional fall through
+                case 0x00:
                     if (currentByteIndex != length - 1) {
                         countOfBytesToCopy = (page[offset + currentByteIndex + 1] & 0xFF) + 64
                            + page[offset + currentByteIndex] * 256;
@@ -73,7 +73,7 @@ final class CharDecompressor implements Decompressor {
                         currentByteIndex += countOfBytesToCopy + 1;
                         currentResultArrayIndex += countOfBytesToCopy;
                     }
-                break;
+                    break;
                 case 0x40:
                     int copyCounter = endOfFirstByte * 16 + (page[offset + currentByteIndex + 1] & 0xFF);
                     for (int i = 0; i < copyCounter + 18; i++) {
