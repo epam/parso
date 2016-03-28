@@ -1,6 +1,10 @@
 ﻿# Parso Java library
 ## Overview
-Parso is a lightweight Java library that is designed to read SAS7BDAT datasets. The Parso interfaces are analogous to those that belong to libraries designed to read table-storing files, for example, CSVReader library. Despite its small size, the Parso library is the only full-featured open-source solution to process SAS7BDAT datasets, both uncompressed and CHAR-compressed. It is effective in processing clinical and statistical data, which is often stored in SAS7BDAT format. In addition, the Parso library allows users to convert data into CSV format.
+Parso is a lightweight Java library that is designed to read SAS7BDAT datasets. The Parso interfaces are analogous to
+ those that belong to libraries designed to read table-storing files, for example, CSVReader library. Despite its
+ small size, the Parso library is the only full-featured open-source solution to process SAS7BDAT datasets
+ (uncompressed, CHAR-compressed or BINARY-compressed). It is effective in processing clinical and statistical data,
+ which is often stored in SAS7BDAT format. In addition, the Parso library allows users to convert data into CSV format.
 
 ## Why Select Parso as your SAS7BDAT File Reader?
 * Stability: Successful processing in difficult cases (partially corrupt files, compression, etc.)
@@ -61,14 +65,14 @@ To convert the metadata of the file into CSV format, use:
 
 ```java
 Writer writer = new StringWriter();
-CSVMetadataWriter csvMetadataWriter = new CSVMetadataWriter(writer);
+CSVMetadataWriter csvMetadataWriter = new CSVMetadataWriterImpl(writer);
 csvMetadataWriter.writeMetadata(sasFileReader.getColumns());
 ```
 To convert the data of the file into CSV format, use:
 
 ```java
 Writer writer = new StringWriter();
-CSVDataWriter csvDataWriter = new CSVDataWriter(writer);
+CSVDataWriter csvDataWriter = new CSVDataWriterImpl(writer);
 csvDataWriter.writeColumnNames(sasFileReader.getColumns());
 ```
 

@@ -39,9 +39,9 @@ public interface SasFileReader {
     Object[][] readAll();
 
     /**
-     * Reads all rows from the sas7bdat file.
+     * Reads rows one by one from the sas7bdat file.
      *
-     * @return an array of array objects whose elements can be objects of the following classes: double, long,
+     * @return an array of objects whose elements can be objects of the following classes: double, long,
      * int, byte[], Date depending on the column they are in.
      *
      * @throws IOException if reading input stream is impossible.
