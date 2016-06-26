@@ -3,8 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.epam</groupId>
     <artifactId>parso</artifactId>
-    <version>2.0</version>
-    <packaging>jar</packaging>
+    <version>2.1.0-SNAPSHOT</version>
+    <packaging>bundle</packaging>
     <name>parso</name>
     <description>Parso is a lightweight Java library designed to read SAS7BDAT datasets. The Parso interfaces
         are analogous to libraries designed to read table-storing files, for example, CSVReader library.
@@ -89,6 +89,26 @@
                     </archive>
                 </configuration>
             </plugin>
+			<!--
+			OSGi source bundle generation from:
+			http://rajakannappan.blogspot.com/2010/03/automating-eclipse-source-bundle.html
+			-->
+			<!-- Build helper maven plugin sets the parsedVersion.osgiVersion property -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.10</version>
+				<executions>
+					<execution>
+						<id>set-osgi-version</id>
+						<phase>package</phase>
+						<goals>
+							<goal>parse-version</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- source maven plugin creates the source bundle and adds manifest --> 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -102,6 +122,18 @@
                         </goals>
                     </execution>
                 </executions>
+				<configuration>
+					<archive>
+						<manifestEntries>
+							<Bundle-ManifestVersion>2</Bundle-ManifestVersion>
+							<Bundle-Name>${project.name}</Bundle-Name>
+							<Bundle-SymbolicName>${groupId}.${artifactId}.source</Bundle-SymbolicName>
+							<Bundle-Vendor>${organization.name}</Bundle-Vendor>
+							<Bundle-Version>${parsedVersion.osgiVersion}</Bundle-Version>
+							<Eclipse-SourceBundle>${groupId}.${artifactId};version=${parsedVersion.osgiVersion};roots:="."</Eclipse-SourceBundle>
+						</manifestEntries>
+					</archive>
+				</configuration>
             </plugin>
             <plugin>
                 <groupId>org.sonatype.plugins</groupId>
@@ -135,6 +167,20 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>3.0.1</version>
+				<extensions>true</extensions>
+				<configuration>
+			    	<instructions>
+			        	<Export-Package>com.epam.parso;com.epam.parso.impl</Export-Package>
+			        	<Private-Package>com.epam.parso.impl.*</Private-Package>
+			        	<!-- Bundle-Activator>com.epam.parso.impl.Activator</Bundle-Activator-->
+						<!-- Eclipse-SourceBundle>${project.name};version="${parsedVersion.osgiVersion}";roots:="."</Eclipse-SourceBundle-->
+					</instructions>
+			    </configuration>
+			</plugin>
         </plugins>
         <resources>
             <resource>
