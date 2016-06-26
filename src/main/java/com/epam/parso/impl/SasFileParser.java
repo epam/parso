@@ -799,12 +799,29 @@ public final class SasFileParser {
      * @param bytes the array of bytes that stores the number of days from 01/01/1960.
      * @return a variable of the {@link Date} type.
      */
-    private Date bytesToDate(byte[] bytes) {
-        double doubleDays = byteArrayToByteBuffer(bytes).getDouble();
+     private Date bytesToDate(byte[] bytes) {
+        double doubleDays;
+        if (bytes.length == 4) {
+            byte[] ba = new byte[8];
+            ba[0] = bytes[0];
+            ba[1] = bytes[1];
+            ba[2] = bytes[2];
+            ba[3] = bytes[3];
+            ba[4] = 0;
+            ba[5] = 0;
+            ba[6] = 0;
+            ba[7] = 0;
+            ByteBuffer bb = byteArrayToByteBuffer(ba);
+            doubleDays = bb.getDouble();
+        } else {
+            doubleDays = byteArrayToByteBuffer(bytes).getDouble();
+        }
+
         return Double.isNaN(doubleDays) ? null : new Date((long) ((doubleDays
-                - SasFileConstants.START_DATES_DAYS_DIFFERENCE)
-                * SasFileConstants.SECONDS_IN_MINUTE * SasFileConstants.MINUTES_IN_HOUR
-                * SasFileConstants.HOURS_IN_DAY * SasFileConstants.MILLISECONDS_IN_SECONDS));
+               - SasFileConstants.START_DATES_DAYS_DIFFERENCE)
+               * SasFileConstants.SECONDS_IN_MINUTE
+               * SasFileConstants.MINUTES_IN_HOUR * SasFileConstants.HOURS_IN_DAY
+               * SasFileConstants.MILLISECONDS_IN_SECONDS));
     }
 
     /**
