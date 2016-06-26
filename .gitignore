@@ -1,3 +1,7 @@
 *.iml
 .idea
 target
+/.checkstyle
+/.classpath
+/.project
+/.settings
