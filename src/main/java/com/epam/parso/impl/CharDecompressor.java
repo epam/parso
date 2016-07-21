@@ -81,6 +81,12 @@ final class CharDecompressor implements Decompressor {
                     }
                     currentByteIndex += 2;
                     break;
+                case 0x50:
+                    for (int i = 0; i < endOfFirstByte * 256 + (page[offset + currentByteIndex + 1] & 0xFF) + 17; i++) {
+                        resultByteArray[currentResultArrayIndex++] = 0x40;
+                    }
+                    currentByteIndex++;
+                    break;
                 case 0x60:
                     for (int i = 0; i < endOfFirstByte * 256 + (page[offset + currentByteIndex + 1] & 0xFF) + 17; i++) {
                         resultByteArray[currentResultArrayIndex++] = 0x20;
