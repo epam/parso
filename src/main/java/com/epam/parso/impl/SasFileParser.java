@@ -605,7 +605,23 @@ public final class SasFileParser {
                         } else {
                             if (SasFileConstants.DATE_FORMAT_STRINGS.contains(
                                     columns.get(currentColumnIndex).getFormat())) {
-                                rowElements[currentColumnIndex] = bytesToDate(temp);
+								try {
+									rowElements[currentColumnIndex] = bytesToDate(temp);
+								} catch (BufferUnderflowException e) {
+									Object number = convertByteArrayToNumber(temp);
+									if (number == null) {
+										rowElements[currentColumnIndex] = null;
+									} else {
+										double tempNumber = ((Number) number).doubleValue();
+										if (Double.isNaN(tempNumber)) {
+											rowElements[currentColumnIndex] = null;
+										} else {
+											rowElements[currentColumnIndex] = new Date(
+													(long) ((tempNumber - START_DATES_DAYS_DIFFERENCE) * SECONDS_IN_MINUTE
+															* MINUTES_IN_HOUR * HOURS_IN_DAY * MILLISECONDS_IN_SECONDS));
+										}
+								    }
+								}
                             } else {
                                 rowElements[currentColumnIndex] = convertByteArrayToNumber(temp);
                             }
