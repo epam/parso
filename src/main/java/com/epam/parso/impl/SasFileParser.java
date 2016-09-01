@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.EOFException;
 import java.io.UnsupportedEncodingException;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Collections;
@@ -617,8 +618,11 @@ public final class SasFileParser {
 											rowElements[currentColumnIndex] = null;
 										} else {
 											rowElements[currentColumnIndex] = new Date(
-													(long) ((tempNumber - START_DATES_DAYS_DIFFERENCE) * SECONDS_IN_MINUTE
-															* MINUTES_IN_HOUR * HOURS_IN_DAY * MILLISECONDS_IN_SECONDS));
+													(long) ((tempNumber - SasFileConstants.START_DATES_DAYS_DIFFERENCE) * 
+																SasFileConstants.SECONDS_IN_MINUTE *
+																SasFileConstants.MINUTES_IN_HOUR * 
+																SasFileConstants.HOURS_IN_DAY * 
+																SasFileConstants.MILLISECONDS_IN_SECONDS));
 										}
 								    }
 								}
