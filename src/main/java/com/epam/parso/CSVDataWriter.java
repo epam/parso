@@ -21,6 +21,7 @@ import java.util.List;
 
 /**
  * Interface for exporting data from sas7bdat file to csv.
+ * @since 2.1
  */
 public interface CSVDataWriter {
     /**

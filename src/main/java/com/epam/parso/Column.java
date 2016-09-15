@@ -18,6 +18,7 @@ package com.epam.parso;
 
 /**
  * A class to store column metadata.
+ * @since 2.1
  */
 public class Column {
     /**

@@ -21,6 +21,7 @@ import java.util.List;
 
 /**
  * Interface for exporting metadata from sas7bdat file to csv.
+ * @since 2.1
  */
 public interface CSVMetadataWriter {
     /**
