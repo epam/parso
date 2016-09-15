@@ -21,6 +21,7 @@ import java.util.List;
 
 /**
  * Main interface for working with library.
+ * @since 2.1
  */
 public interface SasFileReader {
     /**

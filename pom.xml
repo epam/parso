@@ -174,10 +174,12 @@
 				<extensions>true</extensions>
 				<configuration>
 			    	<instructions>
-			        	<Export-Package>com.epam.parso;com.epam.parso.impl</Export-Package>
+			        	<Export-Package>com.epam.parso</Export-Package>
 			        	<Private-Package>com.epam.parso.impl.*</Private-Package>
 			        	<!-- Bundle-Activator>com.epam.parso.impl.Activator</Bundle-Activator-->
 						<!-- Eclipse-SourceBundle>${project.name};version="${parsedVersion.osgiVersion}";roots:="."</Eclipse-SourceBundle-->
+						<Bundle-ActivationPolicy>lazy</Bundle-ActivationPolicy>
+						<Service-Component>OSGi-INF/component.xml</Service-Component>
 					</instructions>
 			    </configuration>
 			</plugin>
