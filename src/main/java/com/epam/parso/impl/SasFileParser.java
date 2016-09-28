@@ -708,21 +708,7 @@ public final class SasFileParser {
      * @return number of a long or double type.
      */
     private Object convertByteArrayToNumber(byte[] mass) {
-        ByteBuffer original = byteArrayToByteBuffer(mass);
-
-        if (mass.length < SasFileConstants.BYTES_IN_DOUBLE) {
-            ByteBuffer byteBuffer = ByteBuffer.allocate(SasFileConstants.BYTES_IN_DOUBLE);
-            if (sasFileProperties.getEndianness() == 1) {
-                byteBuffer.position(SasFileConstants.BYTES_IN_DOUBLE - mass.length);
-            }
-            byteBuffer.put(original);
-            byteBuffer.order(original.order());
-            byteBuffer.position(0);
-            original = byteBuffer;
-        }
-
-        double resultDouble = original.getDouble();
-        original.clear();
+        double resultDouble = bytesToDouble(mass);
 
         if (Double.isNaN(resultDouble) || (resultDouble < SasFileConstants.NAN_EPSILON && resultDouble > 0)) {
             return null;
@@ -786,7 +772,7 @@ public final class SasFileParser {
      * @return a variable of the {@link Date} type.
      */
     private Date bytesToDateTime(byte[] bytes) {
-        double doubleSeconds = byteArrayToByteBuffer(bytes).getDouble();
+        double doubleSeconds = bytesToDouble(bytes);
         return Double.isNaN(doubleSeconds) ? null : new Date((long) ((doubleSeconds
                 - SasFileConstants.START_DATES_SECONDS_DIFFERENCE) * SasFileConstants.MILLISECONDS_IN_SECONDS));
     }
@@ -800,11 +786,34 @@ public final class SasFileParser {
      * @return a variable of the {@link Date} type.
      */
     private Date bytesToDate(byte[] bytes) {
-        double doubleDays = byteArrayToByteBuffer(bytes).getDouble();
+        double doubleDays = bytesToDouble(bytes);
         return Double.isNaN(doubleDays) ? null : new Date((long) ((doubleDays
                 - SasFileConstants.START_DATES_DAYS_DIFFERENCE)
                 * SasFileConstants.SECONDS_IN_MINUTE * SasFileConstants.MINUTES_IN_HOUR
                 * SasFileConstants.HOURS_IN_DAY * SasFileConstants.MILLISECONDS_IN_SECONDS));
+    }
+
+    /**
+     * The function to convert an array of bytes into a double number.
+     *
+     * @param bytes a double number represented by an array of bytes.
+     * @return a number of the double type that is the conversion result.
+     */
+    private double bytesToDouble(byte[] bytes) {
+        ByteBuffer original = byteArrayToByteBuffer(bytes);
+
+        if (bytes.length < SasFileConstants.BYTES_IN_DOUBLE) {
+            ByteBuffer byteBuffer = ByteBuffer.allocate(SasFileConstants.BYTES_IN_DOUBLE);
+            if (sasFileProperties.getEndianness() == 1) {
+                byteBuffer.position(SasFileConstants.BYTES_IN_DOUBLE - bytes.length);
+            }
+            byteBuffer.put(original);
+            byteBuffer.order(original.order());
+            byteBuffer.position(0);
+            original = byteBuffer;
+        }
+
+        return original.getDouble();
     }
 
     /**
