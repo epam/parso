@@ -1,0 +1,12 @@
+Number,Name,Type,Data length,Format,Label
+1,id,Numeric,8,,
+2,num1,Numeric,8,,
+3,num2,Numeric,8,,
+4,num3,Numeric,8,,
+5,num4,Numeric,8,,
+6,num5,Numeric,8,,
+7,num6,Numeric,8,,
+8,num7,Numeric,8,,
+9,num8,Numeric,8,,
+10,num9,Numeric,8,,
+11,num10,Numeric,8,,

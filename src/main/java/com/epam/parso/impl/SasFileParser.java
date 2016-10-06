@@ -71,6 +71,8 @@ public final class SasFileParser {
         tmpMap.put(0x00000000F6F6F6F6L, SubheaderIndexes.COLUMN_SIZE_SUBHEADER_INDEX);
         tmpMap.put(0xF7F7F7F700000000L, SubheaderIndexes.ROW_SIZE_SUBHEADER_INDEX);
         tmpMap.put(0xF6F6F6F600000000L, SubheaderIndexes.COLUMN_SIZE_SUBHEADER_INDEX);
+        tmpMap.put(0xF7F7F7F7FFFFFBFEL, SubheaderIndexes.ROW_SIZE_SUBHEADER_INDEX);
+        tmpMap.put(0xF6F6F6F6FFFFFBFEL, SubheaderIndexes.COLUMN_SIZE_SUBHEADER_INDEX);
         tmpMap.put(0x00FCFFFFFFFFFFFFL, SubheaderIndexes.SUBHEADER_COUNTS_SUBHEADER_INDEX);
         tmpMap.put(0xFDFFFFFFFFFFFFFFL, SubheaderIndexes.COLUMN_TEXT_SUBHEADER_INDEX);
         tmpMap.put(0xFFFFFFFFFFFFFFFFL, SubheaderIndexes.COLUMN_NAME_SUBHEADER_INDEX);
