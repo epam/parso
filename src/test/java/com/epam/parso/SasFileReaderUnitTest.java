@@ -70,6 +70,7 @@ public class SasFileReaderUnitTest {
         COLON_SAS_FILE_PROPERTIES.setU64(false);
         COLON_SAS_FILE_PROPERTIES.setCompressionMethod(null);
         COLON_SAS_FILE_PROPERTIES.setEndianness(1);
+        COLON_SAS_FILE_PROPERTIES.setEncoding("US-ASCII");
         COLON_SAS_FILE_PROPERTIES.setName("colon");
         COLON_SAS_FILE_PROPERTIES.setFileType("DATA");
         COLON_SAS_FILE_PROPERTIES.setDateCreated(new Date(854409600000L));
@@ -225,6 +226,7 @@ public class SasFileReaderUnitTest {
         assertThat(sasFileProperties.isU64()).isEqualTo(COLON_SAS_FILE_PROPERTIES.isU64());
         assertThat(sasFileProperties.isCompressed()).isEqualTo(COLON_SAS_FILE_PROPERTIES.isCompressed());
         assertThat(sasFileProperties.getEndianness()).isEqualTo(COLON_SAS_FILE_PROPERTIES.getEndianness());
+        assertThat(sasFileProperties.getEncoding()).isEqualTo(COLON_SAS_FILE_PROPERTIES.getEncoding());
         assertThat(sasFileProperties.getName()).isEqualTo(COLON_SAS_FILE_PROPERTIES.getName());
         assertThat(sasFileProperties.getFileType()).isEqualTo(COLON_SAS_FILE_PROPERTIES.getFileType());
         assertThat(sasFileProperties.getDateCreated()).isEqualTo(COLON_SAS_FILE_PROPERTIES.getDateCreated());

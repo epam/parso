@@ -19,6 +19,8 @@ package com.epam.parso.impl;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * This is an class to store constants for parsing the sas7bdat file (byte offsets, column formats, accuracy) as well as
@@ -132,6 +134,151 @@ interface SasFileConstants {
      * little-endian (Intel), if the value equals to 0 then the bytes order is big-endian.
      */
     int ENDIANNESS_LENGTH = 1;
+
+    /**
+     * The sas7bdat file stores its character encoding with the length of {@link SasFileConstants#ENCODING_LENGTH} bytes
+     * and a ENCODING_OFFSET bytes offset.
+     */
+    long ENCODING_OFFSET = 70L;
+
+    /**
+     * The sas7bdat files its character encoding with the length of ENCODING_LENGTH bytes and
+     * a {@link SasFileConstants#ENCODING_OFFSET} bytes offset.
+     */
+    int ENCODING_LENGTH = 1;
+
+    /**
+     * The sas7bdat file stores its character encoding with the length
+     * of {@link SasFileConstants#SESSION_ENCODING_LENGTH} bytes and a SESSION_ENCODING_OFFSET bytes offset.
+     */
+    long SESSION_ENCODING_OFFSET = 71L;
+
+    /**
+     * The sas7bdat files its character encoding with the length of SESSION_ENCODING_LENGTH bytes and
+     * a {@link SasFileConstants#SESSION_ENCODING_OFFSET} bytes offset.
+     */
+    int SESSION_ENCODING_LENGTH = 1;
+
+    /**
+     * The integer (one or two bytes) at the {@link SasFileConstants#ENCODING_OFFSET} indicates the character encoding
+     * of string data.  The SAS_CHARACTER_ENCODINGS map links the values that are known to occur and the associated
+     * encoding.  This list excludes encodings present in SAS but missing support in {@link java.nio.charset}
+     */
+    Map<Byte, String> SAS_CHARACTER_ENCODINGS = Collections.unmodifiableMap(new HashMap<Byte, String>() {
+        {
+            put((byte) 0x46, "x-MacArabic");
+            put((byte) 0xF5, "x-MacCroatian");
+            put((byte) 0xF6, "x-MacCyrillic");
+            put((byte) 0x48, "x-MacGreek");
+            put((byte) 0x47, "x-MacHebrew");
+            put((byte) 0xA3, "x-MacIceland");
+            put((byte) 0x22, "ISO-8859-6");
+            put((byte) 0x45, "x-MacRoman");
+            put((byte) 0xF7, "x-MacRomania");
+            put((byte) 0x49, "x-MacThai");
+            put((byte) 0x4B, "x-MacTurkish");
+            put((byte) 0x4C, "x-MacUkraine");
+            put((byte) 0x7B, "Big5");
+            put((byte) 0x21, "ISO-8859-5");
+            put((byte) 0x4E, "IBM037");
+            put((byte) 0x5F, "x-IBM1025");
+            put((byte) 0xCF, "x-IBM1097");
+            put((byte) 0x62, "x-IBM1112");
+            put((byte) 0x63, "x-IBM1122");
+            put((byte) 0xB7, "IBM01140");
+            put((byte) 0xB8, "IBM01141");
+            put((byte) 0xB9, "IBM01142");
+            put((byte) 0xBA, "IBM01143");
+            put((byte) 0xBB, "IBM01144");
+            put((byte) 0xBC, "IBM01145");
+            put((byte) 0xBD, "IBM01146");
+            put((byte) 0xBE, "IBM01147");
+            put((byte) 0xBF, "IBM01148");
+            put((byte) 0xD3, "IBM01149");
+            put((byte) 0x57, "IBM424");
+            put((byte) 0x58, "IBM500");
+            put((byte) 0x59, "IBM-Thai");
+            put((byte) 0x5A, "IBM870");
+            put((byte) 0x5B, "x-IBM875");
+            put((byte) 0x7D, "GB2312");
+            put((byte) 0x86, "EUC-JP");
+            put((byte) 0x8C, "EUC-KR");
+            put((byte) 0x77, "x-EUC-TW");
+            put((byte) 0xCD, "GB18030");
+            put((byte) 0x23, "ISO-8859-7");
+            put((byte) 0x24, "ISO-8859-8");
+            put((byte) 0x80, "x-IBM1381");
+            put((byte) 0x82, "x-IBM930");
+            put((byte) 0x8B, "x-IBM933");
+            put((byte) 0x7C, "x-IBM935");
+            put((byte) 0x75, "x-IBM937");
+            put((byte) 0x81, "x-IBM939");
+            put((byte) 0x89, "x-IBM942");
+            put((byte) 0x8E, "x-IBM949");
+            put((byte) 0xAC, "x-ISO2022-CN-CNS");
+            put((byte) 0xA9, "x-ISO2022-CN-GB");
+            put((byte) 0xA7, "ISO-2022-JP");
+            put((byte) 0xA8, "ISO-2022-KR");
+            put((byte) 0x1D, "ISO-8859-1");
+            put((byte) 0x1E, "ISO-8859-2");
+            put((byte) 0x1F, "ISO-8859-3");
+            put((byte) 0x20, "ISO-8859-4");
+            put((byte) 0x25, "ISO-8859-9");
+            put((byte) 0xF2, "ISO-8859-13");
+            put((byte) 0x28, "ISO-8859-15");
+            put((byte) 0x88, "x-windows-iso2022jp");
+            put((byte) 0x7E, "x-mswin-936");
+            put((byte) 0x8D, "x-windows-949");
+            put((byte) 0x76, "x-windows-950");
+            put((byte) 0xAD, "IBM037");
+            put((byte) 0x6C, "x-IBM1025");
+            put((byte) 0x6D, "IBM1026");
+            put((byte) 0x6E, "IBM1047");
+            put((byte) 0xD0, "x-IBM1097");
+            put((byte) 0x6F, "x-IBM1112");
+            put((byte) 0x70, "x-IBM1122");
+            put((byte) 0xC0, "IBM01140");
+            put((byte) 0xC1, "IBM01141");
+            put((byte) 0xC2, "IBM01142");
+            put((byte) 0xC3, "IBM01143");
+            put((byte) 0xC4, "IBM01144");
+            put((byte) 0xC5, "IBM01145");
+            put((byte) 0xC6, "IBM01146");
+            put((byte) 0xC7, "IBM01147");
+            put((byte) 0xC8, "IBM01148");
+            put((byte) 0xD4, "IBM01149");
+            put((byte) 0x66, "IBM424");
+            put((byte) 0x67, "IBM-Thai");
+            put((byte) 0x68, "IBM870");
+            put((byte) 0x69, "x-IBM875");
+            put((byte) 0xEA, "x-IBM930");
+            put((byte) 0xEB, "x-IBM933");
+            put((byte) 0xEC, "x-IBM935");
+            put((byte) 0xED, "x-IBM937");
+            put((byte) 0xEE, "x-IBM939");
+            put((byte) 0x2B, "IBM437");
+            put((byte) 0x2C, "IBM850");
+            put((byte) 0x2D, "IBM852");
+            put((byte) 0x3A, "IBM857");
+            put((byte) 0x2E, "IBM00858");
+            put((byte) 0x2F, "IBM862");
+            put((byte) 0x33, "IBM866");
+            put((byte) 0x8A, "Shift_JIS");
+            put((byte) 0xF8, "JIS_X0201");
+            put((byte) 0x27, "x-iso-8859-11");
+            put((byte) 0x1C, "US-ASCII");
+            put((byte) 0x14, "UTF-8");
+            put((byte) 0x42, "windows-1256");
+            put((byte) 0x43, "windows-1257");
+            put((byte) 0x3D, "windows-1251");
+            put((byte) 0x3F, "windows-1253");
+            put((byte) 0x41, "windows-1255");
+            put((byte) 0x3E, "windows-1252");
+            put((byte) 0x3C, "windows-1250");
+            put((byte) 0x40, "windows-1254");
+            put((byte) 0x44, "windows-1258");
+        }
+    });
 
     /**
      * The sas7bdat file stores the table name with the length of {@link SasFileConstants#DATASET_LENGTH} bytes and
@@ -779,13 +926,14 @@ interface SasFileConstants {
 
     /**
      * The date formats to store the day, month, and year. Appear in the data of the
-     * {@link SasFileParser.FormatAndLabelSubheader} subheader and are stored in {@link Column#format}.
+     * {@link SasFileParser.FormatAndLabelSubheader} subheader and are stored in {@link com.epam.parso.Column#format}.
      */
     List<String> DATE_FORMAT_STRINGS = Arrays.asList("YYMMDD", "MMDDYY", "DDMMYY", "DATE");
 
     /**
-     * The date formats to store the day, month, year, hour, minutes, seconds, and milliseconds. Appear in the data
-     * of the {@link SasFileParser.FormatAndLabelSubheader} subheader and are stored in {@link Column#format}.
+     * The date formats to store the day, month, year, hour, minutes, seconds, and milliseconds.
+     * Appear in the data of the {@link SasFileParser.FormatAndLabelSubheader} subheader
+     * and are stored in {@link com.epam.parso.Column#format}.
      */
     List<String> DATE_TIME_FORMAT_STRINGS = Collections.singletonList("DATETIME");
 }

@@ -138,7 +138,7 @@ public final class SasFileParser {
     /**
      * Default encoding for output strings.
      */
-    private String encoding = "ASCII";
+    private String encoding = "US-ASCII";
     /**
      * A cache to store the current page of the sas7bdat file. Used to avoid posing buffering requirements
      * to {@link SasFileParser#sasFileStream}.
@@ -258,16 +258,20 @@ public final class SasFileParser {
 
         int totalAlign = align1 + align2;
 
-        Long[] offset = {SasFileConstants.ENDIANNESS_OFFSET, SasFileConstants.DATASET_OFFSET, SasFileConstants
-                .FILE_TYPE_OFFSET, SasFileConstants.DATE_CREATED_OFFSET + align1,
+        Long[] offset = {SasFileConstants.ENDIANNESS_OFFSET, SasFileConstants.ENCODING_OFFSET,
+                SasFileConstants.SESSION_ENCODING_OFFSET,
+                SasFileConstants.DATASET_OFFSET, SasFileConstants.FILE_TYPE_OFFSET, SasFileConstants
+                .DATE_CREATED_OFFSET + align1,
                 SasFileConstants.DATE_MODIFIED_OFFSET + align1, SasFileConstants.HEADER_SIZE_OFFSET + align1,
                 SasFileConstants.PAGE_SIZE_OFFSET + align1,
                 SasFileConstants.PAGE_COUNT_OFFSET + align1, SasFileConstants.SAS_RELEASE_OFFSET + totalAlign,
                 SasFileConstants.SAS_SERVER_TYPE_OFFSET + totalAlign,
                 SasFileConstants.OS_VERSION_NUMBER_OFFSET + totalAlign, SasFileConstants.OS_MAKER_OFFSET
                 + totalAlign, SasFileConstants.OS_NAME_OFFSET + totalAlign};
-        Integer[] length = {SasFileConstants.ENDIANNESS_LENGTH, SasFileConstants.DATASET_LENGTH, SasFileConstants
-                .FILE_TYPE_LENGTH, SasFileConstants.DATE_CREATED_LENGTH,
+        Integer[] length = {SasFileConstants.ENDIANNESS_LENGTH, SasFileConstants.ENCODING_LENGTH,
+                SasFileConstants.SESSION_ENCODING_LENGTH,
+                SasFileConstants.DATASET_LENGTH, SasFileConstants.FILE_TYPE_LENGTH, SasFileConstants
+                .DATE_CREATED_LENGTH,
                 SasFileConstants.DATE_MODIFIED_LENGTH, SasFileConstants.HEADER_SIZE_LENGTH, SasFileConstants
                 .PAGE_SIZE_LENGTH, SasFileConstants.PAGE_COUNT_LENGTH + align2,
                 SasFileConstants.SAS_RELEASE_LENGTH, SasFileConstants.SAS_SERVER_TYPE_LENGTH, SasFileConstants
@@ -275,20 +279,26 @@ public final class SasFileParser {
         List<byte[]> vars = getBytesFromFile(offset, length);
 
         sasFileProperties.setEndianness(vars.get(0)[0]);
-        sasFileProperties.setName(bytesToString(vars.get(1)).trim());
-        sasFileProperties.setFileType(bytesToString(vars.get(2)).trim());
-        sasFileProperties.setDateCreated(bytesToDateTime(vars.get(3)));
-        sasFileProperties.setDateModified(bytesToDateTime(vars.get(4)));
-        sasFileProperties.setHeaderLength(bytesToInt(vars.get(5)));
-        sasFileProperties.setPageLength(bytesToInt(vars.get(6)));
-        sasFileProperties.setPageCount(bytesToLong(vars.get(7)));
-        sasFileProperties.setSasRelease(bytesToString(vars.get(8)).trim());
-        sasFileProperties.setServerType(bytesToString(vars.get(9)).trim());
-        sasFileProperties.setOsType(bytesToString(vars.get(10)).trim());
-        if (vars.get(12)[0] != 0) {
-            sasFileProperties.setOsName(bytesToString(vars.get(12)).trim());
+        String encoding = SasFileConstants.SAS_CHARACTER_ENCODINGS.get(vars.get(1)[0]);
+        if (encoding != null) {
+            this.encoding = encoding;
+        }
+        sasFileProperties.setEncoding(this.encoding);
+        sasFileProperties.setSessionEncoding(SasFileConstants.SAS_CHARACTER_ENCODINGS.get(vars.get(2)[0]));
+        sasFileProperties.setName(bytesToString(vars.get(3)).trim());
+        sasFileProperties.setFileType(bytesToString(vars.get(4)).trim());
+        sasFileProperties.setDateCreated(bytesToDateTime(vars.get(5)));
+        sasFileProperties.setDateModified(bytesToDateTime(vars.get(6)));
+        sasFileProperties.setHeaderLength(bytesToInt(vars.get(7)));
+        sasFileProperties.setPageLength(bytesToInt(vars.get(8)));
+        sasFileProperties.setPageCount(bytesToLong(vars.get(9)));
+        sasFileProperties.setSasRelease(bytesToString(vars.get(10)).trim());
+        sasFileProperties.setServerType(bytesToString(vars.get(11)).trim());
+        sasFileProperties.setOsType(bytesToString(vars.get(12)).trim());
+        if (vars.get(14)[0] != 0) {
+            sasFileProperties.setOsName(bytesToString(vars.get(14)).trim());
         } else {
-            sasFileProperties.setOsName(bytesToString(vars.get(11)).trim());
+            sasFileProperties.setOsName(bytesToString(vars.get(13)).trim());
         }
 
         if (sasFileStream != null) {
@@ -935,9 +945,9 @@ public final class SasFileParser {
         private InputStream sasFileStream;
 
         /**
-         * Default value for {@link SasFileParser#encoding} variable.
+         * Default value for {@link SasFileProperties#encoding} variable.
          */
-        private String encoding = "ASCII";
+        private String encoding = "US-ASCII";
 
         /**
          * Default value for {@link SasFileParser#byteOutput} variable.
