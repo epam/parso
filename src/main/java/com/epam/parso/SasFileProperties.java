@@ -39,6 +39,16 @@ public class SasFileProperties {
     private int endianness;
 
     /**
+     * The name of the sas7bdat character encoding.
+     */
+    private String encoding;
+
+    /**
+     * The name of the sas7bdat character encoding.
+     */
+    private String sessionEncoding;
+
+    /**
      * The name of the sas7bdat file table .
      */
     private String name;
@@ -280,6 +290,42 @@ public class SasFileProperties {
      */
     public void setEndianness(int endianness) {
         this.endianness = endianness;
+    }
+
+    /**
+     * The function to get encoding.
+     *
+     * @return the character encoding in which the sas7bdat file was created.
+     */
+    public String getEncoding() {
+        return encoding;
+    }
+
+    /**
+     * The method to specify encoding.
+     *
+     * @param encoding the character encoding in which the sas7bdat file was created.
+     */
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+    }
+
+    /**
+     * The function to get session encoding.
+     *
+     * @return the character encoding in which the sas7bdat file was created.
+     */
+    public String getSessionEncoding() {
+        return sessionEncoding;
+    }
+
+    /**
+     * The method to specify session encoding.
+     *
+     * @param sessionEncoding the character encoding in which the sas7bdat file was created.
+     */
+    public void setSessionEncoding(String sessionEncoding) {
+        this.sessionEncoding = sessionEncoding;
     }
 
     /**

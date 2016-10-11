@@ -1,0 +1,6 @@
+Number,Name,Type,Data length,Format,Label
+1,SepalLength,Numeric,8,,Sepal Length in cm.
+2,SepalWidth,Numeric,8,,Sepal Width in cm.
+3,PetalLength,Numeric,8,,Petal Length in cm.
+4,PetalWidth,Numeric,8,,Petal Width in cm.
+5,Species,Character,16,,
