@@ -1,4 +1,33 @@
 ﻿# Parso Java library
+## Parso 2.0.2
+***20 October 2016***
+
+* Character encoding support added
+* The subheaders signatures list updated
+* Correct double-byte character encoding processing added
+
+## Parso 2.0.1
+***28 September 2016***
+
+* Double values processing corrected
+
+## Parso 2.0
+***28 March 2016***
+
+* Binary compression algorithm improved
+* Char compression algorithm improved
+* Correct processing of numbers larger than long
+* Codestyle improvements
+
+## Parso 1.2.1
+***13 February 2016***
+
+* Data streams processing
+* Converting SAS7BDAT datasets into CSV format
+* Reading and converting metadata of SAS7BDAT datasets into CSV format
+* Extracting all properties of SAS7BDAT files (creation date, modification date, etc.)
+* Two ways to read the file data: in one go and row by row
+
 ## Overview
 Parso is a lightweight Java library that is designed to read SAS7BDAT datasets. The Parso interfaces are analogous to
  those that belong to libraries designed to read table-storing files, for example, CSVReader library. Despite its
