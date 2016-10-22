@@ -259,7 +259,6 @@ public final class SasFileParser {
         int totalAlign = align1 + align2;
 
         Long[] offset = {SasFileConstants.ENDIANNESS_OFFSET, SasFileConstants.ENCODING_OFFSET,
-                SasFileConstants.SESSION_ENCODING_OFFSET,
                 SasFileConstants.DATASET_OFFSET, SasFileConstants.FILE_TYPE_OFFSET, SasFileConstants
                 .DATE_CREATED_OFFSET + align1,
                 SasFileConstants.DATE_MODIFIED_OFFSET + align1, SasFileConstants.HEADER_SIZE_OFFSET + align1,
@@ -269,7 +268,6 @@ public final class SasFileParser {
                 SasFileConstants.OS_VERSION_NUMBER_OFFSET + totalAlign, SasFileConstants.OS_MAKER_OFFSET
                 + totalAlign, SasFileConstants.OS_NAME_OFFSET + totalAlign};
         Integer[] length = {SasFileConstants.ENDIANNESS_LENGTH, SasFileConstants.ENCODING_LENGTH,
-                SasFileConstants.SESSION_ENCODING_LENGTH,
                 SasFileConstants.DATASET_LENGTH, SasFileConstants.FILE_TYPE_LENGTH, SasFileConstants
                 .DATE_CREATED_LENGTH,
                 SasFileConstants.DATE_MODIFIED_LENGTH, SasFileConstants.HEADER_SIZE_LENGTH, SasFileConstants
@@ -284,21 +282,20 @@ public final class SasFileParser {
             this.encoding = encoding;
         }
         sasFileProperties.setEncoding(this.encoding);
-        sasFileProperties.setSessionEncoding(SasFileConstants.SAS_CHARACTER_ENCODINGS.get(vars.get(2)[0]));
-        sasFileProperties.setName(bytesToString(vars.get(3)).trim());
-        sasFileProperties.setFileType(bytesToString(vars.get(4)).trim());
-        sasFileProperties.setDateCreated(bytesToDateTime(vars.get(5)));
-        sasFileProperties.setDateModified(bytesToDateTime(vars.get(6)));
-        sasFileProperties.setHeaderLength(bytesToInt(vars.get(7)));
-        sasFileProperties.setPageLength(bytesToInt(vars.get(8)));
-        sasFileProperties.setPageCount(bytesToLong(vars.get(9)));
-        sasFileProperties.setSasRelease(bytesToString(vars.get(10)).trim());
-        sasFileProperties.setServerType(bytesToString(vars.get(11)).trim());
-        sasFileProperties.setOsType(bytesToString(vars.get(12)).trim());
-        if (vars.get(14)[0] != 0) {
-            sasFileProperties.setOsName(bytesToString(vars.get(14)).trim());
-        } else {
+        sasFileProperties.setName(bytesToString(vars.get(2)).trim());
+        sasFileProperties.setFileType(bytesToString(vars.get(3)).trim());
+        sasFileProperties.setDateCreated(bytesToDateTime(vars.get(4)));
+        sasFileProperties.setDateModified(bytesToDateTime(vars.get(5)));
+        sasFileProperties.setHeaderLength(bytesToInt(vars.get(6)));
+        sasFileProperties.setPageLength(bytesToInt(vars.get(7)));
+        sasFileProperties.setPageCount(bytesToLong(vars.get(8)));
+        sasFileProperties.setSasRelease(bytesToString(vars.get(9)).trim());
+        sasFileProperties.setServerType(bytesToString(vars.get(10)).trim());
+        sasFileProperties.setOsType(bytesToString(vars.get(11)).trim());
+        if (vars.get(13)[0] != 0) {
             sasFileProperties.setOsName(bytesToString(vars.get(13)).trim());
+        } else {
+            sasFileProperties.setOsName(bytesToString(vars.get(12)).trim());
         }
 
         if (sasFileStream != null) {

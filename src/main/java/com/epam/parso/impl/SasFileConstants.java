@@ -148,18 +148,6 @@ interface SasFileConstants {
     int ENCODING_LENGTH = 1;
 
     /**
-     * The sas7bdat file stores its character encoding with the length
-     * of {@link SasFileConstants#SESSION_ENCODING_LENGTH} bytes and a SESSION_ENCODING_OFFSET bytes offset.
-     */
-    long SESSION_ENCODING_OFFSET = 71L;
-
-    /**
-     * The sas7bdat files its character encoding with the length of SESSION_ENCODING_LENGTH bytes and
-     * a {@link SasFileConstants#SESSION_ENCODING_OFFSET} bytes offset.
-     */
-    int SESSION_ENCODING_LENGTH = 1;
-
-    /**
      * The integer (one or two bytes) at the {@link SasFileConstants#ENCODING_OFFSET} indicates the character encoding
      * of string data.  The SAS_CHARACTER_ENCODINGS map links the values that are known to occur and the associated
      * encoding.  This list excludes encodings present in SAS but missing support in {@link java.nio.charset}
