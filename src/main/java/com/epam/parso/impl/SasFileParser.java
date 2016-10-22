@@ -108,7 +108,7 @@ public final class SasFileParser {
      * Every element corresponds to a {@link SasFileParser.ColumnTextSubheader}. The first text block includes
      * the information about compression.
      */
-    private final List<String> columnsNamesStrings = new ArrayList<String>();
+    private final List<byte[]> columnsNamesBytes = new ArrayList<byte[]>();
     /**
      * The list of column names.
      */
@@ -767,9 +767,10 @@ public final class SasFileParser {
      *
      * @param bytes a string represented by an array of bytes.
      * @return the conversion result string.
+     * @throws UnsupportedEncodingException when unknown encoding.
      */
-    private String bytesToString(byte[] bytes) {
-        return new String(bytes);
+    private String bytesToString(byte[] bytes) throws UnsupportedEncodingException {
+        return new String(bytes, encoding);
     }
 
     /**
@@ -1129,7 +1130,7 @@ public final class SasFileParser {
     /**
      * The class to process subheaders of the ColumnTextSubheader type that store information about
      * file compression and table columns (name, label, format). The first subheader of this type includes the file
-     * compression information. The results are stored in {@link SasFileParser#columnsNamesStrings} and
+     * compression information. The results are stored in {@link SasFileParser#columnsNamesBytes} and
      * {@link SasFileProperties#compressionMethod}.
      */
     class ColumnTextSubheader implements ProcessingSubheader {
@@ -1156,10 +1157,10 @@ public final class SasFileParser {
             length[0] = textBlockSize;
             vars = getBytesFromFile(offset, length);
 
-            columnsNamesStrings.add(bytesToString(vars.get(0)));
-            if (columnsNamesStrings.size() == 1) {
-                String columnName = columnsNamesStrings.get(0);
-                String compessionLiteral = findCompressionLiteral(columnName);
+            columnsNamesBytes.add(vars.get(0));
+            if (columnsNamesBytes.size() == 1) {
+                byte[] columnName = columnsNamesBytes.get(0);
+                String compessionLiteral = findCompressionLiteral(bytesToString(columnName));
                 sasFileProperties.setCompressionMethod(compessionLiteral); //might be null
             }
         }
@@ -1203,8 +1204,8 @@ public final class SasFileParser {
                 int textSubheaderIndex = bytesToShort(vars.get(0));
                 int columnNameOffset = bytesToShort(vars.get(1));
                 int columnNameLength = bytesToShort(vars.get(2));
-                columnsNamesList.add(columnsNamesStrings.get(textSubheaderIndex).substring(columnNameOffset,
-                        columnNameOffset + columnNameLength).intern());
+                columnsNamesList.add(bytesToString(Arrays.copyOfRange(columnsNamesBytes.get(textSubheaderIndex),
+                        columnNameOffset, columnNameOffset + columnNameLength)).intern());
             }
         }
     }
@@ -1290,17 +1291,17 @@ public final class SasFileParser {
             List<byte[]> vars = getBytesFromFile(offset, length);
 
             // min used to prevent incorrect data which appear in some files
-            int textSubheaderIndexForFormat = Math.min(bytesToShort(vars.get(0)), columnsNamesStrings.size() - 1);
+            int textSubheaderIndexForFormat = Math.min(bytesToShort(vars.get(0)), columnsNamesBytes.size() - 1);
             int columnFormatOffset = bytesToShort(vars.get(1));
             int columnFormatLength = bytesToShort(vars.get(2));
             // min used to prevent incorrect data which appear in some files
-            int textSubheaderIndexForLabel = Math.min(bytesToShort(vars.get(3)), columnsNamesStrings.size() - 1);
+            int textSubheaderIndexForLabel = Math.min(bytesToShort(vars.get(3)), columnsNamesBytes.size() - 1);
             int columnLabelOffset = bytesToShort(vars.get(4));
             int columnLabelLength = bytesToShort(vars.get(5));
-            String columnLabel = columnsNamesStrings.get(textSubheaderIndexForLabel).substring(
-                    columnLabelOffset, columnLabelOffset + columnLabelLength).intern();
-            String columnFormat = columnsNamesStrings.get(textSubheaderIndexForFormat).substring(
-                    columnFormatOffset, columnFormatOffset + columnFormatLength).intern();
+            String columnLabel = bytesToString(Arrays.copyOfRange(columnsNamesBytes.get(textSubheaderIndexForLabel),
+                    columnLabelOffset, columnLabelOffset + columnLabelLength)).intern();
+            String columnFormat = bytesToString(Arrays.copyOfRange(columnsNamesBytes.get(textSubheaderIndexForFormat),
+                    columnFormatOffset, columnFormatOffset + columnFormatLength)).intern();
             LOGGER.debug("Column format: {}", columnFormat);
             columns.add(new Column(currentColumnNumber + 1, columnsNamesList.get(columns.size()),
                     columnLabel, columnFormat, columnsTypesList.get(columns.size()),
