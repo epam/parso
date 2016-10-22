@@ -188,7 +188,7 @@ interface SasFileConstants {
             put((byte) 0x59, "IBM-Thai");
             put((byte) 0x5A, "IBM870");
             put((byte) 0x5B, "x-IBM875");
-            put((byte) 0x7D, "GB2312");
+            put((byte) 0x7D, "GBK");
             put((byte) 0x86, "EUC-JP");
             put((byte) 0x8C, "EUC-KR");
             put((byte) 0x77, "x-EUC-TW");
