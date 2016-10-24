@@ -1,15 +1,10 @@
 ﻿# Parso Java library
-## Parso 2.0.3
-***21 October 2016***
-
-* Character encoding support added for
-* Correct double-byte character encoding processing added
-
 ## Parso 2.0.2
-***11 October 2016***
+***24 October 2016***
 
-* Character encoding file property added
+* Character encoding support added
 * The subheaders signatures list updated
+* Correct double-byte character encoding processing added
 
 ## Parso 2.0.1
 ***28 September 2016***
