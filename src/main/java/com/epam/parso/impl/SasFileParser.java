@@ -628,7 +628,7 @@ public final class SasFileParser {
                     rowElements[currentColumnIndex] = bytes;
                 } else {
                     try {
-                        rowElements[currentColumnIndex] = (bytes == null ? null : new String(bytes, encoding));
+                        rowElements[currentColumnIndex] = (bytes == null ? null : bytesToString(bytes));
                     } catch (UnsupportedEncodingException e) {
                         LOGGER.error(e.getMessage(), e);
                     }
@@ -771,6 +771,21 @@ public final class SasFileParser {
      */
     private String bytesToString(byte[] bytes) throws UnsupportedEncodingException {
         return new String(bytes, encoding);
+    }
+
+    /**
+     * The function to convert a sub-range of an array of bytes into a string.
+     *
+     * @param bytes a string represented by an array of bytes.
+     * @param offset the initial offset
+     * @param length  the length
+     * @return the conversion result string.
+     * @throws UnsupportedEncodingException when unknown encoding.
+     * @throws StringIndexOutOfBoundsException when invalid offset and/or length.
+     */
+    private String bytesToString(byte[] bytes, int offset, int length)
+            throws UnsupportedEncodingException, StringIndexOutOfBoundsException {
+        return new String(bytes, offset, length, encoding);
     }
 
     /**
@@ -1204,8 +1219,8 @@ public final class SasFileParser {
                 int textSubheaderIndex = bytesToShort(vars.get(0));
                 int columnNameOffset = bytesToShort(vars.get(1));
                 int columnNameLength = bytesToShort(vars.get(2));
-                columnsNamesList.add(bytesToString(Arrays.copyOfRange(columnsNamesBytes.get(textSubheaderIndex),
-                        columnNameOffset, columnNameOffset + columnNameLength)).intern());
+                columnsNamesList.add(bytesToString(columnsNamesBytes.get(textSubheaderIndex),
+                        columnNameOffset, columnNameLength).intern());
             }
         }
     }
@@ -1298,10 +1313,10 @@ public final class SasFileParser {
             int textSubheaderIndexForLabel = Math.min(bytesToShort(vars.get(3)), columnsNamesBytes.size() - 1);
             int columnLabelOffset = bytesToShort(vars.get(4));
             int columnLabelLength = bytesToShort(vars.get(5));
-            String columnLabel = bytesToString(Arrays.copyOfRange(columnsNamesBytes.get(textSubheaderIndexForLabel),
-                    columnLabelOffset, columnLabelOffset + columnLabelLength)).intern();
-            String columnFormat = bytesToString(Arrays.copyOfRange(columnsNamesBytes.get(textSubheaderIndexForFormat),
-                    columnFormatOffset, columnFormatOffset + columnFormatLength)).intern();
+            String columnLabel = bytesToString(columnsNamesBytes.get(textSubheaderIndexForLabel),
+                    columnLabelOffset, columnLabelLength).intern();
+            String columnFormat = bytesToString(columnsNamesBytes.get(textSubheaderIndexForFormat),
+                    columnFormatOffset, columnFormatLength).intern();
             LOGGER.debug("Column format: {}", columnFormat);
             columns.add(new Column(currentColumnNumber + 1, columnsNamesList.get(columns.size()),
                     columnLabel, columnFormat, columnsTypesList.get(columns.size()),
