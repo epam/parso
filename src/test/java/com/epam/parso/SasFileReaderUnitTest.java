@@ -164,6 +164,7 @@ public class SasFileReaderUnitTest {
                 }
             }
             compareResultWithControl(controlReader, writer, (int) (rowCount - rowCount % COMPARE_ROWS_COUNT), columns);
+            assertThat(controlReader.readNext()).isNull();
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         } finally {
@@ -264,6 +265,7 @@ public class SasFileReaderUnitTest {
                 }
                 lineNumber++;
             }
+            assertThat(resultReader.readNext()).isNull();
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         } finally {
