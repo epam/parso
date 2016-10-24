@@ -21,6 +21,7 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
     <developers>
         <developer>
             <name>Petr Tsurinov</name>
@@ -35,6 +36,13 @@
             <organizationUrl>http://www.epam.com</organizationUrl>
         </developer>
     </developers>
+
+    <contributors>
+        <contributor>
+            <name>Matthew Kastin</name>
+            <email>Fried.Egg@verizon.net</email>
+        </contributor>
+    </contributors>
 
     <scm>
         <connection>scm:git:git@github.com:epam/parso.git</connection>

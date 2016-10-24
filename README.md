@@ -1,6 +1,6 @@
 ﻿# Parso Java library
 ## Parso 2.0.2
-***20 October 2016***
+***24 October 2016***
 
 * Character encoding support added
 * The subheaders signatures list updated
