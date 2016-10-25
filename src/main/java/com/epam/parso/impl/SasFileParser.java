@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.EOFException;
 import java.io.UnsupportedEncodingException;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Collections;
@@ -614,7 +615,26 @@ public final class SasFileParser {
                         } else {
                             if (SasFileConstants.DATE_FORMAT_STRINGS.contains(
                                     columns.get(currentColumnIndex).getFormat())) {
-                                rowElements[currentColumnIndex] = bytesToDate(temp);
+				try {
+					rowElements[currentColumnIndex] = bytesToDate(temp);
+				} catch (BufferUnderflowException e) {
+					Object number = convertByteArrayToNumber(temp);
+					if (number == null) {
+						rowElements[currentColumnIndex] = null;
+					} else {
+						double tempNumber = ((Number) number).doubleValue();
+						if (Double.isNaN(tempNumber)) {
+							rowElements[currentColumnIndex] = null;
+						} else {
+							rowElements[currentColumnIndex] = new Date(
+								(long) ((tempNumber - SasFileConstants.START_DATES_DAYS_DIFFERENCE) * 
+										SasFileConstants.SECONDS_IN_MINUTE *
+										SasFileConstants.MINUTES_IN_HOUR * 
+										SasFileConstants.HOURS_IN_DAY * 
+										SasFileConstants.MILLISECONDS_IN_SECONDS));
+						}
+				    }
+				}
                             } else {
                                 rowElements[currentColumnIndex] = convertByteArrayToNumber(temp);
                             }
