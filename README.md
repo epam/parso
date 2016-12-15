@@ -1,4 +1,9 @@
 ﻿# Parso Java library
+## Parso 2.0.3
+***15 December 2016***
+
+* Added handling of empty or corrupted input stream.
+
 ## Parso 2.0.2
 ***24 October 2016***
 
