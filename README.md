@@ -1,4 +1,10 @@
 ﻿# Parso Java library
+## Parso 2.0.4
+***8 March 2017***
+
+* Added processing column names, formats and labels on page type 'amd'.
+* Added handling of ISO8601 date format.
+
 ## Parso 2.0.3
 ***15 December 2016***
 

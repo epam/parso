@@ -28,17 +28,17 @@ public class Column {
     /**
      * The column name.
      */
-    private final String name;
+    private String name;
 
     /**
      * The column label.
      */
-    private final String label;
+    private String label;
 
     /**
      * The column format.
      */
-    private final String format;
+    private String format;
 
     /**
      * The class of data stored in the cells of rows related to a column, can be Number.class or String.class.
@@ -122,5 +122,29 @@ public class Column {
      */
     public int getLength() {
         return length;
+    }
+
+    /**
+     * The function to set column name.
+     * @param name the column name.
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * The function to set column label.
+     * @param label the column label.
+     */
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    /**
+     * The function to set column format.
+     * @param format the column format.
+     */
+    public void setFormat(String format) {
+        this.format = format;
     }
 }

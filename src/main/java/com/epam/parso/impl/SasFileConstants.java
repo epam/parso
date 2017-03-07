@@ -557,6 +557,11 @@ interface SasFileConstants {
     int PAGE_MIX_TYPE = 512;
 
     /**
+     * The page type amd.
+     */
+    int PAGE_AMD_TYPE = 1024;
+
+    /**
      * The sas7bdat file stores the array of subheader pointers ({@link SasFileParser.SubheaderPointer}) at this
      * offset (adding {@link SasFileConstants#PAGE_BIT_OFFSET_X86} or {@link SasFileConstants#PAGE_BIT_OFFSET_X64})
      * from the beginning of the page.

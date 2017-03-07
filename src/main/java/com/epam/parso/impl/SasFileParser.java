@@ -16,8 +16,7 @@
 
 package com.epam.parso.impl;
 
-import com.epam.parso.Column;
-import com.epam.parso.SasFileProperties;
+import com.epam.parso.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -184,6 +183,12 @@ public final class SasFileParser {
      * True if stream is at the end of file.
      */
     private boolean eof;
+
+    /**
+     * The list of missing column information.
+     */
+    private List<ColumnMissingInfo> columnMissingInfoList = new ArrayList<ColumnMissingInfo>();
+
     /**
      * The constructor that reads metadata from the sas7bdat, parses it and puts the results in
      * {@link SasFileParser#sasFileProperties}.
@@ -550,9 +555,37 @@ public final class SasFileParser {
         }
 
         readPageHeader();
-        if (currentPageType == PAGE_META_TYPE) {
+        if (currentPageType == PAGE_META_TYPE || currentPageType == PAGE_AMD_TYPE) {
             List<SubheaderPointer> subheaderPointers = new ArrayList<SubheaderPointer>();
             processPageMetadata(bitOffset, subheaderPointers);
+            if (currentPageType == PAGE_AMD_TYPE) {
+                processMissingColumnInfo();
+            }
+        }
+    }
+
+    /**
+     * The function to process missing column information.
+     * @throws UnsupportedEncodingException when unknown encoding.
+     */
+    private void processMissingColumnInfo() throws UnsupportedEncodingException {
+        for (ColumnMissingInfo columnMissingInfo : columnMissingInfoList) {
+            String missedInfo = bytesToString(columnsNamesBytes.get(columnMissingInfo.getTextSubheaderIndex()),
+                    columnMissingInfo.getOffset(), columnMissingInfo.getLength()).intern();
+            Column column = columns.get(columnMissingInfo.getColumnId());
+            switch (columnMissingInfo.getMissingInfoType()) {
+                case NAME:
+                    column.setName(missedInfo);
+                    break;
+                case FORMAT:
+                    column.setFormat(missedInfo);
+                    break;
+                case LABEL:
+                    column.setLabel(missedInfo);
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
@@ -1216,8 +1249,14 @@ public final class SasFileParser {
                 int textSubheaderIndex = bytesToShort(vars.get(0));
                 int columnNameOffset = bytesToShort(vars.get(1));
                 int columnNameLength = bytesToShort(vars.get(2));
-                columnsNamesList.add(bytesToString(columnsNamesBytes.get(textSubheaderIndex),
-                        columnNameOffset, columnNameLength).intern());
+                if (textSubheaderIndex < columnsNamesBytes.size()) {
+                    columnsNamesList.add(bytesToString(columnsNamesBytes.get(textSubheaderIndex),
+                            columnNameOffset, columnNameLength).intern());
+                } else {
+                    columnsNamesList.add(new String(new char[columnNameLength]));
+                    columnMissingInfoList.add(new ColumnMissingInfo(i, textSubheaderIndex, columnNameOffset,
+                            columnNameLength, ColumnMissingInfo.MissingInfoType.NAME));
+                }
             }
         }
     }
@@ -1302,10 +1341,22 @@ public final class SasFileParser {
             int textSubheaderIndexForLabel = Math.min(bytesToShort(vars.get(3)), columnsNamesBytes.size() - 1);
             int columnLabelOffset = bytesToShort(vars.get(4));
             int columnLabelLength = bytesToShort(vars.get(5));
-            String columnLabel = bytesToString(columnsNamesBytes.get(textSubheaderIndexForLabel),
-                    columnLabelOffset, columnLabelLength).intern();
-            String columnFormat = bytesToString(columnsNamesBytes.get(textSubheaderIndexForFormat),
-                    columnFormatOffset, columnFormatLength).intern();
+            String columnLabel = "";
+            String columnFormat = "";
+            if (textSubheaderIndexForLabel < columnsNamesBytes.size()) {
+                columnLabel = bytesToString(columnsNamesBytes.get(textSubheaderIndexForLabel),
+                        columnLabelOffset, columnLabelLength).intern();
+            } else {
+                columnMissingInfoList.add(new ColumnMissingInfo(columns.size(), textSubheaderIndexForLabel,
+                        columnLabelOffset, columnLabelLength, ColumnMissingInfo.MissingInfoType.LABEL));
+            }
+            if (textSubheaderIndexForFormat < columnsNamesBytes.size()) {
+                columnFormat = bytesToString(columnsNamesBytes.get(textSubheaderIndexForFormat),
+                        columnFormatOffset, columnFormatLength).intern();
+            } else {
+                columnMissingInfoList.add(new ColumnMissingInfo(columns.size(), textSubheaderIndexForFormat,
+                        columnFormatOffset, columnFormatLength, ColumnMissingInfo.MissingInfoType.FORMAT));
+            }
             LOGGER.debug(COLUMN_FORMAT, columnFormat);
             columns.add(new Column(currentColumnNumber + 1, columnsNamesList.get(columns.size()),
                     columnLabel, columnFormat, columnsTypesList.get(columns.size()),
