@@ -88,12 +88,12 @@ public class CSVDataWriterImpl extends AbstractCSVWriter implements CSVDataWrite
     /**
      * One of data formats used in sas7bdat files, corresponds to yyyy-MM-dd.
      */
-    private static final String DATE_FORMAT_IS8601DA = "IS8601DA";
+    private static final String DATE_FORMAT_E8601DA = "E8601DA";
 
     /**
      * One of data formats used in sas7bdat files, corresponds to yyyy-MM-dd hh:mm:ss.SSSSS.
      */
-    private static final String DATE_FORMAT_IS8601DT = "IS8601DT";
+    private static final String DATE_FORMAT_E8601DT = "E8601DT";
 
     /**
      * One of data formats used in sas7bdat files, corresponds to ddMMMyyyy.
@@ -138,8 +138,8 @@ public class CSVDataWriterImpl extends AbstractCSVWriter implements CSVDataWrite
         tmpMap.put(DATE_FORMAT_DDMMYY, "dd/MM/yyyy");
         tmpMap.put(DATE_FORMAT, "ddMMMyyyy");
         tmpMap.put(DATE_TIME_FORMAT, "yyyy-MM-dd HH:mm:ss");
-        tmpMap.put(DATE_FORMAT_IS8601DA, "yyyy-MM-dd");
-        tmpMap.put(DATE_FORMAT_IS8601DT, "YYYY-MM-DD hh:mm:ss.SSSSS");
+        tmpMap.put(DATE_FORMAT_E8601DA, "yyyy-MM-dd");
+        tmpMap.put(DATE_FORMAT_E8601DT, "yyyy-MM-dd'T'HH:mm:ss");
         DATE_OUTPUT_FORMAT_STRINGS = Collections.synchronizedMap(tmpMap);
     }
 

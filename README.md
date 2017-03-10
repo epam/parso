@@ -1,4 +1,9 @@
 ﻿# Parso Java library
+## Parso 2.0.5
+***10 March 2017***
+
+* Fixed handling of ISO8601 date format. Added new date pattern.
+
 ## Parso 2.0.4
 ***8 March 2017***
 
