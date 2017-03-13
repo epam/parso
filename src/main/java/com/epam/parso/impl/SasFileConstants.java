@@ -136,6 +136,22 @@ interface SasFileConstants {
     int ENDIANNESS_LENGTH = 1;
 
     /**
+     * If a value with the length of ENDIANNESS_LENGTH bytes stored in the sas7bdat file with
+     * a {@link SasFileConstants#ENDIANNESS_OFFSET} bytes offset equals to LITTLE_ENDIAN_CHECKER
+     * then the bytes order is little-endian (Intel), if the value equals to
+     * {@link SasFileConstants#BIG_ENDIAN_CHECKER} then the bytes order is big-endian.
+     */
+    int LITTLE_ENDIAN_CHECKER = 1;
+
+    /**
+     * If a value with the length of ENDIANNESS_LENGTH bytes stored in the sas7bdat file with
+     * a {@link SasFileConstants#ENDIANNESS_OFFSET} bytes offset equals to
+     * {@link SasFileConstants#LITTLE_ENDIAN_CHECKER} then the bytes order is little-endian (Intel),
+     * if the value equals to BIG_ENDIAN_CHECKER then the bytes order is big-endian.
+     */
+    int BIG_ENDIAN_CHECKER = 0;
+
+    /**
      * The sas7bdat file stores its character encoding with the length of {@link SasFileConstants#ENCODING_LENGTH} bytes
      * and a ENCODING_OFFSET bytes offset.
      */
@@ -541,6 +557,11 @@ interface SasFileConstants {
     int PAGE_MIX_TYPE = 512;
 
     /**
+     * The page type amd.
+     */
+    int PAGE_AMD_TYPE = 1024;
+
+    /**
      * The sas7bdat file stores the array of subheader pointers ({@link SasFileParser.SubheaderPointer}) at this
      * offset (adding {@link SasFileConstants#PAGE_BIT_OFFSET_X86} or {@link SasFileConstants#PAGE_BIT_OFFSET_X64})
      * from the beginning of the page.
@@ -916,12 +937,12 @@ interface SasFileConstants {
      * The date formats to store the day, month, and year. Appear in the data of the
      * {@link SasFileParser.FormatAndLabelSubheader} subheader and are stored in {@link com.epam.parso.Column#format}.
      */
-    List<String> DATE_FORMAT_STRINGS = Arrays.asList("YYMMDD", "MMDDYY", "DDMMYY", "DATE");
+    List<String> DATE_FORMAT_STRINGS = Arrays.asList("YYMMDD", "MMDDYY", "DDMMYY", "DATE", "E8601DA");
 
     /**
      * The date formats to store the day, month, year, hour, minutes, seconds, and milliseconds.
      * Appear in the data of the {@link SasFileParser.FormatAndLabelSubheader} subheader
      * and are stored in {@link com.epam.parso.Column#format}.
      */
-    List<String> DATE_TIME_FORMAT_STRINGS = Collections.singletonList("DATETIME");
+    List<String> DATE_TIME_FORMAT_STRINGS = Arrays.asList("DATETIME", "E8601DT");
 }
