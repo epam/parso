@@ -71,41 +71,6 @@ public class CSVDataWriterImpl extends AbstractCSVWriter implements CSVDataWrite
     private static final String TIME_DELIMETER = ":";
 
     /**
-     * One of data formats used in sas7bdat files, corresponds to yyyy-MM-dd.
-     */
-    private static final String DATE_FORMAT_YYMMDD = "YYMMDD";
-
-    /**
-     * One of data formats used in sas7bdat files, corresponds to MM/dd/yyyy.
-     */
-    private static final String DATE_FORMAT_MMDDYY = "MMDDYY";
-
-    /**
-     * One of data formats used in sas7bdat files, corresponds to dd/MM/yyyy.
-     */
-    private static final String DATE_FORMAT_DDMMYY = "DDMMYY";
-
-    /**
-     * One of data formats used in sas7bdat files, corresponds to yyyy-MM-dd.
-     */
-    private static final String DATE_FORMAT_E8601DA = "E8601DA";
-
-    /**
-     * One of data formats used in sas7bdat files, corresponds to yyyy-MM-dd hh:mm:ss.SSSSS.
-     */
-    private static final String DATE_FORMAT_E8601DT = "E8601DT";
-
-    /**
-     * One of data formats used in sas7bdat files, corresponds to ddMMMyyyy.
-     */
-    private static final String DATE_FORMAT = "DATE";
-
-    /**
-     * One of data formats used in sas7bdat files, corresponds to yyyy-MM-dd HH:mm:ss.
-     */
-    private static final String DATE_TIME_FORMAT = "DATETIME";
-
-    /**
      * The date formats to store the hour, minutes, seconds, and milliseconds. Appear in the data of
      * the {@link SasFileParser.FormatAndLabelSubheader} subheader and are stored in {@link Column#format}.
      */
@@ -127,21 +92,88 @@ public class CSVDataWriterImpl extends AbstractCSVWriter implements CSVDataWrite
     private static final String ENCODING = "CP1252";
 
     /**
-     * The mapping between date formats in sas7bdat files and SimpleDateFormat.
+     * These are sas7bdat format references to {@link java.text.SimpleDateFormat} date formats.
+     *
+     * UNSUPPORTED FORMATS:
+     *   DTYYQC, PDJULG, PDJULI, QTR, QTRR, WEEKU, WEEKV, WEEKW,
+     *   YYQ, YYQC, YYQD, YYQN, YYQP, YYQS, YYQR, YYQRC, YYQRD, YYQRN, YYQRP, YYQRS
      */
-    private static final Map<String, String> DATE_OUTPUT_FORMAT_STRINGS;
+    private static final Map<String, String>
+            DATE_OUTPUT_FORMAT_STRINGS = Collections.unmodifiableMap(new HashMap<String, String>() {
+        {
+            /* date formats */
+            put("B8601DA", "yyyyMMdd");
+            put("E8601DA", "yyyy-MM-dd");
+            put("DATE", "ddMMMyyyy");
+            put("DAY", "dd");
+            put("DDMMYY", "dd/MM/yyyy");
+            put("DDMMYYB", "dd MM yyyy");
+            put("DDMMYYC", "dd:MM:yyyy");
+            put("DDMMYYD", "dd-MM-yyyy");
+            put("DDMMYYN", "ddMMyyyy");
+            put("DDMMYYP", "dd.MM.yyyy");
+            put("DDMMYYS", "dd/MM/yyyy");
+            put("JULDAY", "D");
+            put("JULIAN", "yyyyD");
+            put("MMDDYY", "MM/dd/yyyy");
+            put("MMDDYYB", "MM dd yyyy");
+            put("MMDDYYC", "MM:dd:yyyy");
+            put("MMDDYYD", "MM-dd-yyyy");
+            put("MMDDYYN", "MMddyyyy");
+            put("MMDDYYP", "MM.dd.yyyy");
+            put("MMDDYYS", "MM/dd/yyyy");
+            put("MMYY", "MM'M'yyyy");
+            put("MMYYC", "MM:yyyy");
+            put("MMYYD", "MM-yyyy");
+            put("MMYYN", "MMyyyy");
+            put("MMYYP", "MM.yyyy");
+            put("MMYYS", "MM/yyyy");
+            put("MONNAME", "MMMM");
+            put("MONTH", "M");
+            put("MONYY", "MMMyyyy");
+            put("WEEKDATE", "EEEE, MMMM dd, yyyy");
+            put("WEEKDATX", "EEEE, dd MMMM, yyyy");
+            put("WEEKDAY", "F");
+            put("DOWNAME", "EEEE");
+            put("WORDDATE", "MMMM d, yyyy");
+            put("WORDDATX", "d MMMM yyyy");
+            put("YYMM", "yyyy'M'MM");
+            put("YYMMC", "yyyy:MM");
+            put("YYMMD", "yyyy-MM");
+            put("YYMMN", "yyyyMM");
+            put("YYMMP", "yyyy.MM");
+            put("YYMMS", "yyyy/MM");
+            put("YYMMDD", "yyyy-MM-dd");
+            put("YYMMDDB", "yyyy MM dd");
+            put("YYMMDDC", "yyyy:MM:dd");
+            put("YYMMDDD", "yyyy-MM-dd");
+            put("YYMMDDN", "yyyyMMdd");
+            put("YYMMDDP", "yyyy.MM.dd");
+            put("YYMMDDS", "yyyy/MM/dd");
+            put("YYMON", "yyyyMMM");
+            put("YEAR", "yyyy");
 
-    static {
-        Map<String, String> tmpMap = new HashMap<String, String>();
-        tmpMap.put(DATE_FORMAT_YYMMDD, "yyyy-MM-dd");
-        tmpMap.put(DATE_FORMAT_MMDDYY, "MM/dd/yyyy");
-        tmpMap.put(DATE_FORMAT_DDMMYY, "dd/MM/yyyy");
-        tmpMap.put(DATE_FORMAT, "ddMMMyyyy");
-        tmpMap.put(DATE_TIME_FORMAT, "yyyy-MM-dd HH:mm:ss");
-        tmpMap.put(DATE_FORMAT_E8601DA, "yyyy-MM-dd");
-        tmpMap.put(DATE_FORMAT_E8601DT, "yyyy-MM-dd'T'HH:mm:ss");
-        DATE_OUTPUT_FORMAT_STRINGS = Collections.synchronizedMap(tmpMap);
-    }
+            /* datetime formats */
+            put("B8601DN", "yyyyMMdd");
+            put("B8601DT", "yyyyMMdd'T'HHmmssSSS");
+            put("B8601DX", "yyyyMMdd'T'HHmmssXX");
+            put("B8601DZ", "yyyyMMdd'T'HHmmssXX");
+            put("B8601LX", "yyyyMMdd'T'HHmmssXX");
+            put("E8601DN", "yyyy-MM-dd");
+            put("E8601DT", "yyyy-MM-dd'T'HH:mm:ss.SSS");
+            put("E8601DX", "yyyy-MM-dd'T'HH:mm:ssXXX");
+            put("E8601DZ", "yyyy-MM-dd'T'HH:mm:ssXXX");
+            put("E8601LX", "yyyy-MM-dd'T'HH:mm:ssXXX");
+            put("DATEAMPM", "ddMMMyyyy:HH:mm:ss.SS a");
+            put("DATETIME", "ddMMMyyyy:HH:mm:ss.SS");
+            put("DTDATE", "ddMMMyyyy");
+            put("DTMONYY", "MMMyyyy");
+            put("DTWKDATX", "EEEE, dd MMMM, yyyy");
+            put("DTYEAR", "yyyy");
+            put("MDYAMPM", "MM/dd/yyyy H:mm a");
+            put("TOD", "HH:mm:ss.SS");
+        }
+    });
 
     /**
      * The constructor that defines writer variable to output result csv file.
