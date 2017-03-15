@@ -18,9 +18,10 @@ package com.epam.parso.impl;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * This is an class to store constants for parsing the sas7bdat file (byte offsets, column formats, accuracy) as well as
@@ -937,7 +938,7 @@ interface SasFileConstants {
      * The date formats to store the day, month, and year. Appear in the data of the
      * {@link SasFileParser.FormatAndLabelSubheader} subheader and are stored in {@link com.epam.parso.Column#format}.
      */
-    List<String> DATE_FORMAT_STRINGS = Arrays.asList(
+    Set<String> DATE_FORMAT_STRINGS = new HashSet<String>(Arrays.asList(
             "B8601DA",
             "E8601DA",
             "DATE",
@@ -960,14 +961,14 @@ interface SasFileConstants {
             "MONNAME",
             "MONTH",
             "MONYY"
-    );
+    ));
 
     /**
      * The date formats to store the day, month, year, hour, minutes, seconds, and milliseconds.
      * Appear in the data of the {@link SasFileParser.FormatAndLabelSubheader} subheader
      * and are stored in {@link com.epam.parso.Column#format}.
      */
-    List<String> DATE_TIME_FORMAT_STRINGS = Arrays.asList(
+    Set<String> DATE_TIME_FORMAT_STRINGS = new HashSet<String>(Arrays.asList(
             "B8601DN", "B8601DT", "B8601DX", "B8601DZ", "B8601LX",
             "E8601DN", "E8601DT", "E8601DX", "E8601DZ", "E8601LX",
             "DATEAMPM",
@@ -980,5 +981,5 @@ interface SasFileConstants {
             "DTYEAR",
             "TOD",
             "MDYAMPM"
-    );
+    ));
 }
