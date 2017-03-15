@@ -99,7 +99,7 @@ public class CSVDataWriterImpl extends AbstractCSVWriter implements CSVDataWrite
      *   YYQ, YYQC, YYQD, YYQN, YYQP, YYQS, YYQR, YYQRC, YYQRD, YYQRN, YYQRP, YYQRS
      */
     private static final Map<String, String>
-            DATE_OUTPUT_FORMAT_STRINGS = Collections.unmodifiableMap(new HashMap<String, String>() {
+            DATE_OUTPUT_FORMAT_STRINGS =             Collections.unmodifiableMap(new HashMap<String, String>() {
         {
             /* date formats */
             put("B8601DA", "yyyyMMdd");
@@ -156,14 +156,14 @@ public class CSVDataWriterImpl extends AbstractCSVWriter implements CSVDataWrite
             /* datetime formats */
             put("B8601DN", "yyyyMMdd");
             put("B8601DT", "yyyyMMdd'T'HHmmssSSS");
-            put("B8601DX", "yyyyMMdd'T'HHmmssXX");
-            put("B8601DZ", "yyyyMMdd'T'HHmmssXX");
-            put("B8601LX", "yyyyMMdd'T'HHmmssXX");
+            put("B8601DX", "yyyyMMdd'T'HHmmssZ");
+            put("B8601DZ", "yyyyMMdd'T'HHmmssZ");
+            put("B8601LX", "yyyyMMdd'T'HHmmssZ");
             put("E8601DN", "yyyy-MM-dd");
             put("E8601DT", "yyyy-MM-dd'T'HH:mm:ss.SSS");
-            put("E8601DX", "yyyy-MM-dd'T'HH:mm:ssXXX");
-            put("E8601DZ", "yyyy-MM-dd'T'HH:mm:ssXXX");
-            put("E8601LX", "yyyy-MM-dd'T'HH:mm:ssXXX");
+            put("E8601DX", "yyyy-MM-dd'T'HH:mm:ssZ");
+            put("E8601DZ", "yyyy-MM-dd'T'HH:mm:ssZ");
+            put("E8601LX", "yyyy-MM-dd'T'HH:mm:ssZ");
             put("DATEAMPM", "ddMMMyyyy:HH:mm:ss.SS a");
             put("DATETIME", "ddMMMyyyy:HH:mm:ss.SS");
             put("DTDATE", "ddMMMyyyy");
