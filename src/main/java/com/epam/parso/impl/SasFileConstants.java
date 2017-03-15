@@ -18,9 +18,10 @@ package com.epam.parso.impl;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * This is an class to store constants for parsing the sas7bdat file (byte offsets, column formats, accuracy) as well as
@@ -937,12 +938,48 @@ interface SasFileConstants {
      * The date formats to store the day, month, and year. Appear in the data of the
      * {@link SasFileParser.FormatAndLabelSubheader} subheader and are stored in {@link com.epam.parso.Column#format}.
      */
-    List<String> DATE_FORMAT_STRINGS = Arrays.asList("YYMMDD", "MMDDYY", "DDMMYY", "DATE", "E8601DA");
+    Set<String> DATE_FORMAT_STRINGS = new HashSet<String>(Arrays.asList(
+            "B8601DA",
+            "E8601DA",
+            "DATE",
+            "DAY",
+            "DDMMYY", "DDMMYYB", "DDMMYYC", "DDMMYYD", "DDMMYYN", "DDMMYYP", "DDMMYYS",
+            "WEEKDATE",
+            "WEEKDATX",
+            "WEEKDAY",
+            "DOWNAME",
+            "WORDDATE",
+            "WORDDATX",
+            "YYMM", "YYMMC", "YYMMD", "YYMMN", "YYMMP", "YYMMS",
+            "YYMMDD", "YYMMDDB", "YYMMDDC", "YYMMDDD", "YYMMDDN", "YYMMDDP", "YYMMDDS",
+            "YYMON",
+            "YEAR",
+            "JULDAY",
+            "JULIAN",
+            "MMDDYY", "MMDDYYC", "MMDDYYD", "MMDDYYN", "MMDDYYP", "MMDDYYS",
+            "MMYY", "MMYYC", "MMYYD", "MMYYN", "MMYYP", "MMYYS",
+            "MONNAME",
+            "MONTH",
+            "MONYY"
+    ));
 
     /**
      * The date formats to store the day, month, year, hour, minutes, seconds, and milliseconds.
      * Appear in the data of the {@link SasFileParser.FormatAndLabelSubheader} subheader
      * and are stored in {@link com.epam.parso.Column#format}.
      */
-    List<String> DATE_TIME_FORMAT_STRINGS = Arrays.asList("DATETIME", "E8601DT");
+    Set<String> DATE_TIME_FORMAT_STRINGS = new HashSet<String>(Arrays.asList(
+            "B8601DN", "B8601DT", "B8601DX", "B8601DZ", "B8601LX",
+            "E8601DN", "E8601DT", "E8601DX", "E8601DZ", "E8601LX",
+            "DATEAMPM",
+            "DATETIME",
+            "DTDATE",
+            "DTMONYY",
+            "DTWKDATX",
+            "DTMONYY",
+            "DTWKDATX",
+            "DTYEAR",
+            "TOD",
+            "MDYAMPM"
+    ));
 }

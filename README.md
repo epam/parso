@@ -1,4 +1,9 @@
 ﻿# Parso Java library
+## Parso 2.0.6
+***14 March 2017***
+
+* Added handling of many additional date and datetime format patterns.
+
 ## Parso 2.0.5
 ***10 March 2017***
 
