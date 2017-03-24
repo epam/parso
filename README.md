@@ -1,4 +1,10 @@
 ﻿# Parso Java library
+## Parso 2.0.7
+***24 March 2017***
+
+* Fixed handling of none seekable binary channel.
+* Added ability to set locale used for dates in csv file.
+
 ## Parso 2.0.6
 ***14 March 2017***
 

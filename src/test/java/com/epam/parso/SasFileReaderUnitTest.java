@@ -26,10 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static com.epam.parso.TestUtils.getResourceAsStream;
 import static org.fest.assertions.Assertions.assertThat;
@@ -154,7 +151,7 @@ public class SasFileReaderUnitTest {
             long rowCount = sasFileReader.getSasFileProperties().getRowCount();
             List<Column> columns = sasFileReader.getColumns();
             CSVReader controlReader = new CSVReader(inputStreamReader);
-            CSVDataWriter csvDataWriter = new CSVDataWriterImpl(writer);
+            CSVDataWriter csvDataWriter = new CSVDataWriterImpl(writer, ",", "\n", Locale.UK);
             controlReader.readNext();
             for (int i = 0; i < rowCount; i++) {
                 csvDataWriter.writeRow(sasFileReader.getColumns(), sasFileReader.readNext());
@@ -247,6 +244,18 @@ public class SasFileReaderUnitTest {
         logger.info("Time passed: {} ms", System.currentTimeMillis() - programStart);
     }
 
+    @Test
+    public void testInputStream() throws IOException {
+        String fileName = getClass().getClassLoader().getResource("sas7bdat/mixed_data_one.sas7bdat").getFile();
+        ZeroAvailableBytesInputStream is = new ZeroAvailableBytesInputStream(fileName);
+        SasFileReader reader = new SasFileReaderImpl(is);
+        Object[][] data = reader.readAll();
+        closeInputStream(is);
+
+        assertThat(data[0][2]).isEqualTo("AAAAAAAA");
+        assertThat(data.length).isEqualTo(24);
+    }
+
     private void compareResultWithControl(CSVReader controlReader, Writer writer, int lineNumber,
                                           List<Column> columns) {
         CSVReader resultReader = null;
@@ -310,6 +319,18 @@ public class SasFileReaderUnitTest {
                 csvReader.close();
             }
         } catch (IOException ignore) {
+        }
+    }
+
+    private class ZeroAvailableBytesInputStream extends FileInputStream {
+
+        public ZeroAvailableBytesInputStream(String name) throws FileNotFoundException {
+            super(name);
+        }
+
+        @Override
+        public int available() throws IOException {
+            return 0;
         }
     }
 }

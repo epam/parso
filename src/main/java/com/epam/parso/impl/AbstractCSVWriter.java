@@ -18,6 +18,7 @@ package com.epam.parso.impl;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Locale;
 
 /**
  * This is a class to store functions which are used in classes {@link CSVMetadataWriterImpl} and
@@ -48,6 +49,11 @@ abstract class AbstractCSVWriter {
      * The endline for csv file.
      */
     private String endline = DEFAULT_ENDLINE;
+
+    /**
+     * The locale for dates in csv file.
+     */
+    private Locale locale = Locale.getDefault();
 
     /**
      * The constructor that defines writer variable to output result csv file.
@@ -81,6 +87,22 @@ abstract class AbstractCSVWriter {
         this.writer = writer;
         this.delimiter = delimiter;
         this.endline = endline;
+    }
+
+    /**
+     * The constructor that defines writer variable to output result csv file with selected delimiter,
+     * endline and locale.
+     *
+     * @param writer    the writer which is used to output csv file.
+     * @param delimiter separator used in csv file.
+     * @param endline   symbols used in csv file as endline.
+     * @param locale   locale used in csv file for dates.
+     */
+    AbstractCSVWriter(Writer writer, String delimiter, String endline, Locale locale) {
+        this.writer = writer;
+        this.delimiter = delimiter;
+        this.endline = endline;
+        this.locale = locale;
     }
 
     /**
@@ -141,5 +163,13 @@ abstract class AbstractCSVWriter {
      */
     public String getEndline() {
         return endline;
+    }
+
+    /**
+     * Locale getter.
+     * @return the locale for dates in csv file.
+     */
+    public Locale getLocale() {
+        return locale;
     }
 }

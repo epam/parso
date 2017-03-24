@@ -23,13 +23,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Collections;
-import java.util.Date;
-import java.util.TimeZone;
+import java.util.*;
 
 /**
  * This is a class to export the sas7bdat file data into the CSV format.
@@ -206,6 +200,19 @@ public class CSVDataWriterImpl extends AbstractCSVWriter implements CSVDataWrite
     }
 
     /**
+     * The constructor that defines writer variable to output result csv file with selected delimiter,
+     * endline and locale.
+     *
+     * @param writer    the writer which is used to output csv file.
+     * @param delimiter separator used in csv file.
+     * @param endline   symbols used in csv file as endline.
+     * @param locale   locale used for dates in csv file.
+     */
+    public CSVDataWriterImpl(Writer writer, String delimiter, String endline, Locale locale) {
+        super(writer, delimiter, endline, locale);
+    }
+
+    /**
      * The function to convert a date into a string according to the format used.
      *
      * @param currentDate the date to convert.
@@ -213,10 +220,10 @@ public class CSVDataWriterImpl extends AbstractCSVWriter implements CSVDataWrite
      *                    {@link CSVDataWriterImpl#DATE_OUTPUT_FORMAT_STRINGS} mapping keys.
      * @return the string that corresponds to the date in the format used.
      */
-    private static String convertDateElementToString(Date currentDate, String format) {
+    private String convertDateElementToString(Date currentDate, String format) {
         SimpleDateFormat dateFormat;
         String valueToPrint = "";
-        dateFormat = new SimpleDateFormat(DATE_OUTPUT_FORMAT_STRINGS.get(format));
+        dateFormat = new SimpleDateFormat(DATE_OUTPUT_FORMAT_STRINGS.get(format), getLocale());
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         if (currentDate.getTime() != 0) {
             valueToPrint = dateFormat.format(currentDate.getTime());

@@ -302,13 +302,16 @@ public final class SasFileParser {
         }
 
         if (sasFileStream != null) {
-            int bytesLeft = sasFileProperties.getHeaderLength() - currentFilePosition;
-
-            long actuallySkipped = 0;
-            while (actuallySkipped < bytesLeft) {
-                actuallySkipped += sasFileStream.skip(bytesLeft - actuallySkipped);
+            try {
+                int bytesLeft = sasFileProperties.getHeaderLength() - currentFilePosition;
+                long actuallySkipped = 0;
+                while (actuallySkipped < bytesLeft) {
+                    actuallySkipped += sasFileStream.skip(bytesLeft - actuallySkipped);
+                }
+                currentFilePosition = 0;
+            } catch (IOException e) {
+                throw new IOException(EMPTY_INPUT_STREAM);
             }
-            currentFilePosition = 0;
         }
     }
 
@@ -689,10 +692,10 @@ public final class SasFileParser {
                 byte[] temp = new byte[length[i]];
                 long actuallySkipped = 0;
                 while (actuallySkipped < offset[i] - currentFilePosition) {
-                    if (sasFileStream.available() <= 0) {
-                        throw new IOException(EMPTY_INPUT_STREAM);
-                    } else {
+                    try {
                         actuallySkipped += sasFileStream.skip(offset[i] - currentFilePosition - actuallySkipped);
+                    } catch (IOException e) {
+                        throw new IOException(EMPTY_INPUT_STREAM);
                     }
                 }
                 try {
