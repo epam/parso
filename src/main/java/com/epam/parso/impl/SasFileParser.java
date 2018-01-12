@@ -1,16 +1,19 @@
 /**
  * *************************************************************************
  * Copyright (C) 2015 EPAM
- * <p>
- * This file is part of Parso.
- * <p>
- * This file may be distributed and/or modified under the terms of the
- * GNU General Public License version 3 as published by the Free Software
- * Foundation and appearing in the file LICENSE.GPL included in the
- * packaging of this file.
- * <p>
- * This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
- * WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  * *************************************************************************
  */
 
@@ -334,8 +337,8 @@ public final class SasFileParser {
      * (at the {@link SasFileConstants#SUBHEADER_COUNT_OFFSET} offset). Then, depending on the page type,
      * the method calls the function to process the page.
      *
-     * @throws IOException if reading from the {@link SasFileParser#sasFileStream} stream is impossible.
      * @return true if all metadata is read.
+     * @throws IOException if reading from the {@link SasFileParser#sasFileStream} stream is impossible.
      */
     private boolean processSasFilePageMeta() throws IOException {
         int bitOffset = sasFileProperties.isU64() ? PAGE_BIT_OFFSET_X64 : PAGE_BIT_OFFSET_X86;
@@ -708,6 +711,9 @@ public final class SasFileParser {
             }
         } else {
             for (int i = 0; i < offset.length; i++) {
+                if (cachedPage.length < offset[i]) {
+                    throw new IOException(EMPTY_INPUT_STREAM);
+                }
                 vars.add(Arrays.copyOfRange(cachedPage, (int) (long) offset[i], (int) (long) offset[i] + length[i]));
             }
         }
