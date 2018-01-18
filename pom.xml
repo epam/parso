@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.epam</groupId>
     <artifactId>parso</artifactId>
-    <version>2.0.7</version>
+    <version>2.0.8</version>
     <packaging>jar</packaging>
     <name>parso</name>
     <description>Parso is a lightweight Java library designed to read SAS7BDAT datasets. The Parso interfaces
@@ -13,11 +13,14 @@
         statistical data often stored in SAS7BDAT format. Parso allows converting data into CSV format.
     </description>
     <url>https://github.com/epam/parso</url>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
     <licenses>
         <license>
-            <name>GNU General Public License v3</name>
-            <url>http://www.gnu.org/licenses/gpl.html</url>
+            <name>Apache License v2</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -25,9 +28,7 @@
     <developers>
         <developer>
             <name>Petr Tsurinov</name>
-            <email>Petr_Tsurinov@epam.com</email>
-            <organization>EPAM</organization>
-            <organizationUrl>http://www.epam.com</organizationUrl>
+            <email>arat90@ya.ru</email>
         </developer>
         <developer>
             <name>Igor Printsev</name>
@@ -70,7 +71,6 @@
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
-                    <encoding>utf-8</encoding>
                 </configuration>
             </plugin>
             <plugin>
@@ -116,6 +116,11 @@
                 <artifactId>nexus-staging-maven-plugin</artifactId>
                 <version>1.6.3</version>
                 <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <phase>deploy</phase>
+                    </execution>
+                </executions>
                 <configuration>
                     <serverId>ossrh</serverId>
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
