@@ -41,7 +41,7 @@ public class Column {
     /**
      * The column format.
      */
-    private String format;
+    private ColumnFormat format;
 
     /**
      * The class of data stored in the cells of rows related to a column, can be Number.class or String.class.
@@ -64,7 +64,7 @@ public class Column {
      *               String.class.
      * @param length the column length
      */
-    public Column(int id, String name, String label, String format, Class<?> type, int length) {
+    public Column(int id, String name, String label, ColumnFormat format, Class<?> type, int length) {
         this.id = id;
         this.name = name;
         this.label = label;
@@ -96,7 +96,7 @@ public class Column {
      *
      * @return the string that contains the column format.
      */
-    public String getFormat() {
+    public ColumnFormat getFormat() {
         return format;
     }
 
@@ -147,7 +147,7 @@ public class Column {
      * The function to set column format.
      * @param format the column format.
      */
-    public void setFormat(String format) {
+    public void setFormat(ColumnFormat format) {
         this.format = format;
     }
 }

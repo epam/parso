@@ -109,7 +109,7 @@ abstract class AbstractCSVWriter {
     }
 
     /**
-     * The method to output a text represented by an array of bytes using writer.
+     * The method to write a text represented by an array of bytes using writer.
      * If the text contains the delimiter, line breaks, tabulation characters, and double quotes, the text is stropped.
      *
      * @param writer      the variable to output data.
@@ -118,15 +118,25 @@ abstract class AbstractCSVWriter {
      * @throws java.io.IOException appears if the output into writer is impossible.
      */
     static void checkSurroundByQuotesAndWrite(Writer writer, String delimiter, String trimmedText) throws IOException {
+        writer.write(checkSurroundByQuotes(delimiter, trimmedText));
+    }
+
+    /**
+     * The method to output a text represented by an array of bytes.
+     * If the text contains the delimiter, line breaks, tabulation characters, and double quotes, the text is stropped.
+     *
+     * @param delimiter   if trimmedText contains this delimiter it will be stropped.
+     * @param trimmedText the array of bytes that contains the text to output.
+     * @return string represented by an array of bytes.
+     * @throws java.io.IOException appears if the output into writer is impossible.
+     */
+    static String checkSurroundByQuotes(String delimiter, String trimmedText) throws IOException {
         boolean containsDelimiter = stringContainsItemFromList(trimmedText, delimiter, "\n", "\t", "\r", "\"");
         String trimmedTextWithoutQuotesDuplicates = trimmedText.replace("\"", "\"\"");
         if (containsDelimiter && trimmedTextWithoutQuotesDuplicates.length() != 0) {
-            writer.write("\"");
+            return "\"" + trimmedTextWithoutQuotesDuplicates + "\"";
         }
-        writer.write(trimmedTextWithoutQuotesDuplicates);
-        if (containsDelimiter && trimmedTextWithoutQuotesDuplicates.length() != 0) {
-            writer.write("\"");
-        }
+        return trimmedTextWithoutQuotesDuplicates;
     }
 
     /**

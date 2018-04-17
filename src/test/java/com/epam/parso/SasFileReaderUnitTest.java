@@ -41,7 +41,7 @@ public class SasFileReaderUnitTest {
     private static final List<String> COLON_COLUMN_NAMES = Arrays.asList("sex", "age", "stage", "mmdx", "yydx",
             "surv_mm", "surv_yy", "status", "subsite", "year8594", "agegrp", "dx", "exit");
     private static final List<String> COLON_COLUMN_FORMATS = Arrays.asList("", "", "", "", "", "", "", "", "", "", "",
-            "MMDDYY", "MMDDYY");
+            "MMDDYY10.", "MMDDYY10.");
     private static final List<String> COLON_COLUMN_LABELS = Arrays.asList("Sex", "Age at diagnosis",
             "Clinical stage at diagnosis", "Month of diagnosis", "Year of diagnosis", "Survival time in months",
             "Survival time in years", "Vital status at last contact", "Anatomical subsite of tumour",
@@ -111,7 +111,7 @@ public class SasFileReaderUnitTest {
             assertThat(columns.get(i).getId()).isEqualTo(COLON_COLUMN_IDS.get(i));
             assertThat(columns.get(i).getName()).isEqualTo(COLON_COLUMN_NAMES.get(i));
             assertThat(columns.get(i).getLabel()).isEqualTo(COLON_COLUMN_LABELS.get(i));
-            assertThat(columns.get(i).getFormat()).isEqualTo(COLON_COLUMN_FORMATS.get(i));
+            assertThat(columns.get(i).getFormat().toString()).isEqualTo(COLON_COLUMN_FORMATS.get(i));
             assertThat(columns.get(i).getType()).isEqualTo(COLON_COLUMN_TYPES.get(i));
             assertThat(columns.get(i).getLength()).isEqualTo(COLON_COLUMN_LENGTHS.get(i));
         }
@@ -200,10 +200,10 @@ public class SasFileReaderUnitTest {
     public void testStringValue() throws IOException {
         InputStream is = getResourceAsStream("sas7bdat/mixed_data_one.sas7bdat");
         SasFileReader reader = new SasFileReaderImpl(is);
-        
+
         Object[] data = reader.readNext();
         closeInputStream(is);
-        
+
         assertThat(data[2]).isEqualTo("AAAAAAAA");
     }
 
@@ -257,6 +257,50 @@ public class SasFileReaderUnitTest {
 
         assertThat(data[0][2]).isEqualTo("AAAAAAAA");
         assertThat(data.length).isEqualTo(24);
+    }
+
+    @Test
+    public void testPartialReadingOfColumns() {
+        long programStart = System.currentTimeMillis();
+        InputStream fileInputStream = getResourceAsStream(fileName);
+        logger.info("Processing file {}", fileName);
+        Writer writer = new StringWriter();
+        InputStreamReader inputStreamReader = new InputStreamReader(
+                getResourceAsStream(fileName.toLowerCase().replace("sas7bdat", "csv")));
+
+        List<String> columnNames = new ArrayList<String>() {{
+            add("x1");
+            add("x5");
+            add("x8");
+        }};
+
+        try {
+            SasFileReader sasFileReader = new SasFileReaderImpl(fileInputStream);
+            long rowCount = sasFileReader.getSasFileProperties().getRowCount();
+            CSVReader controlReader = new CSVReader(inputStreamReader);
+            CSVDataWriter csvDataWriter = new CSVDataWriterImpl(writer, ",", "\n", Locale.UK);
+            controlReader.readNext();
+            for (int i = 0; i < rowCount; i++) {
+                csvDataWriter.writeRow(sasFileReader.getColumns(columnNames), sasFileReader.readNext(columnNames));
+            }
+            CSVReader resultReader = new CSVReader(new StringReader(writer.toString()));
+            for (int i = 0; i < rowCount; i++) {
+                String[] controlRow = controlReader.readNext();
+                String[] resultRow = resultReader.readNext();
+                assertThat(resultRow.length).isEqualTo(columnNames.size());
+                assertThat(resultRow[0]).isEqualTo(controlRow[0]);
+                assertThat(resultRow[1]).isEqualTo(controlRow[4]);
+                assertThat(resultRow[2]).isEqualTo(controlRow[7]);
+            }
+            assertThat(controlReader.readNext()).isNull();
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        } finally {
+            closeWriter(writer);
+            closeInputStream(fileInputStream);
+            closeInputStreamReader(inputStreamReader);
+        }
+        logger.info("Time passed: {} ms", System.currentTimeMillis() - programStart);
     }
 
     private void compareResultWithControl(CSVReader controlReader, Writer writer, int lineNumber,

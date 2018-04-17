@@ -147,7 +147,7 @@ public class CSVMetadataWriterImpl extends AbstractCSVWriter implements CSVMetad
             writer.write(String.valueOf(column.getLength()));
             writer.write(delimiter);
             if (!column.getFormat().isEmpty()) {
-                checkSurroundByQuotesAndWrite(writer, delimiter, column.getFormat() + ".");
+                checkSurroundByQuotesAndWrite(writer, delimiter, column.getFormat().toString());
             }
             writer.write(delimiter);
             checkSurroundByQuotesAndWrite(writer, delimiter, column.getLabel());

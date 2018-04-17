@@ -769,6 +769,42 @@ interface SasFileConstants {
     int COLUMN_TYPE_LENGTH = 1;
 
     /**
+     * For some table column, the sas7bdat file stores width of format:
+     * - with the length of {@link SasFileConstants#COLUMN_FORMAT_WIDTH_OFFSET_LENGTH} bytes,
+     * - at an offset calculated as COLUMN_FORMAT_WIDTH_OFFSET bytes + the size of value types
+     * (int or long depending on {@link SasFileConstants#ALIGN_2_VALUE}) from
+     * the beginning of the {@link SasFileParser.FormatAndLabelSubheader} subheader.
+     */
+    long COLUMN_FORMAT_WIDTH_OFFSET = 8L;
+
+    /**
+     * For some table column, the sas7bdat file stores width of format:
+     * - with the length of COLUMN_FORMAT_WIDTH_OFFSET_LENGTH bytes,
+     * - at an offset calculated as {@link SasFileConstants#COLUMN_FORMAT_WIDTH_OFFSET bytes} + the size of value types
+     * (int or long depending on {@link SasFileConstants#ALIGN_2_VALUE}) from
+     * the beginning of the {@link SasFileParser.FormatAndLabelSubheader} subheader.
+     */
+    int COLUMN_FORMAT_WIDTH_OFFSET_LENGTH = 2;
+
+    /**
+     * For some table column, the sas7bdat file stores precision of format:
+     * - with the length of {@link SasFileConstants#COLUMN_FORMAT_PRECISION_OFFSET_LENGTH} bytes,
+     * - at an offset calculated as COLUMN_FORMAT_PRECISION_OFFSET bytes + the size of value types
+     * (int or long depending on {@link SasFileConstants#ALIGN_2_VALUE}) from
+     * the beginning of the {@link SasFileParser.FormatAndLabelSubheader} subheader.
+     */
+    long COLUMN_FORMAT_PRECISION_OFFSET = 10L;
+
+    /**
+     * For some table column, the sas7bdat file stores width of format:
+     * - with the length of COLUMN_FORMAT_PRECISION_OFFSET_LENGTH bytes,
+     * - at an offset calculated as {@link SasFileConstants#COLUMN_FORMAT_PRECISION_OFFSET bytes} +
+     * + the size of value type (int or long depending on {@link SasFileConstants#ALIGN_2_VALUE}) from
+     * the beginning of the {@link SasFileParser.FormatAndLabelSubheader} subheader.
+     */
+    int COLUMN_FORMAT_PRECISION_OFFSET_LENGTH = 2;
+
+    /**
      * For every table column, the sas7bdat file stores the index of
      * the {@link SasFileParser.ColumnTextSubheader} whose text block stores the column format:
      * - with the length of {@link SasFileConstants#COLUMN_FORMAT_TEXT_SUBHEADER_INDEX_LENGTH} bytes,

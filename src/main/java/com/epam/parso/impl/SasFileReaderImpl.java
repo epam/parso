@@ -27,7 +27,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
+import java.util.*;
+
+import static com.epam.parso.impl.ParserMessageConstants.UNKNOWN_COLUMN_NAME;
 
 /**
  * A class to read sas7bdat files transferred to the input stream and then to get metadata and file data.
@@ -43,6 +45,11 @@ public class SasFileReaderImpl implements SasFileReader {
      * Object for parsing sas7bdat file.
      */
     private final SasFileParser sasFileParser;
+
+    /**
+     * List of columns obtained by names.
+     */
+    private final List<Column> columnsByName = new ArrayList<Column>();
 
     /**
      * Builds an object of the SasFileReaderImpl class from the file contained in the input stream.
@@ -89,18 +96,45 @@ public class SasFileReaderImpl implements SasFileReader {
     }
 
     /**
-     * Reads all rows from the sas7bdat file.
+     * The function to get the {@link Column} list from {@link SasFileReader}
+     * according to the columnNames.
      *
+     * @param columnNames - list of column names that should be returned.
+     * @return a list of columns.
+     */
+    @Override
+    public List<Column> getColumns(List<String> columnNames) {
+        if (columnsByName.isEmpty()) {
+            Map<String, Column> columnsMap = new HashMap<String, Column>();
+            List<Column> allColumns = sasFileParser.getColumns();
+            for (Column column : allColumns) {
+                columnsMap.put(column.getName(), column);
+            }
+            for (String name : columnNames) {
+                if (columnsMap.containsKey(name)) {
+                    columnsByName.add(columnsMap.get(name));
+                } else {
+                    throw new NoSuchElementException(UNKNOWN_COLUMN_NAME);
+                }
+            }
+        }
+        return columnsByName;
+    }
+
+    /**
+     * Reads all rows from the sas7bdat file. For each row, only the columns defined in the list are read.
+     *
+     * @param columnNames list of column names which should be processed.
      * @return an array of array objects whose elements can be objects of the following classes: double, long,
      * int, byte[], Date depending on the column they are in.
      */
     @Override
-    public Object[][] readAll() {
+    public Object[][] readAll(List<String> columnNames) {
         int rowNum = (int) getSasFileProperties().getRowCount();
         Object[][] result = new Object[rowNum][];
         for (int i = 0; i < rowNum; i++) {
             try {
-                result[i] = readNext();
+                result[i] = readNext(columnNames);
             } catch (IOException e) {
                 if (LOGGER.isWarnEnabled()) {
                     LOGGER.warn("I/O exception, skipping the rest of the file. "
@@ -119,8 +153,31 @@ public class SasFileReaderImpl implements SasFileReader {
      * int, byte[], Date depending on the column they are in.
      */
     @Override
+    public Object[][] readAll() {
+        return readAll(null);
+    }
+
+    /**
+     * Reads all rows from the sas7bdat file.
+     *
+     * @return an array of array objects whose elements can be objects of the following classes: double, long,
+     * int, byte[], Date depending on the column they are in.
+     */
+    @Override
     public Object[] readNext() throws IOException {
-        return sasFileParser.readNext();
+        return sasFileParser.readNext(null);
+    }
+
+    /**
+     * Reads all rows from the sas7bdat file. For each row, only the columns defined in the list are read.
+     *
+     * @param columnNames list of column names which should be processed.
+     * @return an array of array objects whose elements can be objects of the following classes: double, long,
+     * int, byte[], Date depending on the column they are in.
+     */
+    @Override
+    public Object[] readNext(List<String> columnNames) throws IOException {
+        return sasFileParser.readNext(columnNames);
     }
 
     /**

@@ -45,6 +45,10 @@ interface ParserMessageConstants {
      */
     String NO_SUPPORTED_COMPRESSION_LITERAL = "No supported compression literal found, assuming no compression";
     /**
+     * Error string if list of columns does not contain specified column name.
+     */
+    String UNKNOWN_COLUMN_NAME = "Unknown column name";
+    /**
      * Debug info. Subheader count.
      */
     String SUBHEADER_COUNT = "Subheader count: {}";

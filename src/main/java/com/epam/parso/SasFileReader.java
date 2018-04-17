@@ -34,6 +34,15 @@ public interface SasFileReader {
     List<Column> getColumns();
 
     /**
+     * The function to get the {@link Column} list from {@link SasFileReader}
+     * according to the columnNames.
+     *
+     * @param columnNames - list of column names which should be returned.
+     * @return a list of columns.
+     */
+    List<Column> getColumns(List<String> columnNames);
+
+    /**
      * Reads all rows from the sas7bdat file.
      *
      * @return an array of array objects whose elements can be objects of the following classes: double, long,
@@ -42,14 +51,32 @@ public interface SasFileReader {
     Object[][] readAll();
 
     /**
+     * Reads all rows from the sas7bdat file. For each row, only the columns defined in the list are read.
+     *
+     * @param columnNames list of column names which should be processed.
+     * @return an array of array objects whose elements can be objects of the following classes: double, long,
+     * int, byte[], Date depending on the column they are in.
+     */
+    Object[][] readAll(List<String> columnNames);
+
+    /**
      * Reads rows one by one from the sas7bdat file.
      *
      * @return an array of objects whose elements can be objects of the following classes: double, long,
      * int, byte[], Date depending on the column they are in.
-     *
      * @throws IOException if reading input stream is impossible.
      */
     Object[] readNext() throws IOException;
+
+    /**
+     * Reads rows one by one from the sas7bdat file. For each row, only the columns defined in the list are read.
+     *
+     * @param columnNames list of column names which should be processed.
+     * @return an array of objects whose elements can be objects of the following classes: double, long,
+     * int, byte[], Date depending on the column they are in.
+     * @throws IOException if reading input stream is impossible.
+     */
+    Object[] readNext(List<String> columnNames) throws IOException;
 
     /**
      * The function to get sas file properties.
