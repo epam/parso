@@ -150,7 +150,8 @@ public final class SasFileParser {
      */
     private byte[] cachedPage;
     /**
-     * The type of the current page when reading the file. If it is other than {@link SasFileConstants#PAGE_META_TYPE},
+     * The type of the current page when reading the file. If it is other than
+     * {@link SasFileConstants#PAGE_META_TYPE_1}, {@link SasFileConstants#PAGE_META_TYPE_1},
      * {@link SasFileConstants#PAGE_MIX_TYPE} and {@link SasFileConstants#PAGE_DATA_TYPE} page is skipped.
      */
     private int currentPageType;
@@ -344,7 +345,8 @@ public final class SasFileParser {
         int bitOffset = sasFileProperties.isU64() ? PAGE_BIT_OFFSET_X64 : PAGE_BIT_OFFSET_X86;
         readPageHeader();
         List<SubheaderPointer> subheaderPointers = new ArrayList<SubheaderPointer>();
-        if (currentPageType == PAGE_META_TYPE || currentPageType == PAGE_MIX_TYPE) {
+        if (currentPageType == PAGE_META_TYPE_1 || currentPageType == PAGE_META_TYPE_2
+                || currentPageType == PAGE_MIX_TYPE) {
             processPageMetadata(bitOffset, subheaderPointers);
         }
         return currentPageType == PAGE_DATA_TYPE || currentPageType == PAGE_MIX_TYPE
@@ -352,9 +354,9 @@ public final class SasFileParser {
     }
 
     /**
-     * The method to parse and read metadata of a page, used for pages of the {@link SasFileConstants#PAGE_META_TYPE}
-     * and {@link SasFileConstants#PAGE_MIX_TYPE} types. The method goes through subheaders, one by one, and calls
-     * the processing functions depending on their signatures.
+     * The method to parse and read metadata of a page, used for pages of the {@link SasFileConstants#PAGE_META_TYPE_1}
+     * {@link SasFileConstants#PAGE_META_TYPE_1}, and {@link SasFileConstants#PAGE_MIX_TYPE} types. The method goes
+     * through subheaders, one by one, and calls the processing functions depending on their signatures.
      *
      * @param bitOffset         the offset from the beginning of the page at which the page stores its metadata.
      * @param subheaderPointers the number of subheaders on the page.
@@ -489,7 +491,8 @@ public final class SasFileParser {
         }
         int bitOffset = sasFileProperties.isU64() ? PAGE_BIT_OFFSET_X64 : PAGE_BIT_OFFSET_X86;
         switch (currentPageType) {
-            case PAGE_META_TYPE:
+            case PAGE_META_TYPE_1:
+            case PAGE_META_TYPE_2:
                 SubheaderPointer currentSubheaderPointer =
                         currentPageDataSubheaderPointers.get(currentRowOnPageIndex++);
                 ((ProcessingDataSubheader) subheaderIndexToClass.get(SubheaderIndexes.DATA_SUBHEADER_INDEX))
@@ -529,16 +532,17 @@ public final class SasFileParser {
 
     /**
      * The method to read next page from sas7bdat file and put it into {@link SasFileParser#cachedPage}. If this page
-     * has {@link SasFileConstants#PAGE_META_TYPE} type method process it's subheaders. Method skips page with type
-     * other than {@link SasFileConstants#PAGE_META_TYPE}, {@link SasFileConstants#PAGE_MIX_TYPE} or
+     * has {@link SasFileConstants#PAGE_META_TYPE_1} or {@link SasFileConstants#PAGE_META_TYPE_2} type method process
+     * it's subheaders. Method skips page with type other than {@link SasFileConstants#PAGE_META_TYPE_1},
+     * {@link SasFileConstants#PAGE_META_TYPE_2}, {@link SasFileConstants#PAGE_MIX_TYPE} or
      * {@link SasFileConstants#PAGE_DATA_TYPE} and reads next.
      *
      * @throws IOException if reading from the {@link SasFileParser#sasFileStream} stream is impossible.
      */
     private void readNextPage() throws IOException {
         processNextPage();
-        while (currentPageType != PAGE_META_TYPE && currentPageType != PAGE_MIX_TYPE
-                && currentPageType != PAGE_DATA_TYPE) {
+        while (currentPageType != PAGE_META_TYPE_1 && currentPageType != PAGE_META_TYPE_2
+                && currentPageType != PAGE_MIX_TYPE && currentPageType != PAGE_DATA_TYPE) {
             if (eof) {
                 return;
             }
@@ -562,7 +566,8 @@ public final class SasFileParser {
         }
 
         readPageHeader();
-        if (currentPageType == PAGE_META_TYPE || currentPageType == PAGE_AMD_TYPE) {
+        if (currentPageType == PAGE_META_TYPE_1 || currentPageType == PAGE_META_TYPE_2
+                || currentPageType == PAGE_AMD_TYPE) {
             List<SubheaderPointer> subheaderPointers = new ArrayList<SubheaderPointer>();
             processPageMetadata(bitOffset, subheaderPointers);
             if (currentPageType == PAGE_AMD_TYPE) {

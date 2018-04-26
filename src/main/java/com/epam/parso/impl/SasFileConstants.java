@@ -497,8 +497,8 @@ interface SasFileConstants {
      * The sas7bdat file stores the type of page as a short value with the length of
      * {@link SasFileConstants#PAGE_TYPE_LENGTH} bytes and a PAGE_TYPE_OFFSET bytes offset (with addition of
      * {@link SasFileConstants#PAGE_BIT_OFFSET_X86} or {@link SasFileConstants#PAGE_BIT_OFFSET_X64}).
-     * There can be {@link SasFileConstants#PAGE_META_TYPE}, {@link SasFileConstants#PAGE_DATA_TYPE}, or
-     * {@link SasFileConstants#PAGE_MIX_TYPE} page types.
+     * There can be {@link SasFileConstants#PAGE_META_TYPE_1}, {@link SasFileConstants#PAGE_META_TYPE_2},
+     * {@link SasFileConstants#PAGE_DATA_TYPE}, or {@link SasFileConstants#PAGE_MIX_TYPE} page types.
      */
     long PAGE_TYPE_OFFSET = 0L;
 
@@ -506,8 +506,8 @@ interface SasFileConstants {
      * The sas7bdat file stores the type of page as a short value with the length of PAGE_TYPE_LENGTH bytes
      * and a {@link SasFileConstants#PAGE_TYPE_OFFSET} bytes offset (with addition of
      * {@link SasFileConstants#PAGE_BIT_OFFSET_X86} or {@link SasFileConstants#PAGE_BIT_OFFSET_X64}).
-     * There can be {@link SasFileConstants#PAGE_META_TYPE}, {@link SasFileConstants#PAGE_DATA_TYPE}, or
-     * {@link SasFileConstants#PAGE_MIX_TYPE} page types.
+     * There can be {@link SasFileConstants#PAGE_META_TYPE_1}, {@link SasFileConstants#PAGE_META_TYPE_2},
+     * {@link SasFileConstants#PAGE_DATA_TYPE}, or {@link SasFileConstants#PAGE_MIX_TYPE} page types.
      */
     int PAGE_TYPE_LENGTH = 2;
 
@@ -528,27 +528,34 @@ interface SasFileConstants {
     int BLOCK_COUNT_LENGTH = 2;
 
     /**
-     * For pages of the {@link SasFileConstants#PAGE_META_TYPE} and {@link SasFileConstants#PAGE_MIX_TYPE} types,
-     * the sas7bdat file stores the number of subheaders on the current page as a short value - with the length of
-     * {@link SasFileConstants#SUBHEADER_COUNT_LENGTH} bytes and a SUBHEADER_COUNT_OFFSET bytes offset from
-     * the beginning of the page (with addition of {@link SasFileConstants#PAGE_BIT_OFFSET_X86} or
-     * {@link SasFileConstants#PAGE_BIT_OFFSET_X64}).
+     * For pages of the {@link SasFileConstants#PAGE_META_TYPE_1}, {@link SasFileConstants#PAGE_META_TYPE_2}
+     * and {@link SasFileConstants#PAGE_MIX_TYPE} types, the sas7bdat file stores the number of subheaders on
+     * the current page as a short value - with the length of {@link SasFileConstants#SUBHEADER_COUNT_LENGTH}
+     * bytes and a SUBHEADER_COUNT_OFFSET bytes offset from the beginning of the page (with addition of
+     * {@link SasFileConstants#PAGE_BIT_OFFSET_X86} or {@link SasFileConstants#PAGE_BIT_OFFSET_X64}).
      */
     long SUBHEADER_COUNT_OFFSET = 4L;
 
     /**
-     * For pages of the {@link SasFileConstants#PAGE_META_TYPE} and {@link SasFileConstants#PAGE_MIX_TYPE} types,
-     * the sas7bdat file stores the number of subheaders on the current page as a short value - with the length of
-     * SUBHEADER_COUNT_LENGTH bytes and a {@link SasFileConstants#SUBHEADER_COUNT_OFFSET} bytes offset from
-     * the beginning of the page (with addition of {@link SasFileConstants#PAGE_BIT_OFFSET_X86} or
-     * {@link SasFileConstants#PAGE_BIT_OFFSET_X64}).
+     * For pages of the {@link SasFileConstants#PAGE_META_TYPE_1}, {@link SasFileConstants#PAGE_META_TYPE_2}
+     * and {@link SasFileConstants#PAGE_MIX_TYPE} types, the sas7bdat file stores the number of subheaders on
+     * the current page as a short value - with the length of SUBHEADER_COUNT_LENGTH bytes and a
+     * {@link SasFileConstants#SUBHEADER_COUNT_OFFSET} bytes offset from the beginning of the page
+     * (with addition of {@link SasFileConstants#PAGE_BIT_OFFSET_X86} or {@link SasFileConstants#PAGE_BIT_OFFSET_X64}).
      */
     int SUBHEADER_COUNT_LENGTH = 2;
 
     /**
-     * The page type storing only metadata as a set of subheaders.
+     * The page type storing metadata as a set of subheaders. It can also store compressed row data in subheaders.
+     * The sas7bdat format has two values that correspond to the page type 'meta'.
      */
-    int PAGE_META_TYPE = 0;
+    int PAGE_META_TYPE_1 = 0;
+
+    /**
+     * The page type storing metadata as a set of subheaders. It can also store compressed row data in subheaders.
+     * The sas7bdat format has two values that correspond to the page type 'meta'.
+     */
+    int PAGE_META_TYPE_2 = 16384;
 
     /**
      * The page type storing only data as a number of table rows.
