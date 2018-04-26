@@ -1,4 +1,16 @@
 ﻿# Parso Java library
+## Parso 2.0.9
+***26 April 2018***
+Fixed some issues
+* Added ability to read precision information ([#22][i22])
+* Exposed formatting API for reuse ([#24][i24])
+* Added ability to read only specified columns to improve performance
+* Fixed bug [#26][i26]
+
+[i22]: https://github.com/epam/parso/issues/22
+[i24]: https://github.com/epam/parso/issues/24
+[i26]: https://github.com/epam/parso/issues/26
+
 ## Parso 2.0.8
 ***12 January 2018***
 
