@@ -152,7 +152,7 @@ public final class DataWriterUtil {
             put("MONYY", "MMMyyyy");
             put("WEEKDATE", "EEEE, MMMM dd, yyyy");
             put("WEEKDATX", "EEEE, dd MMMM, yyyy");
-            put("WEEKDAY", "F");
+            put("WEEKDAY", "u");
             put("DOWNAME", "EEEE");
             put("WORDDATE", "MMMM d, yyyy");
             put("WORDDATX", "d MMMM yyyy");
