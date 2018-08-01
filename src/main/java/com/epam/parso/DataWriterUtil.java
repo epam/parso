@@ -21,6 +21,7 @@ package com.epam.parso;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -60,7 +61,7 @@ public final class DataWriterUtil {
     private static final String HOURS_OUTPUT_FORMAT = "%02d";
 
     /**
-     * The format to output minutes in the the CSV format.
+     * The format to output minutes in the CSV format.
      */
     private static final String MINUTES_OUTPUT_FORMAT = "%02d";
 
@@ -82,6 +83,13 @@ public final class DataWriterUtil {
     private static final List<String> TIME_FORMAT_STRINGS = Arrays.asList("TIME", "HHMM");
 
     /**
+     * The format to store the percentage values. Appear in the data of
+     * the {@link com.epam.parso.impl.SasFileParser.FormatAndLabelSubheader} subheader
+     * and are stored in {@link Column#format}.
+     */
+    private static final String PERCENT_FORMAT = "PERCENT";
+
+    /**
      * The number of seconds in a minute.
      */
     private static final int SECONDS_IN_MINUTE = 60;
@@ -95,6 +103,12 @@ public final class DataWriterUtil {
      * The locale for dates in output row.
      */
     private static final Locale DEFAULT_LOCALE = Locale.getDefault();
+
+    /**
+     * The format to output percentage values in the CSV format. This format is used
+     * when {@link ColumnFormat#precision} does not contain the accuracy of rounding.
+     */
+    private static final DecimalFormat ZERO_PRECISION_FORMAT = new DecimalFormat("0%");
 
     /**
      * These are sas7bdat format references to {@link java.text.SimpleDateFormat} date formats.
@@ -204,6 +218,8 @@ public final class DataWriterUtil {
             } else {
                 if (TIME_FORMAT_STRINGS.contains(column.getFormat().getName())) {
                     valueToPrint = convertTimeElementToString((Long) entry);
+                } else if (PERCENT_FORMAT.equals(column.getFormat().getName())) {
+                    valueToPrint = convertPercentElementToString(entry, column.getFormat());
                 } else {
                     valueToPrint = String.valueOf(entry);
                     if (entry.getClass() == Double.class) {
@@ -272,6 +288,24 @@ public final class DataWriterUtil {
         }
         valueToPrint = trimZerosFromEnd(valueToPrint);
         return valueToPrint;
+    }
+
+    /**
+     * The function to convert a percent element into a string. The accuracy of rounding
+     * is stored in {@link Column#format}.
+     * @param value the input numeric value to convert.
+     * @param columnFormat the column format containing the precision of rounding the converted value.
+     * @return the string with the text presentation of the input numeric value.
+     */
+    private static String convertPercentElementToString(Object value, ColumnFormat columnFormat) {
+        Double doubleValue = value instanceof Long ? ((Long) value).doubleValue() : (Double) value;
+        DecimalFormat df = ZERO_PRECISION_FORMAT;
+        int precision = columnFormat.getPrecision();
+        if (precision != 0) {
+            String pattern = "0%." + new String(new char[precision]).replace("\0", "0");
+            df = new DecimalFormat(pattern);
+        }
+        return df.format(doubleValue);
     }
 
     /**

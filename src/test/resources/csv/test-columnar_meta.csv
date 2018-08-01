@@ -1,0 +1,9 @@
+Number,Name,Type,Data length,Format,Label
+1,recnum,Numeric,8,,Record Number
+2,square,Numeric,8,,Square of the Record Number
+3,desc,Character,200,,Description of the Row
+4,pctdone,Numeric,8,PERCENT8.,Percent Done
+5,pctincr,Numeric,8,PERCENT7.1,Percent Increment
+6,date,Numeric,8,DDMMYYD10.,
+7,datetime,Numeric,8,DATETIME.,
+8,time,Numeric,8,TIME.,
