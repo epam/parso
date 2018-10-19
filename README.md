@@ -1,4 +1,12 @@
 ﻿# Parso Java library
+## Parso 2.0.10
+***28 September 2018***
+
+* Fixed processing of columns formats and labels
+* Fixed formatting of percentage values ([#28][i28])
+
+[i28]: https://github.com/epam/parso/issues/28
+
 ## Parso 2.0.9
 ***26 April 2018***
 
