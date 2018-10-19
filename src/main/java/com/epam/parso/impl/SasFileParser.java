@@ -1393,12 +1393,10 @@ public final class SasFileParser {
 
             int columnFormatWidth = bytesToShort(vars.get(0));
             int columnFormatPrecision = bytesToShort(vars.get(1));
-            // min used to prevent incorrect data which appear in some files
-            int textSubheaderIndexForFormat = Math.min(bytesToShort(vars.get(2)), columnsNamesBytes.size() - 1);
+            int textSubheaderIndexForFormat = bytesToShort(vars.get(2));
             int columnFormatOffset = bytesToShort(vars.get(3));
             int columnFormatLength = bytesToShort(vars.get(4));
-            // min used to prevent incorrect data which appear in some files
-            int textSubheaderIndexForLabel = Math.min(bytesToShort(vars.get(5)), columnsNamesBytes.size() - 1);
+            int textSubheaderIndexForLabel = bytesToShort(vars.get(5));
             int columnLabelOffset = bytesToShort(vars.get(6));
             int columnLabelLength = bytesToShort(vars.get(7));
             String columnLabel = "";
