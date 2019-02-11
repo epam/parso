@@ -1,19 +1,19 @@
 /**
  * *************************************************************************
  * Copyright (C) 2015 EPAM
-
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
+ * <p>
  * *************************************************************************
  */
 
@@ -22,6 +22,7 @@ package com.epam.parso;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -105,10 +106,10 @@ public final class DataWriterUtil {
     private static final Locale DEFAULT_LOCALE = Locale.getDefault();
 
     /**
-     * The format to output percentage values in the CSV format. This format is used
+     * The pattern to output percentage values in the CSV format. This pattern is used
      * when {@link ColumnFormat#precision} does not contain the accuracy of rounding.
      */
-    private static final DecimalFormat ZERO_PRECISION_FORMAT = new DecimalFormat("0%");
+    private static final String ZERO_PRECISION_PATTERN = "0%";
 
     /**
      * These are sas7bdat format references to {@link java.text.SimpleDateFormat} date formats.
@@ -206,7 +207,7 @@ public final class DataWriterUtil {
      *
      * @param column current processing column.
      * @param entry  current processing entry.
-     * @param locale the locale for parsing date elements.
+     * @param locale the locale for parsing date and percent elements.
      * @return a string representation of current processing entry.
      * @throws IOException appears if the output into writer is impossible.
      */
@@ -219,7 +220,7 @@ public final class DataWriterUtil {
                 if (TIME_FORMAT_STRINGS.contains(column.getFormat().getName())) {
                     valueToPrint = convertTimeElementToString((Long) entry);
                 } else if (PERCENT_FORMAT.equals(column.getFormat().getName())) {
-                    valueToPrint = convertPercentElementToString(entry, column.getFormat());
+                    valueToPrint = convertPercentElementToString(entry, column.getFormat(), locale);
                 } else {
                     valueToPrint = String.valueOf(entry);
                     if (entry.getClass() == Double.class) {
@@ -295,15 +296,17 @@ public final class DataWriterUtil {
      * is stored in {@link Column#format}.
      * @param value the input numeric value to convert.
      * @param columnFormat the column format containing the precision of rounding the converted value.
+     * @param locale the locale for parsing value.
      * @return the string with the text presentation of the input numeric value.
      */
-    private static String convertPercentElementToString(Object value, ColumnFormat columnFormat) {
+    private static String convertPercentElementToString(Object value, ColumnFormat columnFormat, Locale locale) {
         Double doubleValue = value instanceof Long ? ((Long) value).doubleValue() : (Double) value;
-        DecimalFormat df = ZERO_PRECISION_FORMAT;
+        DecimalFormatSymbols dfs = new DecimalFormatSymbols(locale);
+        DecimalFormat df = new DecimalFormat(ZERO_PRECISION_PATTERN, dfs);
         int precision = columnFormat.getPrecision();
         if (precision != 0) {
             String pattern = "0%." + new String(new char[precision]).replace("\0", "0");
-            df = new DecimalFormat(pattern);
+            df = new DecimalFormat(pattern, dfs);
         }
         return df.format(doubleValue);
     }
