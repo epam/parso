@@ -168,6 +168,7 @@ public class CSVMetadataWriterImpl extends AbstractCSVWriter implements CSVMetad
         constructPropertiesString("Compressed: ", sasFileProperties.getCompressionMethod());
         constructPropertiesString("Endianness: ", sasFileProperties.getEndianness() == 1 ? "LITTLE_ENDIANNESS"
                 : "BIG_ENDIANNESS");
+        constructPropertiesString("Encoding: ", sasFileProperties.getEncoding());
         constructPropertiesString("Name: ", sasFileProperties.getName());
         constructPropertiesString("File type: ", sasFileProperties.getFileType());
         constructPropertiesString("Date created: ", sasFileProperties.getDateCreated());
