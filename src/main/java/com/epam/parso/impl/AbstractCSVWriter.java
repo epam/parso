@@ -54,7 +54,7 @@ abstract class AbstractCSVWriter {
     private String endline = DEFAULT_ENDLINE;
 
     /**
-     * The locale for dates in csv file.
+     * The locale for dates and percentage elements in csv file.
      */
     private Locale locale = Locale.getDefault();
 
@@ -180,7 +180,7 @@ abstract class AbstractCSVWriter {
 
     /**
      * Locale getter.
-     * @return the locale for dates in csv file.
+     * @return the locale for dates and percentage elements in csv file.
      */
     public Locale getLocale() {
         return locale;

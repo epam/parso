@@ -208,15 +208,9 @@ public final class SasFileParser {
         subheaderIndexToClass = Collections.unmodifiableMap(tmpMap);
 
         try {
-            getMetadataFromSasFile();
+            getMetadataFromSasFile(builder.encoding);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
-        }
-
-        if (builder.encoding != null) {
-            encoding = builder.encoding;
-        } else {
-            encoding = sasFileProperties.getEncoding() != null ? sasFileProperties.getEncoding() : encoding;
         }
     }
 
@@ -224,11 +218,12 @@ public final class SasFileParser {
      * The method that reads and parses metadata from the sas7bdat and puts the results in
      * {@link SasFileParser#sasFileProperties}.
      *
+     * @param encoding - builder variable for {@link SasFileParser#encoding} variable.
      * @throws IOException - appears if reading from the {@link SasFileParser#sasFileStream} stream is impossible.
      */
-    private void getMetadataFromSasFile() throws IOException {
+    private void getMetadataFromSasFile(String encoding) throws IOException {
         boolean endOfMetadata = false;
-        processSasFileHeader();
+        processSasFileHeader(encoding);
         cachedPage = new byte[sasFileProperties.getPageLength()];
         while (!endOfMetadata) {
             try {
@@ -246,9 +241,10 @@ public final class SasFileParser {
      * After reading is complete, {@link SasFileParser#currentFilePosition} is set to the end of the header whose length
      * is stored at the {@link SasFileConstants#HEADER_SIZE_OFFSET} offset.
      *
+     * @param builderEncoding - builder variable for {@link SasFileParser#encoding} variable.
      * @throws IOException if reading from the {@link SasFileParser#sasFileStream} stream is impossible.
      */
-    private void processSasFileHeader() throws IOException {
+    private void processSasFileHeader(String builderEncoding) throws IOException {
         int align1 = 0;
         int align2 = 0;
 
@@ -281,7 +277,14 @@ public final class SasFileParser {
         if (!isSasFileValid()) {
             throw new IOException(FILE_NOT_VALID);
         }
-        sasFileProperties.setEncoding(SAS_CHARACTER_ENCODINGS.get(vars.get(1)[0]));
+
+        String fileEncoding = SAS_CHARACTER_ENCODINGS.get(vars.get(1)[0]);
+        if (builderEncoding != null) {
+            this.encoding = builderEncoding;
+        } else {
+            this.encoding = fileEncoding != null ? fileEncoding : this.encoding;
+        }
+        sasFileProperties.setEncoding(fileEncoding);
         sasFileProperties.setName(bytesToString(vars.get(2)).trim());
         sasFileProperties.setFileType(bytesToString(vars.get(3)).trim());
         sasFileProperties.setDateCreated(bytesToDateTime(vars.get(4)));

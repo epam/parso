@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -106,10 +107,9 @@ public final class DataWriterUtil {
     private static final Locale DEFAULT_LOCALE = Locale.getDefault();
 
     /**
-     * The pattern to output percentage values in the CSV format. This pattern is used
-     * when {@link ColumnFormat#precision} does not contain the accuracy of rounding.
+     * Error string if column format is unknown.
      */
-    private static final String ZERO_PRECISION_PATTERN = "0%";
+    private static final String UNKNOWN_DATE_FORMAT_EXCEPTION = "Unknown date format";
 
     /**
      * These are sas7bdat format references to {@link java.text.SimpleDateFormat} date formats.
@@ -205,22 +205,29 @@ public final class DataWriterUtil {
     /**
      * Checks current entry type and returns its string representation.
      *
-     * @param column current processing column.
-     * @param entry  current processing entry.
-     * @param locale the locale for parsing date and percent elements.
+     * @param column           current processing column.
+     * @param entry            current processing entry.
+     * @param locale           the locale for parsing date and percent elements.
+     * @param columnFormatters the map that stores (@link Column#id) column identifier and the formatter
+     *                         for converting locale-sensitive values stored in this column into string.
      * @return a string representation of current processing entry.
      * @throws IOException appears if the output into writer is impossible.
      */
-    private static String processEntry(Column column, Object entry, Locale locale) throws IOException {
+    private static String processEntry(Column column, Object entry, Locale locale,
+                                       Map<Integer, Format> columnFormatters) throws IOException {
         if (!String.valueOf(entry).contains(DOUBLE_INFINITY_STRING)) {
             String valueToPrint;
             if (entry.getClass() == Date.class) {
-                valueToPrint = convertDateElementToString((Date) entry, column.getFormat().getName(), locale);
+                valueToPrint = convertDateElementToString((Date) entry,
+                        (SimpleDateFormat) columnFormatters.computeIfAbsent(column.getId(),
+                                e -> getDateFormatProcessor(column.getFormat(), locale)));
             } else {
                 if (TIME_FORMAT_STRINGS.contains(column.getFormat().getName())) {
                     valueToPrint = convertTimeElementToString((Long) entry);
                 } else if (PERCENT_FORMAT.equals(column.getFormat().getName())) {
-                    valueToPrint = convertPercentElementToString(entry, column.getFormat(), locale);
+                    valueToPrint = convertPercentElementToString(entry,
+                            (DecimalFormat) columnFormatters.computeIfAbsent(column.getId(),
+                                    e -> getPercentFormatProcessor(column.getFormat(), locale)));
                 } else {
                     valueToPrint = String.valueOf(entry);
                     if (entry.getClass() == Double.class) {
@@ -238,20 +245,11 @@ public final class DataWriterUtil {
      * The function to convert a date into a string according to the format used.
      *
      * @param currentDate the date to convert.
-     * @param format      the string with the format that must belong to the set of
-     *                    {@link DataWriterUtil#DATE_OUTPUT_FORMAT_STRINGS} mapping keys.
-     * @param locale      the locale for parsing date.
+     * @param dateFormat  the formatter to convert date element into string.
      * @return the string that corresponds to the date in the format used.
      */
-    private static String convertDateElementToString(Date currentDate, String format, Locale locale) {
-        SimpleDateFormat dateFormat;
-        String valueToPrint = "";
-        dateFormat = new SimpleDateFormat(DATE_OUTPUT_FORMAT_STRINGS.get(format), locale);
-        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-        if (currentDate.getTime() != 0) {
-            valueToPrint = dateFormat.format(currentDate.getTime());
-        }
-        return valueToPrint;
+    private static String convertDateElementToString(Date currentDate, SimpleDateFormat dateFormat) {
+        return currentDate.getTime() != 0 ? dateFormat.format(currentDate.getTime()) : "";
     }
 
     /**
@@ -292,23 +290,15 @@ public final class DataWriterUtil {
     }
 
     /**
-     * The function to convert a percent element into a string. The accuracy of rounding
-     * is stored in {@link Column#format}.
-     * @param value the input numeric value to convert.
-     * @param columnFormat the column format containing the precision of rounding the converted value.
-     * @param locale the locale for parsing value.
+     * The function to convert a percent element into a string.
+     *
+     * @param value         the input numeric value to convert.
+     * @param decimalFormat the formatter to convert percentage element into string.
      * @return the string with the text presentation of the input numeric value.
      */
-    private static String convertPercentElementToString(Object value, ColumnFormat columnFormat, Locale locale) {
+    private static String convertPercentElementToString(Object value, DecimalFormat decimalFormat) {
         Double doubleValue = value instanceof Long ? ((Long) value).doubleValue() : (Double) value;
-        DecimalFormatSymbols dfs = new DecimalFormatSymbols(locale);
-        DecimalFormat df = new DecimalFormat(ZERO_PRECISION_PATTERN, dfs);
-        int precision = columnFormat.getPrecision();
-        if (precision != 0) {
-            String pattern = "0%." + new String(new char[precision]).replace("\0", "0");
-            df = new DecimalFormat(pattern, dfs);
-        }
-        return df.format(doubleValue);
+        return decimalFormat.format(doubleValue);
     }
 
     /**
@@ -325,17 +315,20 @@ public final class DataWriterUtil {
     /**
      * The method to convert the Objects array that stores data from the sas7bdat file to list of string.
      *
-     * @param columns the {@link Column} class variables list that stores columns
-     *                description from the sas7bdat file.
-     * @param row     the Objects arrays that stores data from the sas7bdat file.
-     * @param locale  the locale for parsing date elements.
+     * @param columns          the {@link Column} class variables list that stores columns
+     *                         description from the sas7bdat file.
+     * @param row              the Objects arrays that stores data from the sas7bdat file.
+     * @param locale           the locale for parsing date elements.
+     * @param columnFormatters the map that stores (@link Column#id) column identifier and the formatter
+     *                         for converting locale-sensitive values stored in this column into string.
      * @return list of String objects that represent data from sas7bdat file.
      * @throws java.io.IOException appears if the output into writer is impossible.
      */
-    public static List<String> getRowValues(List<Column> columns, Object[] row, Locale locale) throws IOException {
+    public static List<String> getRowValues(List<Column> columns, Object[] row, Locale locale,
+                                            Map<Integer, Format> columnFormatters) throws IOException {
         List<String> values = new ArrayList<String>();
         for (int currentColumnIndex = 0; currentColumnIndex < columns.size(); currentColumnIndex++) {
-            values.add(getValue(columns.get(currentColumnIndex), row[currentColumnIndex], locale));
+            values.add(getValue(columns.get(currentColumnIndex), row[currentColumnIndex], locale, columnFormatters));
         }
         return values;
     }
@@ -343,34 +336,75 @@ public final class DataWriterUtil {
     /**
      * The method to convert the Objects array that stores data from the sas7bdat file to list of string.
      *
-     * @param columns the {@link Column} class variables list that stores columns
-     *                description from the sas7bdat file.
-     * @param row     the Objects arrays that stores data from the sas7bdat file.
+     * @param columns          the {@link Column} class variables list that stores columns
+     *                         description from the sas7bdat file.
+     * @param row              the Objects arrays that stores data from the sas7bdat file.
+     * @param columnFormatters the map that stores (@link Column#id) column identifier and the formatter
+     *                         for converting locale-sensitive values stored in this column into string.
      * @return list of String objects that represent data from sas7bdat file.
      * @throws java.io.IOException appears if the output into writer is impossible.
      */
-    public static List<String> getRowValues(List<Column> columns, Object[] row) throws IOException {
-        return getRowValues(columns, row, DEFAULT_LOCALE);
+    public static List<String> getRowValues(List<Column> columns, Object[] row,
+                                            Map<Integer, Format> columnFormatters) throws IOException {
+        return getRowValues(columns, row, DEFAULT_LOCALE, columnFormatters);
     }
 
     /**
      * The method to convert the Object that stores data from the sas7bdat file cell to string.
      *
-     * @param column the {@link Column} class variable that stores current processing column.
-     * @param entry  the Object that stores data from the cell of sas7bdat file.
-     * @param locale the locale for parsing date elements.
+     * @param column           the {@link Column} class variable that stores current processing column.
+     * @param entry            the Object that stores data from the cell of sas7bdat file.
+     * @param locale           the locale for parsing date elements.
+     * @param columnFormatters the map that stores (@link Column#id) column identifier and the formatter
+     *                         for converting locale-sensitive values stored in this column into string.
      * @return a string representation of current processing entry.
      * @throws IOException appears if the output into writer is impossible.
      */
-    public static String getValue(Column column, Object entry, Locale locale) throws IOException {
+    public static String getValue(Column column, Object entry, Locale locale,
+                                  Map<Integer, Format> columnFormatters) throws IOException {
         String value = "";
         if (entry != null) {
             if (entry.getClass().getName().compareTo(BYTE_ARRAY_CLASS_NAME) == 0) {
                 value = new String((byte[]) entry, ENCODING);
             } else {
-                value = processEntry(column, entry, locale);
+                value = processEntry(column, entry, locale, columnFormatters);
             }
         }
         return value;
+    }
+
+    /**
+     * The function to get a formatter to convert percentage elements into a string.
+     *
+     * @param columnFormat the (@link ColumnFormat) class variable that stores the precision of rounding
+     *                     the converted value.
+     * @param locale       locale for parsing date elements.
+     * @return a formatter to convert percentage elements into a string.
+     */
+    private static Format getPercentFormatProcessor(ColumnFormat columnFormat, Locale locale) {
+        DecimalFormatSymbols dfs = new DecimalFormatSymbols(locale);
+        if (columnFormat.getPrecision() == 0) {
+            return new DecimalFormat("0%", dfs);
+        }
+        String pattern = "0%." + new String(new char[columnFormat.getPrecision()]).replace("\0", "0");
+        return new DecimalFormat(pattern, dfs);
+    }
+
+    /**
+     * The function to get a formatter to convert date elements into a string.
+     *
+     * @param columnFormat the (@link ColumnFormat) class variable that stores the format name that must belong to
+     *                     the set of {@link DataWriterUtil#DATE_OUTPUT_FORMAT_STRINGS} mapping keys.
+     * @param locale       locale for parsing date elements.
+     * @return a formatter to convert date elements into a string.
+     */
+    private static Format getDateFormatProcessor(ColumnFormat columnFormat, Locale locale) {
+        if (!DATE_OUTPUT_FORMAT_STRINGS.containsKey(columnFormat.getName())) {
+            throw new NoSuchElementException(UNKNOWN_DATE_FORMAT_EXCEPTION);
+        }
+        SimpleDateFormat dateFormat =
+                new SimpleDateFormat(DATE_OUTPUT_FORMAT_STRINGS.get(columnFormat.getName()), locale);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return dateFormat;
     }
 }
