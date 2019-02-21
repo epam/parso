@@ -1,19 +1,19 @@
 /**
  * *************************************************************************
  * Copyright (C) 2015 EPAM
-
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
+ * <p>
  * *************************************************************************
  */
 
@@ -25,13 +25,23 @@ import com.epam.parso.DataWriterUtil;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.text.Format;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * This is a class to export the sas7bdat file data into the CSV format.
  */
 public class CSVDataWriterImpl extends AbstractCSVWriter implements CSVDataWriter {
+
+    /**
+     * The map to store (@link Column#id) column identifier and the formatter
+     * for converting locale-sensitive values stored in this column into string.
+     */
+    private Map<Integer, Format> columnFormatters = new HashMap<>();
+
     /**
      * The constructor that defines writer variable to output result csv file.
      *
@@ -69,7 +79,7 @@ public class CSVDataWriterImpl extends AbstractCSVWriter implements CSVDataWrite
      * @param writer    the writer which is used to output csv file.
      * @param delimiter separator used in csv file.
      * @param endline   symbols used in csv file as endline.
-     * @param locale   locale used for dates in csv file.
+     * @param locale    locale used for dates in csv file.
      */
     public CSVDataWriterImpl(Writer writer, String delimiter, String endline, Locale locale) {
         super(writer, delimiter, endline, locale);
@@ -89,7 +99,7 @@ public class CSVDataWriterImpl extends AbstractCSVWriter implements CSVDataWrite
             return;
         }
         Writer writer = getWriter();
-        List<String> valuesToPrint = DataWriterUtil.getRowValues(columns, row, getLocale());
+        List<String> valuesToPrint = DataWriterUtil.getRowValues(columns, row, getLocale(), columnFormatters);
         for (int currentColumnIndex = 0; currentColumnIndex < columns.size(); currentColumnIndex++) {
             writer.write(checkSurroundByQuotes(getDelimiter(), valuesToPrint.get(currentColumnIndex)));
             if (currentColumnIndex != columns.size() - 1) {

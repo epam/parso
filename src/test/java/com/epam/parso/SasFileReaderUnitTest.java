@@ -70,7 +70,7 @@ public class SasFileReaderUnitTest {
         COLON_SAS_FILE_PROPERTIES.setU64(false);
         COLON_SAS_FILE_PROPERTIES.setCompressionMethod(null);
         COLON_SAS_FILE_PROPERTIES.setEndianness(1);
-        COLON_SAS_FILE_PROPERTIES.setEncoding("US-ASCII");
+        COLON_SAS_FILE_PROPERTIES.setEncoding(null);
         COLON_SAS_FILE_PROPERTIES.setName("colon");
         COLON_SAS_FILE_PROPERTIES.setFileType("DATA");
         COLON_SAS_FILE_PROPERTIES.setDateCreated(new Date(854409600000L));

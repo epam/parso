@@ -1,43 +1,35 @@
 /**
  * *************************************************************************
  * Copyright (C) 2015 EPAM
-
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
+ * <p>
  * *************************************************************************
  */
 
 package com.epam.parso.impl;
 
-import com.epam.parso.*;
+import com.epam.parso.Column;
+import com.epam.parso.ColumnFormat;
+import com.epam.parso.ColumnMissingInfo;
+import com.epam.parso.SasFileProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-import java.io.DataInputStream;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.EOFException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Date;
+import java.util.*;
 
 import static com.epam.parso.impl.ParserMessageConstants.*;
 import static com.epam.parso.impl.SasFileConstants.*;
@@ -201,7 +193,6 @@ public final class SasFileParser {
      */
     private SasFileParser(Builder builder) {
         sasFileStream = new DataInputStream(builder.sasFileStream);
-        encoding = builder.encoding;
         byteOutput = builder.byteOutput;
 
         Map<SubheaderIndexes, ProcessingSubheader> tmpMap = new HashMap<SubheaderIndexes, ProcessingSubheader>();
@@ -217,7 +208,7 @@ public final class SasFileParser {
         subheaderIndexToClass = Collections.unmodifiableMap(tmpMap);
 
         try {
-            getMetadataFromSasFile();
+            getMetadataFromSasFile(builder.encoding);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
@@ -227,11 +218,12 @@ public final class SasFileParser {
      * The method that reads and parses metadata from the sas7bdat and puts the results in
      * {@link SasFileParser#sasFileProperties}.
      *
+     * @param encoding - builder variable for {@link SasFileParser#encoding} variable.
      * @throws IOException - appears if reading from the {@link SasFileParser#sasFileStream} stream is impossible.
      */
-    private void getMetadataFromSasFile() throws IOException {
+    private void getMetadataFromSasFile(String encoding) throws IOException {
         boolean endOfMetadata = false;
-        processSasFileHeader();
+        processSasFileHeader(encoding);
         cachedPage = new byte[sasFileProperties.getPageLength()];
         while (!endOfMetadata) {
             try {
@@ -249,9 +241,10 @@ public final class SasFileParser {
      * After reading is complete, {@link SasFileParser#currentFilePosition} is set to the end of the header whose length
      * is stored at the {@link SasFileConstants#HEADER_SIZE_OFFSET} offset.
      *
+     * @param builderEncoding - builder variable for {@link SasFileParser#encoding} variable.
      * @throws IOException if reading from the {@link SasFileParser#sasFileStream} stream is impossible.
      */
-    private void processSasFileHeader() throws IOException {
+    private void processSasFileHeader(String builderEncoding) throws IOException {
         int align1 = 0;
         int align2 = 0;
 
@@ -284,11 +277,14 @@ public final class SasFileParser {
         if (!isSasFileValid()) {
             throw new IOException(FILE_NOT_VALID);
         }
-        String encoding = SAS_CHARACTER_ENCODINGS.get(vars.get(1)[0]);
-        if (encoding != null) {
-            this.encoding = encoding;
+
+        String fileEncoding = SAS_CHARACTER_ENCODINGS.get(vars.get(1)[0]);
+        if (builderEncoding != null) {
+            this.encoding = builderEncoding;
+        } else {
+            this.encoding = fileEncoding != null ? fileEncoding : this.encoding;
         }
-        sasFileProperties.setEncoding(this.encoding);
+        sasFileProperties.setEncoding(fileEncoding);
         sasFileProperties.setName(bytesToString(vars.get(2)).trim());
         sasFileProperties.setFileType(bytesToString(vars.get(3)).trim());
         sasFileProperties.setDateCreated(bytesToDateTime(vars.get(4)));
@@ -323,6 +319,7 @@ public final class SasFileParser {
      * The method to validate sas7bdat file. If sasFileProperties contains an encoding value other than
      * {@link SasFileConstants#LITTLE_ENDIAN_CHECKER} or {@link SasFileConstants#BIG_ENDIAN_CHECKER}
      * the file is considered invalid.
+     *
      * @return true if the value of encoding equals to {@link SasFileConstants#LITTLE_ENDIAN_CHECKER}
      * or {@link SasFileConstants#BIG_ENDIAN_CHECKER}
      */
@@ -552,6 +549,7 @@ public final class SasFileParser {
 
     /**
      * Put next page to cache and read it's header.
+     *
      * @throws IOException if reading from the {@link SasFileParser#sasFileStream} string is impossible.
      */
     private void processNextPage() throws IOException {
@@ -578,6 +576,7 @@ public final class SasFileParser {
 
     /**
      * The function to process missing column information.
+     *
      * @throws UnsupportedEncodingException when unknown encoding.
      */
     private void processMissingColumnInfo() throws UnsupportedEncodingException {
@@ -626,8 +625,8 @@ public final class SasFileParser {
      * The function to convert the array of bytes that stores the data of a row into an array of objects.
      * Each object corresponds to a table cell.
      *
-     * @param rowOffset - the offset of the row in cachedPage.
-     * @param rowLength - the length of the row.
+     * @param rowOffset   - the offset of the row in cachedPage.
+     * @param rowLength   - the length of the row.
      * @param columnNames - list of column names which should be processed.
      * @return the array of objects storing the data of the row.
      */
@@ -668,8 +667,8 @@ public final class SasFileParser {
     /**
      * The function to process element of row.
      *
-     * @param source an array of bytes containing required data.
-     * @param offset the offset in source of required data.
+     * @param source             an array of bytes containing required data.
+     * @param offset             the offset in source of required data.
      * @param currentColumnIndex index of the current element.
      * @return object storing the data of the element.
      */
@@ -856,11 +855,11 @@ public final class SasFileParser {
     /**
      * The function to convert a sub-range of an array of bytes into a string.
      *
-     * @param bytes a string represented by an array of bytes.
+     * @param bytes  a string represented by an array of bytes.
      * @param offset the initial offset
-     * @param length  the length
+     * @param length the length
      * @return the conversion result string.
-     * @throws UnsupportedEncodingException when unknown encoding.
+     * @throws UnsupportedEncodingException    when unknown encoding.
      * @throws StringIndexOutOfBoundsException when invalid offset and/or length.
      */
     private String bytesToString(byte[] bytes, int offset, int length)
@@ -946,6 +945,7 @@ public final class SasFileParser {
 
     /**
      * Columns getter.
+     *
      * @return columns list.
      */
     List<Column> getColumns() {
@@ -1019,6 +1019,7 @@ public final class SasFileParser {
     private interface ProcessingSubheader {
         /**
          * Method which should be overwritten in implementing this interface classes.
+         *
          * @param subheaderOffset offset in bytes from the beginning of subheader.
          * @param subheaderLength length of subheader in bytes.
          * @throws IOException if reading from the {@link SasFileParser#sasFileStream} stream is impossible.
@@ -1032,9 +1033,10 @@ public final class SasFileParser {
     private interface ProcessingDataSubheader extends ProcessingSubheader {
         /**
          * Method which should be overwritten in implementing this interface classes.
+         *
          * @param subheaderOffset offset in bytes from the beginning of subheader.
          * @param subheaderLength length of subheader in bytes.
-         * @param columnNames list of column names which should be processed.
+         * @param columnNames     list of column names which should be processed.
          * @throws IOException if reading from the {@link SasFileParser#sasFileStream} stream is impossible.
          */
         void processSubheader(long subheaderOffset, long subheaderLength, List<String> columnNames) throws IOException;
@@ -1050,9 +1052,9 @@ public final class SasFileParser {
         private InputStream sasFileStream;
 
         /**
-         * Default value for {@link SasFileProperties#encoding} variable.
+         * Builder variable for {@link SasFileParser#encoding} variable.
          */
-        private String encoding = "US-ASCII";
+        private String encoding;
 
         /**
          * Default value for {@link SasFileParser#byteOutput} variable.
