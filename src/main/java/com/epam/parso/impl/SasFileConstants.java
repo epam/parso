@@ -1,19 +1,19 @@
 /**
  * *************************************************************************
  * Copyright (C) 2015 EPAM
-
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
+ * <p>
  * *************************************************************************
  */
 
@@ -21,10 +21,10 @@ package com.epam.parso.impl;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Map;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This is an class to store constants for parsing the sas7bdat file (byte offsets, column formats, accuracy) as well as
@@ -930,6 +930,46 @@ interface SasFileConstants {
      * the beginning of the {@link SasFileParser.FormatAndLabelSubheader} subheader.
      */
     int COLUMN_LABEL_LENGTH_LENGTH = 2;
+
+    /**
+     * The sas7bdat file stores the offset (in symbols) of the file label from
+     * the beginning of the text block of the {@link SasFileParser.ColumnTextSubheader} subheader
+     * where it belongs:
+     * - with the length of {@link SasFileConstants#FILE_FORMAT_OFFSET_LENGTH} bytes,
+     * - at an offset calculated as FILE_FORMAT_OFFSET_OFFSET bytes + 82 * the size of value types
+     * (int or long depending on {@link SasFileConstants#ALIGN_2_VALUE}) from the beginning of
+     * the {@link SasFileParser.RowSizeSubheader} subheader.
+     */
+    long FILE_FORMAT_OFFSET_OFFSET = 24L;
+
+    /**
+     * The sas7bdat file stores the offset (in symbols) of the file label from
+     * the beginning of the text block of the {@link SasFileParser.ColumnTextSubheader}
+     * subheader where it belongs:
+     * - with the length of FILE_FORMAT_OFFSET_LENGTH bytes,
+     * - at an offset calculated as {@link SasFileConstants#FILE_FORMAT_OFFSET_OFFSET} bytes +
+     * + 82 * the size of value types (int or long depending on {@link SasFileConstants#ALIGN_2_VALUE}) from
+     * the beginning of the {@link SasFileParser.RowSizeSubheader} subheader.
+     */
+    int FILE_FORMAT_OFFSET_LENGTH = 2;
+
+    /**
+     * The sas7bdat file stores the length of the file label (in symbols):
+     * - with the length of {@link SasFileConstants#FILE_FORMAT_LENGTH_LENGTH} bytes.
+     * - at an offset calculated as FILE_FORMAT_LENGTH_OFFSET bytes +
+     * 82 * the size of value types (int or long depending on {@link SasFileConstants#ALIGN_2_VALUE})
+     * from the beginning of the {@link SasFileParser.RowSizeSubheader} subheader.
+     */
+    long FILE_FORMAT_LENGTH_OFFSET = 26L;
+
+    /**
+     * The sas7bdat file stores the length of the file label (in symbols):
+     * - with the length of FILE_FORMAT_LENGTH_LENGTH bytes.
+     * - at an offset calculated as FILE_FORMAT_LENGTH_OFFSET bytes +
+     * 82 * the size of value types (int or long depending on {@link SasFileConstants#ALIGN_2_VALUE})
+     * from the beginning of the {@link SasFileParser.RowSizeSubheader} subheader.
+     */
+    int FILE_FORMAT_LENGTH_LENGTH = 2;
 
     /**
      * Accuracy to define whether the numeric result of {@link SasFileParser#convertByteArrayToNumber(byte[])} is

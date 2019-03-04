@@ -26,10 +26,20 @@ import com.epam.parso.SasFileProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.epam.parso.impl.ParserMessageConstants.*;
 import static com.epam.parso.impl.SasFileConstants.*;
@@ -179,6 +189,17 @@ public final class SasFileParser {
      * True if stream is at the end of file.
      */
     private boolean eof;
+
+    /**
+     * The offset of the file label from the beginning of the {@link SasFileParser.ColumnTextSubheader} subheader.
+     */
+    private int fileLabelOffset;
+
+    /**
+     * The length of file label which is stored in the {@link SasFileParser.ColumnTextSubheader} subheader
+     * with {@link SasFileParser#fileLabelOffset} offset.
+     */
+    private int fileLabelLength;
 
     /**
      * The list of missing column information.
@@ -1176,8 +1197,11 @@ public final class SasFileParser {
             int intOrLongLength = sasFileProperties.isU64() ? BYTES_IN_LONG : BYTES_IN_INT;
             Long[] offset = {subheaderOffset + ROW_LENGTH_OFFSET_MULTIPLIER * intOrLongLength,
                     subheaderOffset + ROW_COUNT_OFFSET_MULTIPLIER * intOrLongLength,
-                    subheaderOffset + ROW_COUNT_ON_MIX_PAGE_OFFSET_MULTIPLIER * intOrLongLength};
-            Integer[] length = {intOrLongLength, intOrLongLength, intOrLongLength};
+                    subheaderOffset + ROW_COUNT_ON_MIX_PAGE_OFFSET_MULTIPLIER * intOrLongLength,
+                    subheaderOffset + FILE_FORMAT_OFFSET_OFFSET + 82 * intOrLongLength,
+                    subheaderOffset + FILE_FORMAT_LENGTH_OFFSET + 82 * intOrLongLength};
+            Integer[] length = {intOrLongLength, intOrLongLength, intOrLongLength, FILE_FORMAT_OFFSET_LENGTH,
+                    FILE_FORMAT_LENGTH_LENGTH};
             List<byte[]> vars = getBytesFromFile(offset, length);
 
             if (sasFileProperties.getRowLength() == 0) {
@@ -1189,6 +1213,9 @@ public final class SasFileParser {
             if (sasFileProperties.getMixPageRowCount() == 0) {
                 sasFileProperties.setMixPageRowCount(bytesToLong(vars.get(2)));
             }
+
+            fileLabelOffset = bytesToShort(vars.get(3));
+            fileLabelLength = bytesToShort(vars.get(4));
         }
     }
 
@@ -1268,6 +1295,7 @@ public final class SasFileParser {
                 byte[] columnName = columnsNamesBytes.get(0);
                 String compessionLiteral = findCompressionLiteral(bytesToString(columnName));
                 sasFileProperties.setCompressionMethod(compessionLiteral); //might be null
+                sasFileProperties.setFileLabel(bytesToString(columnName, fileLabelOffset, fileLabelLength));
             }
         }
     }
