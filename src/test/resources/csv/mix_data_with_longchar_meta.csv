@@ -46,3 +46,23 @@ Number,Name,Type,Data length,Format,Label
 45,x44,Character,8,,
 46,x45,Character,8,,
 47,x46,Character,8,,
+Bitness: x86
+Compressed: SASYZCRL
+Endianness: LITTLE_ENDIANNESS
+Encoding: windows-1251
+Name: MIX_DATA_WITH_LONGCHAR
+File type: DATA
+File label: 
+Date created: Sat Jun 05 18:00:16 MSD 1993
+Date modified: Sat Jun 05 18:00:16 MSD 1993
+SAS release: 9.0101M3
+SAS server type: XP_PRO
+OS name: 
+OS type: 
+Header Length: 1024
+Page Length: 16384
+Page Count: 2
+Row Length: 625
+Row Count: 50
+Mix Page Row Count: 17
+Columns Count: 47

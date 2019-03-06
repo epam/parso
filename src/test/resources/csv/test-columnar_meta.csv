@@ -7,3 +7,23 @@ Number,Name,Type,Data length,Format,Label
 6,date,Numeric,8,DDMMYYD10.,
 7,datetime,Numeric,8,DATETIME.,
 8,time,Numeric,8,TIME.,
+Bitness: x86
+Compressed: null
+Endianness: LITTLE_ENDIANNESS
+Encoding: windows-1252
+Name: TESTING
+File type: DATA
+File label: 
+Date created: Fri May 18 14:38:30 MSK 2018
+Date modified: Fri May 18 14:38:30 MSK 2018
+SAS release: 9.0401M5
+SAS server type: X64_7PRO
+OS name: 
+OS type: 
+Header Length: 65536
+Page Length: 65536
+Page Count: 1
+Row Length: 256
+Row Count: 11
+Mix Page Row Count: 248
+Columns Count: 8

@@ -143,13 +143,14 @@ public class SasFileReaderUnitTest {
                     fileName.replace(".sas7bdat", "").replace("sas7bdat", "csv") + "_meta.csv")));
             CSVMetadataWriter csvMetadataWriter = new CSVMetadataWriterImpl(writer);
             csvMetadataWriter.writeMetadata(sasFileReader.getColumns());
+            csvMetadataWriter.writeSasFileProperties(sasFileReader.getSasFileProperties());
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         } finally {
             closeWriter(writer);
             closeInputStream(fileInputStream);
         }
-        compareResultWithControl(controlReader, writer, 0, sasFileReader.getColumns());
+        compareResultWithControl(controlReader, writer);
         logger.info("Time passed: {} ms", System.currentTimeMillis() - programStart);
     }
 
@@ -331,6 +332,29 @@ public class SasFileReaderUnitTest {
                             " number " + (i + 1) + " : " + resultLine[i]).isEqualTo("Element in line number " +
                             lineNumber + " and column " + columns.get(i).getName() + " number " + (i + 1) + " : " +
                             controlLine[i]);
+                }
+                lineNumber++;
+            }
+            assertThat(resultReader.readNext()).isNull();
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        } finally {
+            closeCSVReader(resultReader);
+        }
+    }
+
+    private void compareResultWithControl(CSVReader controlReader, Writer writer) {
+        CSVReader resultReader = null;
+        int lineNumber = 1;
+        try {
+            resultReader = new CSVReader(new StringReader(writer.toString()));
+            String[] controlLine;
+            String[] resultLine;
+            while ((resultLine = resultReader.readNext()) != null && (controlLine = controlReader.readNext()) != null) {
+                assertThat(resultLine.length).isEqualTo(controlLine.length);
+                for (int i = 0; i < controlLine.length; i++) {
+                    assertThat("Element in line number " + lineNumber + " : " + resultLine[i])
+                            .isEqualTo("Element in line number " + lineNumber + " : " + controlLine[i]);
                 }
                 lineNumber++;
             }

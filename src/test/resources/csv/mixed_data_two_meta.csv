@@ -20,3 +20,23 @@ Number,Name,Type,Data length,Format,Label
 19,x19,Numeric,8,,
 20,x20,Numeric,8,,
 21,x21,Numeric,8,,
+Bitness: x86
+Compressed: SASYZCRL
+Endianness: LITTLE_ENDIANNESS
+Encoding: windows-1251
+Name: MIXED_DATA_TWO
+File type: DATA
+File label: 
+Date created: Sat Jun 05 17:00:41 MSD 1993
+Date modified: Sat Jun 05 17:00:41 MSD 1993
+SAS release: 9.0101M3
+SAS server type: XP_PRO
+OS name: 
+OS type: 
+Header Length: 1024
+Page Length: 8192
+Page Count: 3
+Row Length: 168
+Row Count: 50
+Mix Page Row Count: 31
+Columns Count: 21

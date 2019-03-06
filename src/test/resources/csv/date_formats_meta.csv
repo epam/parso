@@ -66,3 +66,23 @@ Number,Name,Type,Data length,Format,Label
 65,dtyear,Numeric,8,DTYEAR4.,
 66,tod,Numeric,8,TOD20.2,
 67,mdyampm,Numeric,8,MDYAMPM40.,
+Bitness: x86
+Compressed: null
+Endianness: LITTLE_ENDIANNESS
+Encoding: windows-1252
+Name: DATE_FORMATS
+File type: DATA
+File label: 
+Date created: Tue Mar 14 18:36:56 MSK 2017
+Date modified: Tue Mar 14 18:36:56 MSK 2017
+SAS release: 9.0401M4
+SAS server type: X64_7PRO
+OS name: 
+OS type: 
+Header Length: 65536
+Page Length: 65536
+Page Count: 1
+Row Length: 536
+Row Count: 1
+Mix Page Row Count: 107
+Columns Count: 67

@@ -10,3 +10,23 @@ Number,Name,Type,Data length,Format,Label
 9,num8,Numeric,8,,
 10,num9,Numeric,8,,
 11,num10,Numeric,8,,
+Bitness: x64
+Compressed: null
+Endianness: BIG_ENDIANNESS
+Encoding: UTF-8
+Name: EXTEND_YES
+File type: DATA
+File label: 
+Date created: Wed Oct 05 02:07:19 MSK 2016
+Date modified: Wed Oct 05 02:07:19 MSK 2016
+SAS release: 9.0401M3
+SAS server type: X64_8PRO
+OS name: 
+OS type: 
+Header Length: 65536
+Page Length: 65536
+Page Count: 2
+Row Length: 88
+Row Count: 729
+Mix Page Row Count: 709
+Columns Count: 11

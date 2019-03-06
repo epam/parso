@@ -4,3 +4,23 @@ Number,Name,Type,Data length,Format,Label
 3,x3,Character,8,,
 4,x4,Character,8,,
 5,x5,Character,8,,
+Bitness: x86
+Compressed: SASYZCRL
+Endianness: LITTLE_ENDIANNESS
+Encoding: windows-1251
+Name: MIX_DATA_WITH_MISSING_CHAR
+File type: DATA
+File label: 
+Date created: Sat Jun 05 17:46:05 MSD 1993
+Date modified: Sat Jun 05 17:46:05 MSD 1993
+SAS release: 9.0101M3
+SAS server type: XP_PRO
+OS name: 
+OS type: 
+Header Length: 1024
+Page Length: 4096
+Page Count: 2
+Row Length: 40
+Row Count: 96
+Mix Page Row Count: 64
+Columns Count: 5

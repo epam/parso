@@ -29,3 +29,23 @@ Number,Name,Type,Data length,Format,Label
 28,x28,Numeric,8,,
 29,x29,Numeric,8,,
 30,x30,Numeric,8,,
+Bitness: x86
+Compressed: SASYZCRL
+Endianness: LITTLE_ENDIANNESS
+Encoding: windows-1251
+Name: ALMOST_RAND
+File type: DATA
+File label: 
+Date created: Sat Jun 05 18:50:57 MSD 1993
+Date modified: Sat Jun 05 18:50:57 MSD 1993
+SAS release: 9.0101M3
+SAS server type: XP_PRO
+OS name: 
+OS type: 
+Header Length: 1024
+Page Length: 12288
+Page Count: 3
+Row Length: 240
+Row Count: 50
+Mix Page Row Count: 35
+Columns Count: 30

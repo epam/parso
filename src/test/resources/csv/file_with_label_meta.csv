@@ -1,14 +1,15 @@
 Number,Name,Type,Data length,Format,Label
-1,测试,Numeric,8,,
+1,a,Numeric,8,,
+2,b,Numeric,8,,
 Bitness: x86
 Compressed: null
 Endianness: LITTLE_ENDIANNESS
-Encoding: GBK
-Name: CHINESE_COLUMN_WORKS
+Encoding: windows-1252
+Name: A
 File type: DATA
-File label: 
-Date created: Mon Oct 17 14:33:37 MSK 2016
-Date modified: Mon Oct 17 14:33:37 MSK 2016
+File label: test
+Date created: Fri Feb 22 10:04:03 MSK 2019
+Date modified: Fri Feb 22 10:04:03 MSK 2019
 SAS release: 9.0401M3
 SAS server type: X64_7PRO
 OS name: 
@@ -16,7 +17,7 @@ OS type:
 Header Length: 65536
 Page Length: 65536
 Page Count: 1
-Row Length: 8
-Row Count: 1
-Mix Page Row Count: 7933
-Columns Count: 1
+Row Length: 16
+Row Count: 2
+Mix Page Row Count: 3988
+Columns Count: 2
