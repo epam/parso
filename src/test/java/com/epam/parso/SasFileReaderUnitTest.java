@@ -1,19 +1,19 @@
 /**
  * *************************************************************************
  * Copyright (C) 2015 EPAM
-
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
+ * <p>
  * *************************************************************************
  */
 
@@ -27,9 +27,20 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import static com.epam.parso.TestUtils.getResourceAsStream;
 import static org.fest.assertions.Assertions.assertThat;
@@ -73,6 +84,7 @@ public class SasFileReaderUnitTest {
         COLON_SAS_FILE_PROPERTIES.setEncoding(null);
         COLON_SAS_FILE_PROPERTIES.setName("colon");
         COLON_SAS_FILE_PROPERTIES.setFileType("DATA");
+        COLON_SAS_FILE_PROPERTIES.setFileLabel("");
         COLON_SAS_FILE_PROPERTIES.setDateCreated(new Date(854409600000L));
         COLON_SAS_FILE_PROPERTIES.setDateModified(new Date(854409600000L));
         COLON_SAS_FILE_PROPERTIES.setSasRelease("7.00.00B");
@@ -131,13 +143,14 @@ public class SasFileReaderUnitTest {
                     fileName.replace(".sas7bdat", "").replace("sas7bdat", "csv") + "_meta.csv")));
             CSVMetadataWriter csvMetadataWriter = new CSVMetadataWriterImpl(writer);
             csvMetadataWriter.writeMetadata(sasFileReader.getColumns());
+            csvMetadataWriter.writeSasFileProperties(sasFileReader.getSasFileProperties());
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         } finally {
             closeWriter(writer);
             closeInputStream(fileInputStream);
         }
-        compareResultWithControl(controlReader, writer, 0, sasFileReader.getColumns());
+        compareResultWithControl(controlReader, writer);
         logger.info("Time passed: {} ms", System.currentTimeMillis() - programStart);
     }
 
@@ -230,6 +243,7 @@ public class SasFileReaderUnitTest {
         assertThat(sasFileProperties.getEncoding()).isEqualTo(COLON_SAS_FILE_PROPERTIES.getEncoding());
         assertThat(sasFileProperties.getName()).isEqualTo(COLON_SAS_FILE_PROPERTIES.getName());
         assertThat(sasFileProperties.getFileType()).isEqualTo(COLON_SAS_FILE_PROPERTIES.getFileType());
+        assertThat(sasFileProperties.getFileLabel()).isEqualTo(COLON_SAS_FILE_PROPERTIES.getFileLabel());
         assertThat(sasFileProperties.getDateCreated()).isEqualTo(COLON_SAS_FILE_PROPERTIES.getDateCreated());
         assertThat(sasFileProperties.getDateModified()).isEqualTo(COLON_SAS_FILE_PROPERTIES.getDateModified());
         assertThat(sasFileProperties.getSasRelease()).isEqualTo(COLON_SAS_FILE_PROPERTIES.getSasRelease());
@@ -318,6 +332,29 @@ public class SasFileReaderUnitTest {
                             " number " + (i + 1) + " : " + resultLine[i]).isEqualTo("Element in line number " +
                             lineNumber + " and column " + columns.get(i).getName() + " number " + (i + 1) + " : " +
                             controlLine[i]);
+                }
+                lineNumber++;
+            }
+            assertThat(resultReader.readNext()).isNull();
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        } finally {
+            closeCSVReader(resultReader);
+        }
+    }
+
+    private void compareResultWithControl(CSVReader controlReader, Writer writer) {
+        CSVReader resultReader = null;
+        int lineNumber = 1;
+        try {
+            resultReader = new CSVReader(new StringReader(writer.toString()));
+            String[] controlLine;
+            String[] resultLine;
+            while ((resultLine = resultReader.readNext()) != null && (controlLine = controlReader.readNext()) != null) {
+                assertThat(resultLine.length).isEqualTo(controlLine.length);
+                for (int i = 0; i < controlLine.length; i++) {
+                    assertThat("Element in line number " + lineNumber + " : " + resultLine[i])
+                            .isEqualTo("Element in line number " + lineNumber + " : " + controlLine[i]);
                 }
                 lineNumber++;
             }

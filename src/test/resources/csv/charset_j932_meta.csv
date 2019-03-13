@@ -4,3 +4,23 @@ Number,Name,Type,Data length,Format,Label
 3,PetalLength,Numeric,8,,Petal Length in cm.
 4,PetalWidth,Numeric,8,,Petal Width in cm.
 5,Species,Character,16,,
+Bitness: x86
+Compressed: null
+Endianness: LITTLE_ENDIANNESS
+Encoding: x-windows-iso2022jp
+Name: CHARSET_J932
+File type: DATA
+File label: 
+Date created: Sat Oct 08 19:13:03 MSK 2016
+Date modified: Sat Oct 08 19:13:03 MSK 2016
+SAS release: 9.0401M3
+SAS server type: X64_8PRO
+OS name: 
+OS type: 
+Header Length: 65536
+Page Length: 65536
+Page Count: 1
+Row Length: 48
+Row Count: 150
+Mix Page Row Count: 1329
+Columns Count: 5

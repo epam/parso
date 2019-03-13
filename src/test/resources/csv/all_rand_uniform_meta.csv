@@ -7,3 +7,23 @@ Number,Name,Type,Data length,Format,Label
 6,x6,Numeric,8,,
 7,x7,Numeric,8,,
 8,x8,Numeric,8,,
+Bitness: x86
+Compressed: SASYZCRL
+Endianness: LITTLE_ENDIANNESS
+Encoding: windows-1251
+Name: ALL_RAND_UNIFORM
+File type: DATA
+File label: 
+Date created: Sun Jun 06 01:36:57 MSD 1993
+Date modified: Sun Jun 06 01:36:57 MSD 1993
+SAS release: 9.0101M3
+SAS server type: XP_PRO
+OS name: 
+OS type: 
+Header Length: 1024
+Page Length: 4096
+Page Count: 3
+Row Length: 64
+Row Count: 37
+Mix Page Row Count: 36
+Columns Count: 8

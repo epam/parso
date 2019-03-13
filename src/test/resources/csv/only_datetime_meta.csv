@@ -18,3 +18,23 @@ Number,Name,Type,Data length,Format,Label
 17,x17,Numeric,8,,
 18,x18,Numeric,8,,
 19,x19,Numeric,8,,
+Bitness: x86
+Compressed: SASYZCRL
+Endianness: LITTLE_ENDIANNESS
+Encoding: windows-1251
+Name: ONLY_DATETIME
+File type: DATA
+File label: 
+Date created: Sat Jun 05 18:03:42 MSD 1993
+Date modified: Sat Jun 05 18:03:42 MSD 1993
+SAS release: 9.0101M3
+SAS server type: XP_PRO
+OS name: 
+OS type: 
+Header Length: 1024
+Page Length: 8192
+Page Count: 2
+Row Length: 152
+Row Count: 24
+Mix Page Row Count: 35
+Columns Count: 19

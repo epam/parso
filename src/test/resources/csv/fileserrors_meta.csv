@@ -2,3 +2,23 @@ Number,Name,Type,Data length,Format,Label
 1,Name,Character,32,,
 2,Path,Character,90,,
 3,index,Character,8,,
+Bitness: x86
+Compressed: SASYZCRL
+Endianness: LITTLE_ENDIANNESS
+Encoding: windows-1252
+Name: FILESERRORS
+File type: DATA
+File label: 
+Date created: Sat Oct 09 16:14:49 MSD 2010
+Date modified: Sat Oct 09 16:14:49 MSD 2010
+SAS release: 9.0201M0
+SAS server type: W32_VSPRO
+OS name: 
+OS type: 
+Header Length: 1024
+Page Length: 8192
+Page Count: 4
+Row Length: 130
+Row Count: 160
+Mix Page Row Count: 52
+Columns Count: 3
