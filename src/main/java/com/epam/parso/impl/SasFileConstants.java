@@ -498,7 +498,8 @@ interface SasFileConstants {
      * {@link SasFileConstants#PAGE_TYPE_LENGTH} bytes and a PAGE_TYPE_OFFSET bytes offset (with addition of
      * {@link SasFileConstants#PAGE_BIT_OFFSET_X86} or {@link SasFileConstants#PAGE_BIT_OFFSET_X64}).
      * There can be {@link SasFileConstants#PAGE_META_TYPE_1}, {@link SasFileConstants#PAGE_META_TYPE_2},
-     * {@link SasFileConstants#PAGE_DATA_TYPE}, or {@link SasFileConstants#PAGE_MIX_TYPE} page types.
+     * {@link SasFileConstants#PAGE_DATA_TYPE}, {@link SasFileConstants#PAGE_MIX_TYPE_1},
+     * {@link SasFileConstants#PAGE_MIX_TYPE_2} or {@link SasFileConstants#PAGE_AMD_TYPE} page types.
      */
     long PAGE_TYPE_OFFSET = 0L;
 
@@ -507,7 +508,8 @@ interface SasFileConstants {
      * and a {@link SasFileConstants#PAGE_TYPE_OFFSET} bytes offset (with addition of
      * {@link SasFileConstants#PAGE_BIT_OFFSET_X86} or {@link SasFileConstants#PAGE_BIT_OFFSET_X64}).
      * There can be {@link SasFileConstants#PAGE_META_TYPE_1}, {@link SasFileConstants#PAGE_META_TYPE_2},
-     * {@link SasFileConstants#PAGE_DATA_TYPE}, or {@link SasFileConstants#PAGE_MIX_TYPE} page types.
+     * {@link SasFileConstants#PAGE_DATA_TYPE}, {@link SasFileConstants#PAGE_MIX_TYPE_1}
+     * {@link SasFileConstants#PAGE_MIX_TYPE_2} or {@link SasFileConstants#PAGE_AMD_TYPE} page types.
      */
     int PAGE_TYPE_LENGTH = 2;
 
@@ -529,19 +531,21 @@ interface SasFileConstants {
 
     /**
      * For pages of the {@link SasFileConstants#PAGE_META_TYPE_1}, {@link SasFileConstants#PAGE_META_TYPE_2}
-     * and {@link SasFileConstants#PAGE_MIX_TYPE} types, the sas7bdat file stores the number of subheaders on
-     * the current page as a short value - with the length of {@link SasFileConstants#SUBHEADER_COUNT_LENGTH}
-     * bytes and a SUBHEADER_COUNT_OFFSET bytes offset from the beginning of the page (with addition of
-     * {@link SasFileConstants#PAGE_BIT_OFFSET_X86} or {@link SasFileConstants#PAGE_BIT_OFFSET_X64}).
+     * {@link SasFileConstants#PAGE_MIX_TYPE_1} and {@link SasFileConstants#PAGE_MIX_TYPE_2} types,
+     * the sas7bdat file stores the number of subheaders on the current page as a short value - with the length of
+     * {@link SasFileConstants#SUBHEADER_COUNT_LENGTH} bytes and a SUBHEADER_COUNT_OFFSET bytes offset
+     * from the beginning of the page (with addition of {@link SasFileConstants#PAGE_BIT_OFFSET_X86}
+     * or {@link SasFileConstants#PAGE_BIT_OFFSET_X64}).
      */
     long SUBHEADER_COUNT_OFFSET = 4L;
 
     /**
-     * For pages of the {@link SasFileConstants#PAGE_META_TYPE_1}, {@link SasFileConstants#PAGE_META_TYPE_2}
-     * and {@link SasFileConstants#PAGE_MIX_TYPE} types, the sas7bdat file stores the number of subheaders on
-     * the current page as a short value - with the length of SUBHEADER_COUNT_LENGTH bytes and a
-     * {@link SasFileConstants#SUBHEADER_COUNT_OFFSET} bytes offset from the beginning of the page
-     * (with addition of {@link SasFileConstants#PAGE_BIT_OFFSET_X86} or {@link SasFileConstants#PAGE_BIT_OFFSET_X64}).
+     * For pages of the {@link SasFileConstants#PAGE_META_TYPE_1}, {@link SasFileConstants#PAGE_META_TYPE_2},
+     * {@link SasFileConstants#PAGE_MIX_TYPE_1} and {@link SasFileConstants#PAGE_MIX_TYPE_2} types,
+     * the sas7bdat file stores the number of subheaders on the current page as a short value - with the length of
+     * SUBHEADER_COUNT_LENGTH bytes and a {@link SasFileConstants#SUBHEADER_COUNT_OFFSET} bytes offset from the
+     * beginning of the page (with addition of {@link SasFileConstants#PAGE_BIT_OFFSET_X86}
+     * or {@link SasFileConstants#PAGE_BIT_OFFSET_X64}).
      */
     int SUBHEADER_COUNT_LENGTH = 2;
 
@@ -565,7 +569,13 @@ interface SasFileConstants {
     /**
      * The page type storing metadata as a set of subheaders and data as a number of table rows.
      */
-    int PAGE_MIX_TYPE = 512;
+    int PAGE_MIX_TYPE_1 = 512;
+
+    /**
+     * The page type storing metadata as a set of subheaders and data as a number of table rows.
+     * Probably this page type is used for mix pages from which some rows have been deleted.
+     */
+    int PAGE_MIX_TYPE_2 = 640;
 
     /**
      * The page type amd.
@@ -623,7 +633,8 @@ interface SasFileConstants {
      * The multiplier whose product with the length of the variable type (that can be int or long depending on the
      * {@link SasFileConstants#ALIGN_2_VALUE} value) is the offset from the subheader beginning
      * {@link SasFileParser.RowSizeSubheader} at which the file stores the number of rows in the table
-     * on the last page of the {@link SasFileConstants#PAGE_MIX_TYPE} type.
+     * on the last page of the {@link SasFileConstants#PAGE_MIX_TYPE_1} or {@link SasFileConstants#PAGE_MIX_TYPE_2}
+     * type.
      */
     int ROW_COUNT_ON_MIX_PAGE_OFFSET_MULTIPLIER = 15;
 

@@ -153,8 +153,8 @@ public final class SasFileParser {
     private byte[] cachedPage;
     /**
      * The type of the current page when reading the file. If it is other than
-     * {@link SasFileConstants#PAGE_META_TYPE_1}, {@link SasFileConstants#PAGE_META_TYPE_1},
-     * {@link SasFileConstants#PAGE_MIX_TYPE} and {@link SasFileConstants#PAGE_DATA_TYPE} page is skipped.
+     * {@link PageType#PAGE_TYPE_META}, {@link PageType#PAGE_TYPE_MIX}, {@link PageType#PAGE_TYPE_DATA}
+     * and {@link PageType#PAGE_TYPE_AMD} page is skipped.
      */
     private int currentPageType;
     /**
@@ -363,18 +363,17 @@ public final class SasFileParser {
         int bitOffset = sasFileProperties.isU64() ? PAGE_BIT_OFFSET_X64 : PAGE_BIT_OFFSET_X86;
         readPageHeader();
         List<SubheaderPointer> subheaderPointers = new ArrayList<SubheaderPointer>();
-        if (currentPageType == PAGE_META_TYPE_1 || currentPageType == PAGE_META_TYPE_2
-                || currentPageType == PAGE_MIX_TYPE) {
+        if (PageType.PAGE_TYPE_META.contains(currentPageType) || PageType.PAGE_TYPE_MIX.contains(currentPageType)) {
             processPageMetadata(bitOffset, subheaderPointers);
         }
-        return currentPageType == PAGE_DATA_TYPE || currentPageType == PAGE_MIX_TYPE
+        return PageType.PAGE_TYPE_DATA.contains(currentPageType) || PageType.PAGE_TYPE_MIX.contains(currentPageType)
                 || currentPageDataSubheaderPointers.size() != 0;
     }
 
     /**
-     * The method to parse and read metadata of a page, used for pages of the {@link SasFileConstants#PAGE_META_TYPE_1}
-     * {@link SasFileConstants#PAGE_META_TYPE_1}, and {@link SasFileConstants#PAGE_MIX_TYPE} types. The method goes
-     * through subheaders, one by one, and calls the processing functions depending on their signatures.
+     * The method to parse and read metadata of a page, used for pages of the {@link PageType#PAGE_TYPE_META}
+     * and {@link PageType#PAGE_TYPE_MIX} types. The method goes through subheaders, one by one, and calls
+     * the processing functions depending on their signatures.
      *
      * @param bitOffset         the offset from the beginning of the page at which the page stores its metadata.
      * @param subheaderPointers the number of subheaders on the page.
@@ -520,7 +519,8 @@ public final class SasFileParser {
                     currentRowOnPageIndex = 0;
                 }
                 break;
-            case PAGE_MIX_TYPE:
+            case PAGE_MIX_TYPE_1:
+            case PAGE_MIX_TYPE_2:
                 int subheaderPointerLength = sasFileProperties.isU64() ? SUBHEADER_POINTER_LENGTH_X64
                         : SUBHEADER_POINTER_LENGTH_X86;
                 int alignCorrection = (bitOffset + SUBHEADER_POINTERS_OFFSET + currentPageSubheadersCount
@@ -550,17 +550,16 @@ public final class SasFileParser {
 
     /**
      * The method to read next page from sas7bdat file and put it into {@link SasFileParser#cachedPage}. If this page
-     * has {@link SasFileConstants#PAGE_META_TYPE_1} or {@link SasFileConstants#PAGE_META_TYPE_2} type method process
-     * it's subheaders. Method skips page with type other than {@link SasFileConstants#PAGE_META_TYPE_1},
-     * {@link SasFileConstants#PAGE_META_TYPE_2}, {@link SasFileConstants#PAGE_MIX_TYPE} or
-     * {@link SasFileConstants#PAGE_DATA_TYPE} and reads next.
+     * has {@link PageType#PAGE_TYPE_META} type method process it's subheaders. Method skips page with type other
+     * than {@link PageType#PAGE_TYPE_META}, {@link PageType#PAGE_TYPE_MIX} or {@link PageType#PAGE_TYPE_DATA}
+     * and reads next.
      *
      * @throws IOException if reading from the {@link SasFileParser#sasFileStream} stream is impossible.
      */
     private void readNextPage() throws IOException {
         processNextPage();
-        while (currentPageType != PAGE_META_TYPE_1 && currentPageType != PAGE_META_TYPE_2
-                && currentPageType != PAGE_MIX_TYPE && currentPageType != PAGE_DATA_TYPE) {
+        while (!PageType.PAGE_TYPE_META.contains(currentPageType) && !PageType.PAGE_TYPE_MIX.contains(currentPageType)
+                && !PageType.PAGE_TYPE_DATA.contains(currentPageType)) {
             if (eof) {
                 return;
             }
@@ -585,11 +584,10 @@ public final class SasFileParser {
         }
 
         readPageHeader();
-        if (currentPageType == PAGE_META_TYPE_1 || currentPageType == PAGE_META_TYPE_2
-                || currentPageType == PAGE_AMD_TYPE) {
+        if (PageType.PAGE_TYPE_META.contains(currentPageType) || PageType.PAGE_TYPE_AMD.contains(currentPageType)) {
             List<SubheaderPointer> subheaderPointers = new ArrayList<SubheaderPointer>();
             processPageMetadata(bitOffset, subheaderPointers);
-            if (currentPageType == PAGE_AMD_TYPE) {
+            if (PageType.PAGE_TYPE_AMD.contains(currentPageType)) {
                 processMissingColumnInfo();
             }
         }
@@ -1179,7 +1177,7 @@ public final class SasFileParser {
     /**
      * The class to process subheaders of the RowSizeSubheader type that store information about the table rows length
      * (in bytes), the number of rows in the table and the number of rows on the last page of the
-     * {@link SasFileConstants#PAGE_MIX_TYPE} type. The results are stored in {@link SasFileProperties#rowLength},
+     * {@link PageType#PAGE_TYPE_MIX} type. The results are stored in {@link SasFileProperties#rowLength},
      * {@link SasFileProperties#rowCount}, and {@link SasFileProperties#mixPageRowCount}, respectively.
      */
     class RowSizeSubheader implements ProcessingSubheader {
