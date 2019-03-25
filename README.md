@@ -1,4 +1,15 @@
 ﻿# Parso Java library
+## Parso 2.0.11
+***25 March 2019***
+
+* Added ability to override file encoding ([#30][i30])
+* Added ability to get file label ([#34][i34])
+* Decimal separator used to convert percentage elements was fixed ([#35][i35])
+
+[i30]: https://github.com/epam/parso/issues/30
+[i34]: https://github.com/epam/parso/issues/34
+[i35]: https://github.com/epam/parso/issues/35
+
 ## Parso 2.0.10
 ***28 September 2018***
 
