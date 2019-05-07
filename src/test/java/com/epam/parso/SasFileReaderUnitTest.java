@@ -41,6 +41,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import static com.epam.parso.TestUtils.getResourceAsStream;
 import static org.fest.assertions.Assertions.assertThat;
@@ -132,6 +133,7 @@ public class SasFileReaderUnitTest {
 
     @Test
     public void testMetadata() {
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Moscow"));
         InputStream fileInputStream = getResourceAsStream(fileName);
         long programStart = System.currentTimeMillis();
         SasFileReader sasFileReader = new SasFileReaderImpl(fileInputStream);

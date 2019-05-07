@@ -12,7 +12,8 @@ public enum PageType {
     PAGE_TYPE_META {
         @Override
         boolean contains(int value) {
-            return SasFileConstants.PAGE_META_TYPE_1 == value || SasFileConstants.PAGE_META_TYPE_2 == value;
+            return SasFileConstants.PAGE_META_TYPE_1 == value || SasFileConstants.PAGE_META_TYPE_2 == value
+                    || SasFileConstants.PAGE_CMETA_TYPE == value;
         }
     },
     /**
@@ -42,7 +43,7 @@ public enum PageType {
     PAGE_TYPE_DATA {
         @Override
         boolean contains(int value) {
-            return SasFileConstants.PAGE_DATA_TYPE == value;
+            return SasFileConstants.PAGE_DATA_TYPE == value || SasFileConstants.PAGE_DATA_TYPE_2 == value;
         }
     };
 

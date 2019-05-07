@@ -551,20 +551,32 @@ interface SasFileConstants {
 
     /**
      * The page type storing metadata as a set of subheaders. It can also store compressed row data in subheaders.
-     * The sas7bdat format has two values that correspond to the page type 'meta'.
+     * The sas7bdat format has three values that correspond to the page type 'meta'.
      */
     int PAGE_META_TYPE_1 = 0;
 
     /**
      * The page type storing metadata as a set of subheaders. It can also store compressed row data in subheaders.
-     * The sas7bdat format has two values that correspond to the page type 'meta'.
+     * The sas7bdat format has three values that correspond to the page type 'meta'.
      */
     int PAGE_META_TYPE_2 = 16384;
+
+    /**
+     * The page type storing metadata as a set of subheaders. It can also store compressed row data in subheaders.
+     * This type is present when there are deleted observations in the dataset.
+     * The sas7bdat format has three values that correspond to the type 'meta'.
+     */
+    int PAGE_CMETA_TYPE = 128;
 
     /**
      * The page type storing only data as a number of table rows.
      */
     int PAGE_DATA_TYPE = 256;
+
+    /**
+     * Another page type for storing only data as a number of table rows.
+     */
+    int PAGE_DATA_TYPE_2 = 384;
 
     /**
      * The page type storing metadata as a set of subheaders and data as a number of table rows.
@@ -628,6 +640,13 @@ interface SasFileConstants {
      * {@link SasFileParser.RowSizeSubheader} at which the number of rows in the table is stored.
      */
     int ROW_COUNT_OFFSET_MULTIPLIER = 6;
+
+    /**
+     * The multiplier whose product with the length of the variable type (that can be int or long depending on the
+     * {@link SasFileConstants#ALIGN_2_VALUE} value) is the offset from the subheader beginning
+     * {@link SasFileParser.RowSizeSubheader} at which the number of deleted rows in the table is stored.
+     */
+    int DELETED_ROW_COUNT_OFFSET_MULTIPLIER = 8;
 
     /**
      * The multiplier whose product with the length of the variable type (that can be int or long depending on the
@@ -1030,6 +1049,23 @@ interface SasFileConstants {
      */
     int START_DATES_SECONDS_DIFFERENCE = SECONDS_IN_MINUTE * MINUTES_IN_HOUR * HOURS_IN_DAY
             * START_DATES_DAYS_DIFFERENCE;
+
+    /**
+     * The offset to the pointer for the bitwise representation of deleted records in MIX pages in x64.
+     */
+    long PAGE_DELETED_POINTER_OFFSET_X64 = 24L;
+
+    /**
+     * The offset to the pointer for the bitwise representation of deleted records in MIX pages in x86.
+     */
+    long PAGE_DELETED_POINTER_OFFSET_X86 = 12L;
+
+    /**
+     * The length of the deleted record pointer from the beginning of the
+     * {@link SasFileConstants#PAGE_DELETED_POINTER_OFFSETX64}
+     * or {@link SasFileConstants#PAGE_DELETED_POINTER_OFFSETX86}.
+     */
+    int PAGE_DELETED_POINTER_LENGTH = 4;
 
     /**
      * The date formats to store the day, month, and year. Appear in the data of the

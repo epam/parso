@@ -207,6 +207,11 @@ public final class SasFileParser {
     private List<ColumnMissingInfo> columnMissingInfoList = new ArrayList<ColumnMissingInfo>();
 
     /**
+     * An bit representation in String marking deleted records.
+     */
+    private String deletedMarkers = "";
+
+    /**
      * The constructor that reads metadata from the sas7bdat, parses it and puts the results in
      * {@link SasFileParser#sasFileProperties}.
      *
@@ -384,25 +389,30 @@ public final class SasFileParser {
         subheaderPointers.clear();
         for (int subheaderPointerIndex = 0; subheaderPointerIndex < currentPageSubheadersCount;
              subheaderPointerIndex++) {
-            SubheaderPointer currentSubheaderPointer = processSubheaderPointers((long) bitOffset
-                    + SUBHEADER_POINTERS_OFFSET, subheaderPointerIndex);
-            subheaderPointers.add(currentSubheaderPointer);
-            if (currentSubheaderPointer.compression != TRUNCATED_SUBHEADER_ID) {
-                long subheaderSignature = readSubheaderSignature(currentSubheaderPointer.offset);
-                SubheaderIndexes subheaderIndex = chooseSubheaderClass(subheaderSignature,
-                        currentSubheaderPointer.compression, currentSubheaderPointer.type);
-                if (subheaderIndex != null) {
-                    if (subheaderIndex != SubheaderIndexes.DATA_SUBHEADER_INDEX) {
-                        LOGGER.debug(SUBHEADER_PROCESS_FUNCTION_NAME, subheaderIndex);
-                        subheaderIndexToClass.get(subheaderIndex).processSubheader(
-                                subheaderPointers.get(subheaderPointerIndex).offset,
-                                subheaderPointers.get(subheaderPointerIndex).length);
+            try {
+                SubheaderPointer currentSubheaderPointer = processSubheaderPointers((long) bitOffset
+                        + SUBHEADER_POINTERS_OFFSET, subheaderPointerIndex);
+                subheaderPointers.add(currentSubheaderPointer);
+                if (currentSubheaderPointer.compression != TRUNCATED_SUBHEADER_ID) {
+                    long subheaderSignature = readSubheaderSignature(currentSubheaderPointer.offset);
+                    SubheaderIndexes subheaderIndex = chooseSubheaderClass(subheaderSignature,
+                            currentSubheaderPointer.compression, currentSubheaderPointer.type);
+                    if (subheaderIndex != null) {
+                        if (subheaderIndex != SubheaderIndexes.DATA_SUBHEADER_INDEX) {
+                            LOGGER.debug(SUBHEADER_PROCESS_FUNCTION_NAME, subheaderIndex);
+                            subheaderIndexToClass.get(subheaderIndex).processSubheader(
+                                    subheaderPointers.get(subheaderPointerIndex).offset,
+                                    subheaderPointers.get(subheaderPointerIndex).length);
+                        } else {
+                            currentPageDataSubheaderPointers.add(subheaderPointers.get(subheaderPointerIndex));
+                        }
                     } else {
-                        currentPageDataSubheaderPointers.add(subheaderPointers.get(subheaderPointerIndex));
+                        LOGGER.debug(UNKNOWN_SUBHEADER_SIGNATURE);
                     }
-                } else {
-                    LOGGER.debug(UNKNOWN_SUBHEADER_SIGNATURE);
                 }
+            } catch (Exception e) {
+                LOGGER.warn("Encountered broken page metadata. Skipping subheader.");
+                continue;
             }
         }
     }
@@ -507,9 +517,15 @@ public final class SasFileParser {
             return null;
         }
         int bitOffset = sasFileProperties.isU64() ? PAGE_BIT_OFFSET_X64 : PAGE_BIT_OFFSET_X86;
+        currentRow = null;
         switch (currentPageType) {
             case PAGE_META_TYPE_1:
             case PAGE_META_TYPE_2:
+            case PAGE_CMETA_TYPE:
+                if (currentPageDataSubheaderPointers.size() == 0 && currentPageType == PAGE_CMETA_TYPE) {
+                    readNextPage();
+                    currentRowOnPageIndex = 0;
+                }
                 SubheaderPointer currentSubheaderPointer =
                         currentPageDataSubheaderPointers.get(currentRowOnPageIndex++);
                 ((ProcessingDataSubheader) subheaderIndexToClass.get(SubheaderIndexes.DATA_SUBHEADER_INDEX))
@@ -520,14 +536,40 @@ public final class SasFileParser {
                 }
                 break;
             case PAGE_MIX_TYPE_1:
-            case PAGE_MIX_TYPE_2:
+                // Mix pages that contain all valid records
                 int subheaderPointerLength = sasFileProperties.isU64() ? SUBHEADER_POINTER_LENGTH_X64
                         : SUBHEADER_POINTER_LENGTH_X86;
                 int alignCorrection = (bitOffset + SUBHEADER_POINTERS_OFFSET + currentPageSubheadersCount
                         * subheaderPointerLength) % BITS_IN_BYTE;
+
                 currentRow = processByteArrayWithData(bitOffset + SUBHEADER_POINTERS_OFFSET + alignCorrection
                         + currentPageSubheadersCount * subheaderPointerLength + currentRowOnPageIndex++
                         * sasFileProperties.getRowLength(), sasFileProperties.getRowLength(), columnNames);
+
+                if (currentRowOnPageIndex == Math.min(sasFileProperties.getRowCount(),
+                        sasFileProperties.getMixPageRowCount())) {
+                    readNextPage();
+                    currentRowOnPageIndex = 0;
+                }
+                break;
+            case PAGE_MIX_TYPE_2:
+                // Mix pages that contain valid and deleted records
+                if (deletedMarkers == "") {
+                    readDeletedInfo();
+                    LOGGER.info(deletedMarkers);
+                }
+                subheaderPointerLength = sasFileProperties.isU64() ? SUBHEADER_POINTER_LENGTH_X64
+                        : SUBHEADER_POINTER_LENGTH_X86;
+                alignCorrection = (bitOffset + SUBHEADER_POINTERS_OFFSET + currentPageSubheadersCount
+                        * subheaderPointerLength) % BITS_IN_BYTE;
+
+                if (deletedMarkers.charAt(currentRowOnPageIndex) != '1') {
+                    currentRow = processByteArrayWithData(bitOffset + SUBHEADER_POINTERS_OFFSET + alignCorrection
+                            + currentPageSubheadersCount * subheaderPointerLength + currentRowOnPageIndex++
+                            * sasFileProperties.getRowLength(), sasFileProperties.getRowLength(), columnNames);
+                } else {
+                    currentRowOnPageIndex++;
+                }
                 if (currentRowOnPageIndex == Math.min(sasFileProperties.getRowCount(),
                         sasFileProperties.getMixPageRowCount())) {
                     readNextPage();
@@ -535,6 +577,7 @@ public final class SasFileParser {
                 }
                 break;
             case PAGE_DATA_TYPE:
+                // Data pages that contain all valid records
                 currentRow = processByteArrayWithData(bitOffset + SUBHEADER_POINTERS_OFFSET + currentRowOnPageIndex++
                         * sasFileProperties.getRowLength(), sasFileProperties.getRowLength(), columnNames);
                 if (currentRowOnPageIndex == currentPageBlockCount) {
@@ -542,8 +585,31 @@ public final class SasFileParser {
                     currentRowOnPageIndex = 0;
                 }
                 break;
+            case PAGE_DATA_TYPE_2:
+                // Data pages that contain valid and deleted records
+                if (deletedMarkers == "") {
+                    readDeletedInfo();
+                    LOGGER.info(deletedMarkers);
+                    LOGGER.info(Integer.toString(deletedMarkers.length()));
+                    LOGGER.info(Integer.toString(currentPageBlockCount));
+                }
+                if (deletedMarkers.charAt(currentRowOnPageIndex) != '1') {
+                    currentRow = processByteArrayWithData(bitOffset + SUBHEADER_POINTERS_OFFSET
+                            + currentRowOnPageIndex++
+                            * sasFileProperties.getRowLength(), sasFileProperties.getRowLength(), columnNames);
+                } else {
+                    currentRowOnPageIndex++;
+                }
+                if (currentRowOnPageIndex == currentPageBlockCount) {
+                    readNextPage();
+                    currentRowOnPageIndex = 0;
+                }
+                break;
             default:
                 break;
+        }
+        if (currentRow == null) {
+            return null;
         }
         return Arrays.copyOf(currentRow, currentRow.length);
     }
@@ -557,6 +623,7 @@ public final class SasFileParser {
      * @throws IOException if reading from the {@link SasFileParser#sasFileStream} stream is impossible.
      */
     private void readNextPage() throws IOException {
+        deletedMarkers = "";
         processNextPage();
         while (!PageType.PAGE_TYPE_META.contains(currentPageType) && !PageType.PAGE_TYPE_MIX.contains(currentPageType)
                 && !PageType.PAGE_TYPE_DATA.contains(currentPageType)) {
@@ -587,6 +654,7 @@ public final class SasFileParser {
         if (PageType.PAGE_TYPE_META.contains(currentPageType) || PageType.PAGE_TYPE_AMD.contains(currentPageType)) {
             List<SubheaderPointer> subheaderPointers = new ArrayList<SubheaderPointer>();
             processPageMetadata(bitOffset, subheaderPointers);
+            readDeletedInfo();
             if (PageType.PAGE_TYPE_AMD.contains(currentPageType)) {
                 processMissingColumnInfo();
             }
@@ -638,6 +706,42 @@ public final class SasFileParser {
         LOGGER.debug(BLOCK_COUNT, currentPageBlockCount);
         currentPageSubheadersCount = bytesToShort(vars.get(2));
         LOGGER.debug(SUBHEADER_COUNT, currentPageSubheadersCount);
+    }
+
+    /**
+     * The function to get the deleted record pointers.
+     *
+     * @throws IOException if reading pointers is impossible.
+     */
+    private void readDeletedInfo() throws IOException {
+        long deletedPointerOffset;
+        int subheaderPointerLength;
+        int bitOffset;
+        if (sasFileProperties.isU64()) {
+            deletedPointerOffset = PAGE_DELETED_POINTER_OFFSET_X64;
+            subheaderPointerLength = SUBHEADER_POINTER_LENGTH_X64;
+            bitOffset = PAGE_BIT_OFFSET_X64 + 8;
+        } else {
+            deletedPointerOffset = PAGE_DELETED_POINTER_OFFSET_X86;
+            subheaderPointerLength = SUBHEADER_POINTER_LENGTH_X86;
+            bitOffset = PAGE_BIT_OFFSET_X86 + 8;
+        }
+        int alignCorrection = (bitOffset + SUBHEADER_POINTERS_OFFSET + currentPageSubheadersCount
+                * subheaderPointerLength) % BITS_IN_BYTE;
+        List<byte[]> vars = getBytesFromFile(new Long[] {deletedPointerOffset},
+                new Integer[] {PAGE_DELETED_POINTER_LENGTH});
+
+        long currentPageDeletedPointer = bytesToShort(vars.get(0));
+        long deletedMapOffset = bitOffset + currentPageDeletedPointer + alignCorrection
+                + (currentPageSubheadersCount * subheaderPointerLength)
+                + ((currentPageBlockCount - currentPageSubheadersCount) * sasFileProperties.getRowLength());
+        List<byte[]> bytes = getBytesFromFile(new Long[] {deletedMapOffset},
+            new Integer[] {(int) Math.ceil((currentPageBlockCount - currentPageSubheadersCount) / 8.0)});
+
+        byte[] x = bytes.get(0);
+        for (int i = 0; i < x.length; i++) {
+            deletedMarkers += String.format("%8s", Integer.toString(x[i] & 0xFF, 2));
+        }
     }
 
     /**
@@ -1197,9 +1301,10 @@ public final class SasFileParser {
                     subheaderOffset + ROW_COUNT_OFFSET_MULTIPLIER * intOrLongLength,
                     subheaderOffset + ROW_COUNT_ON_MIX_PAGE_OFFSET_MULTIPLIER * intOrLongLength,
                     subheaderOffset + FILE_FORMAT_OFFSET_OFFSET + 82 * intOrLongLength,
-                    subheaderOffset + FILE_FORMAT_LENGTH_OFFSET + 82 * intOrLongLength};
+                    subheaderOffset + FILE_FORMAT_LENGTH_OFFSET + 82 * intOrLongLength,
+                    subheaderOffset + DELETED_ROW_COUNT_OFFSET_MULTIPLIER * intOrLongLength};
             Integer[] length = {intOrLongLength, intOrLongLength, intOrLongLength, FILE_FORMAT_OFFSET_LENGTH,
-                    FILE_FORMAT_LENGTH_LENGTH};
+                    FILE_FORMAT_LENGTH_LENGTH, intOrLongLength};
             List<byte[]> vars = getBytesFromFile(offset, length);
 
             if (sasFileProperties.getRowLength() == 0) {
@@ -1214,6 +1319,10 @@ public final class SasFileParser {
 
             fileLabelOffset = bytesToShort(vars.get(3));
             fileLabelLength = bytesToShort(vars.get(4));
+
+            if (sasFileProperties.getDeletedRowCount() == 0) {
+                sasFileProperties.setDeletedRowCount(bytesToLong(vars.get(5)));
+            }
         }
     }
 

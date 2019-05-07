@@ -122,6 +122,11 @@ public class SasFileProperties {
     private long rowCount;
 
     /**
+     * The number of rows in the table.
+     */
+    private long deletedRowCount;
+
+    /**
      * The number of rows on the page containing both data and metadata.
      */
     private long mixPageRowCount;
@@ -487,6 +492,24 @@ public class SasFileProperties {
      * @param rowCount the number of rows in the table.
      */
     public void setRowCount(long rowCount) {
+        this.rowCount = rowCount;
+    }
+
+    /**
+     * The function to get deletedRowCount.
+     *
+     * @return the number of deleted rows in the table.
+     */
+    public long getDeletedRowCount() {
+        return rowCount;
+    }
+
+    /**
+     * The method to specify deletedRowCount.
+     *
+     * @param rowCount the number of deleted rows in the table.
+     */
+    public void setDeletedRowCount(long rowCount) {
         this.rowCount = rowCount;
     }
 
