@@ -448,6 +448,17 @@ public final class SasFileParser {
         LOGGER.debug("No supported compression literal found, assuming no compression");
         return null;
     }
+    
+    
+    /**
+     * The function to return the index of the current row when reading the file sas7bdat file.
+     *
+     * @return current row index
+     */
+    Integer getOffset() {
+      return currentRowInFileIndex;
+    }
+ 
 
     /**
      * The function to read next row from current sas7bdat file.

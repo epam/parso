@@ -119,6 +119,16 @@ public class SasFileReaderImpl implements SasFileReader {
     public Object[] readNext() throws IOException {
         return sasFileParser.readNext();
     }
+    
+    /**
+     * The function to return the index of the current row when reading the file sas7bdat file.
+     *
+     * @return current row index
+     */
+    @Override
+    public Integer getOffset() {
+      return sasFileParser.getOffset();
+    }
 
     /**
      * The function to get sas file properties.

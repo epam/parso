@@ -54,4 +54,11 @@ public interface SasFileReader {
      * @return the object of the {@link SasFileProperties} class that stores file metadata.
      */
     SasFileProperties getSasFileProperties();
+    
+    /**
+     * The function to return the index of the current row when reading the file sas7bdat file.
+     *
+     * @return current row index
+     */
+    Integer getOffset();
 }
