@@ -56,7 +56,7 @@ public interface SasFileReader {
     SasFileProperties getSasFileProperties();
     
     /**
-     * The function to return the index of the current row when reading the file sas7bdat file.
+     * The function to return the index of the current row when reading the sas7bdat file.
      *
      * @return current row index
      */
