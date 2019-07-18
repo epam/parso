@@ -41,7 +41,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.epam.parso.impl.ParserMessageConstants.*;
+import static com.epam.parso.impl.DateTimeConstants.DATETIME_FORMAT_STRINGS;
+import static com.epam.parso.impl.DateTimeConstants.DATE_FORMAT_STRINGS;
+import static com.epam.parso.impl.ParserMessageConstants.BLOCK_COUNT;
+import static com.epam.parso.impl.ParserMessageConstants.COLUMN_FORMAT;
+import static com.epam.parso.impl.ParserMessageConstants.EMPTY_INPUT_STREAM;
+import static com.epam.parso.impl.ParserMessageConstants.FILE_NOT_VALID;
+import static com.epam.parso.impl.ParserMessageConstants.NO_SUPPORTED_COMPRESSION_LITERAL;
+import static com.epam.parso.impl.ParserMessageConstants.NULL_COMPRESSION_LITERAL;
+import static com.epam.parso.impl.ParserMessageConstants.PAGE_TYPE;
+import static com.epam.parso.impl.ParserMessageConstants.SUBHEADER_COUNT;
+import static com.epam.parso.impl.ParserMessageConstants.SUBHEADER_PROCESS_FUNCTION_NAME;
+import static com.epam.parso.impl.ParserMessageConstants.UNKNOWN_SUBHEADER_SIGNATURE;
 import static com.epam.parso.impl.SasFileConstants.*;
 
 /**
@@ -705,10 +716,10 @@ public final class SasFileParser {
                 if (columns.get(currentColumnIndex).getFormat().getName().isEmpty()) {
                     return convertByteArrayToNumber(temp);
                 } else {
-                    if (DATE_TIME_FORMAT_STRINGS.contains(columns.get(currentColumnIndex).getFormat().getName())) {
+                    if (DATETIME_FORMAT_STRINGS.containsKey(columns.get(currentColumnIndex).getFormat().getName())) {
                         return bytesToDateTime(temp);
                     } else {
-                        if (DATE_FORMAT_STRINGS.contains(columns.get(currentColumnIndex).getFormat().getName())) {
+                        if (DATE_FORMAT_STRINGS.containsKey(columns.get(currentColumnIndex).getFormat().getName())) {
                             return bytesToDate(temp);
                         } else {
                             return convertByteArrayToNumber(temp);
