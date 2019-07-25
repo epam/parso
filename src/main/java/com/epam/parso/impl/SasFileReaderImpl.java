@@ -1,19 +1,19 @@
 /**
  * *************************************************************************
  * Copyright (C) 2015 EPAM
-
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
+ * <p>
  * *************************************************************************
  */
 
@@ -27,7 +27,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 import static com.epam.parso.impl.ParserMessageConstants.UNKNOWN_COLUMN_NAME;
 
@@ -58,7 +62,7 @@ public class SasFileReaderImpl implements SasFileReader {
      * @param inputStream - an input stream which should contain a correct sas7bdat file.
      */
     public SasFileReaderImpl(InputStream inputStream) {
-        sasFileParser = new SasFileParser.Builder().sasFileStream(inputStream).build();
+        sasFileParser = new SasFileParser.Builder(inputStream).build();
     }
 
     /**
@@ -70,7 +74,7 @@ public class SasFileReaderImpl implements SasFileReader {
      * @param encoding    - the string containing the encoding to use in strings output
      */
     public SasFileReaderImpl(InputStream inputStream, String encoding) {
-        sasFileParser = new SasFileParser.Builder().sasFileStream(inputStream).encoding(encoding).build();
+        sasFileParser = new SasFileParser.Builder(inputStream).encoding(encoding).build();
     }
 
     /**
@@ -82,7 +86,7 @@ public class SasFileReaderImpl implements SasFileReader {
      * @param byteOutput  - the flag of data output in binary or string format
      */
     public SasFileReaderImpl(InputStream inputStream, Boolean byteOutput) {
-        sasFileParser = new SasFileParser.Builder().sasFileStream(inputStream).byteOutput(byteOutput).build();
+        sasFileParser = new SasFileParser.Builder(inputStream).byteOutput(byteOutput).build();
     }
 
     /**
