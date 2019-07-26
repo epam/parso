@@ -56,8 +56,11 @@ import static com.epam.parso.impl.ParserMessageConstants.UNKNOWN_SUBHEADER_SIGNA
 import static com.epam.parso.impl.SasFileConstants.*;
 
 /**
- * This is a class that parses sas7bdat files. When parsing a sas7bdat file, to interact with the library,
- * do not use this class but use {@link SasFileReaderImpl} instead.
+ * This is a class that parses sas7bdat files. When parsing a sas7bdat file, to interact with the library
+ * use {@link SasFileReaderImpl} which is a wrapper for SasFileParser. Despite this, SasFileParser
+ * is publicly available, it can be instanced via {@link SasFileParser.Builder} and used directly.
+ * Public access to the SasFileParser class was added in scope of this issue:
+ * @see <a href="https://github.com/epam/parso/issues/51"></a>.
  */
 public final class SasFileParser {
     /**
@@ -1112,7 +1115,7 @@ public final class SasFileParser {
         private Boolean byteOutput = false;
 
         /**
-         * The constructor that specify builders sasFileStream variable.
+         * The constructor that specifies builders sasFileStream variable.
          *
          * @param sasFileStream value for {@link SasFileParser#sasFileStream} variable.
          */

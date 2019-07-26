@@ -37,7 +37,10 @@ import static com.epam.parso.impl.ParserMessageConstants.UNKNOWN_COLUMN_NAME;
 
 /**
  * A class to read sas7bdat files transferred to the input stream and then to get metadata and file data.
- * This class is used as a wrapper for SasFileParser.
+ * This class is used as a wrapper for SasFileParser, it provides methods to read sas7bdat file and its properties.
+ * Despite this, {@link SasFileParser} is publicly available, it can be instanced via {@link SasFileParser.Builder}
+ * and used directly. Public access to the {@link SasFileParser} class was added in scope of this issue:
+ * @see <a href="https://github.com/epam/parso/issues/51"></a>.
  */
 public class SasFileReaderImpl implements SasFileReader {
     /**
