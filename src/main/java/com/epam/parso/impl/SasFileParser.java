@@ -56,8 +56,11 @@ import static com.epam.parso.impl.ParserMessageConstants.UNKNOWN_SUBHEADER_SIGNA
 import static com.epam.parso.impl.SasFileConstants.*;
 
 /**
- * This is a class that parses sas7bdat files. When parsing a sas7bdat file, to interact with the library,
- * do not use this class but use {@link SasFileReaderImpl} instead.
+ * This is a class that parses sas7bdat files. When parsing a sas7bdat file, to interact with the library
+ * use {@link SasFileReaderImpl} which is a wrapper for SasFileParser. Despite this, SasFileParser
+ * is publicly available, it can be instanced via {@link SasFileParser.Builder} and used directly.
+ * Public access to the SasFileParser class was added in scope of this issue:
+ * @see <a href="https://github.com/epam/parso/issues/51"></a>.
  */
 public final class SasFileParser {
     /**
@@ -508,13 +511,23 @@ public final class SasFileParser {
     }
 
     /**
-     * The function to read next row from current sas7bdat file.
+     * The function to read and process all columns of next row from current sas7bdat file.
      *
-     * @param columnNames list of column names which should be processed.
      * @return the object array containing elements of current row.
      * @throws IOException if reading from the {@link SasFileParser#sasFileStream} stream is impossible.
      */
-    Object[] readNext(List<String> columnNames) throws IOException {
+    public Object[] readNext() throws IOException {
+        return readNext(null);
+    }
+
+    /**
+     * The function to read and process specified columns of next row from current sas7bdat file.
+     *
+     * @param columnNames list of column names which should be processed, if null then all columns are processed.
+     * @return the object array containing elements of current row.
+     * @throws IOException if reading from the {@link SasFileParser#sasFileStream} stream is impossible.
+     */
+    public Object[] readNext(List<String> columnNames) throws IOException {
         if (currentRowInFileIndex++ >= sasFileProperties.getRowCount() || eof) {
             return null;
         }
@@ -568,7 +581,7 @@ public final class SasFileParser {
      *
      * @throws IOException if reading from the {@link SasFileParser#sasFileStream} stream is impossible.
      */
-    private void readNextPage() throws IOException {
+    public void readNextPage() throws IOException {
         processNextPage();
         while (currentPageType != PAGE_META_TYPE_1 && currentPageType != PAGE_META_TYPE_2
                 && currentPageType != PAGE_MIX_TYPE && currentPageType != PAGE_DATA_TYPE) {
@@ -989,7 +1002,7 @@ public final class SasFileParser {
      *
      * @return the object of the {@link SasFileProperties} class that stores file metadata.
      */
-    SasFileProperties getSasFileProperties() {
+    public SasFileProperties getSasFileProperties() {
         return sasFileProperties;
     }
 
@@ -1077,7 +1090,15 @@ public final class SasFileParser {
     /**
      * SasFileParser builder class made using builder pattern.
      */
-    static class Builder {
+    public static class Builder {
+
+        /**
+         * Empty private constructor to prevent instantiation without the {@link SasFileParser#sasFileStream} variable.
+         */
+        private Builder() {
+
+        }
+
         /**
          * Builder variable for {@link SasFileParser#sasFileStream} variable.
          */
@@ -1094,14 +1115,12 @@ public final class SasFileParser {
         private Boolean byteOutput = false;
 
         /**
-         * The function to specify builders sasFileStream variable.
+         * The constructor that specifies builders sasFileStream variable.
          *
-         * @param val value to be set.
-         * @return result builder.
+         * @param sasFileStream value for {@link SasFileParser#sasFileStream} variable.
          */
-        Builder sasFileStream(InputStream val) {
-            sasFileStream = val;
-            return this;
+        public Builder(InputStream sasFileStream) {
+            this.sasFileStream = sasFileStream;
         }
 
         /**
@@ -1110,7 +1129,7 @@ public final class SasFileParser {
          * @param val value to be set.
          * @return result builder.
          */
-        Builder encoding(String val) {
+        public Builder encoding(String val) {
             encoding = val;
             return this;
         }
@@ -1121,7 +1140,7 @@ public final class SasFileParser {
          * @param val value to be set.
          * @return result builder.
          */
-        Builder byteOutput(Boolean val) {
+        public Builder byteOutput(Boolean val) {
             byteOutput = val;
             return this;
         }
@@ -1131,7 +1150,7 @@ public final class SasFileParser {
          *
          * @return newly built SasFileParser
          */
-        SasFileParser build() {
+        public SasFileParser build() {
             return new SasFileParser(this);
         }
     }
