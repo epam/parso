@@ -501,16 +501,16 @@ public class SasFileProperties {
      * @return the number of deleted rows in the table.
      */
     public long getDeletedRowCount() {
-        return rowCount;
+        return deletedRowCount;
     }
 
     /**
      * The method to specify deletedRowCount.
      *
-     * @param rowCount the number of deleted rows in the table.
+     * @param deletedRowCount the number of deleted rows in the table.
      */
-    public void setDeletedRowCount(long rowCount) {
-        this.rowCount = rowCount;
+    public void setDeletedRowCount(long deletedRowCount) {
+        this.deletedRowCount = deletedRowCount;
     }
 
     /**

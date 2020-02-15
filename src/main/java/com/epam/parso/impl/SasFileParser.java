@@ -563,7 +563,7 @@ public final class SasFileParser {
                 alignCorrection = (bitOffset + SUBHEADER_POINTERS_OFFSET + currentPageSubheadersCount
                         * subheaderPointerLength) % BITS_IN_BYTE;
 
-                if (deletedMarkers.charAt(currentRowOnPageIndex) != '1') {
+                if (deletedMarkers.charAt(currentRowOnPageIndex) == '0') {
                     currentRow = processByteArrayWithData(bitOffset + SUBHEADER_POINTERS_OFFSET + alignCorrection
                             + currentPageSubheadersCount * subheaderPointerLength + currentRowOnPageIndex++
                             * sasFileProperties.getRowLength(), sasFileProperties.getRowLength(), columnNames);
@@ -593,7 +593,7 @@ public final class SasFileParser {
                     LOGGER.info(Integer.toString(deletedMarkers.length()));
                     LOGGER.info(Integer.toString(currentPageBlockCount));
                 }
-                if (deletedMarkers.charAt(currentRowOnPageIndex) != '1') {
+                if (deletedMarkers.charAt(currentRowOnPageIndex) == '0') {
                     currentRow = processByteArrayWithData(bitOffset + SUBHEADER_POINTERS_OFFSET
                             + currentRowOnPageIndex++
                             * sasFileProperties.getRowLength(), sasFileProperties.getRowLength(), columnNames);
@@ -651,7 +651,8 @@ public final class SasFileParser {
         }
 
         readPageHeader();
-        if (PageType.PAGE_TYPE_META.contains(currentPageType) || PageType.PAGE_TYPE_AMD.contains(currentPageType)) {
+        if (PageType.PAGE_TYPE_META.contains(currentPageType) || PageType.PAGE_TYPE_AMD.contains(currentPageType)
+                || PageType.PAGE_TYPE_MIX.contains(currentPageType)) {
             List<SubheaderPointer> subheaderPointers = new ArrayList<SubheaderPointer>();
             processPageMetadata(bitOffset, subheaderPointers);
             readDeletedInfo();
@@ -740,7 +741,7 @@ public final class SasFileParser {
 
         byte[] x = bytes.get(0);
         for (int i = 0; i < x.length; i++) {
-            deletedMarkers += String.format("%8s", Integer.toString(x[i] & 0xFF, 2));
+            deletedMarkers += String.format("%8s", Integer.toString(x[i] & 0xFF, 2)).replace(" ", "0");
         }
     }
 
