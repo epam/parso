@@ -19,18 +19,15 @@
 
 package com.epam.parso.impl;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * This is an class to store constants for parsing the sas7bdat file (byte offsets, column formats, accuracy) as well as
  * the standard constants of time and the sizes of standard data types.
  */
-interface SasFileConstants {
+public interface SasFileConstants {
     /**
      * The size of the long value type in bytes.
      */
