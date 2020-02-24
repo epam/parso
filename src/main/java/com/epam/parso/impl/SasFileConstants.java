@@ -19,6 +19,9 @@
 
 package com.epam.parso.impl;
 
+import java.awt.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -1016,4 +1019,18 @@ public interface SasFileConstants {
      */
     int START_DATES_SECONDS_DIFFERENCE = SECONDS_IN_MINUTE * MINUTES_IN_HOUR * HOURS_IN_DAY
             * START_DATES_DAYS_DIFFERENCE;
+
+    java.util.List<String> DATE_TIME_FORMAT_STRINGS = (java.util.List<String>) Arrays.asList("DATETIME", "DATETIME7","DATETIME8",
+                                                        "DATETIME9", "DATETIME10","DATETIME11","DATETIME12","DATETIME13","DATETIME14",
+                                                        "DATETIME15","DATETIME16","DATETIME17","DATETIME18","DATETIME18.1","DATETIME19",
+                                                        "DATETIME20.1","DATETIME21.2","DATETIME22.3",
+                                                        "DATETIME.", "DATETIME7.","DATETIME8.",
+                                                        "DATETIME9.", "DATETIME10.","DATETIME11.","DATETIME12.","DATETIME13.","DATETIME14.",
+                                                        "DATETIME15.","DATETIME16.","DATETIME17.","DATETIME18.","DATETIME19."
+                                                        );
+    
+    java.util.List<String> DATE_FORMAT_STRINGS = (java.util.List<String>) Arrays.asList("DATE5", "DATE6","DATE7", "DATE8","DATE9","DATE11",
+                                                    "DATE5.", "DATE6.","DATE7.", "DATE8.","DATE9.","DATE11.");
+
 }
+

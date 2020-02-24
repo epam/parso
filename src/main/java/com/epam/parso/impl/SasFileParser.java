@@ -33,13 +33,16 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static com.epam.parso.impl.DateTimeConstants.DATETIME_FORMAT_STRINGS;
 import static com.epam.parso.impl.DateTimeConstants.DATE_FORMAT_STRINGS;
@@ -571,7 +574,16 @@ public final class SasFileParser {
         }
         return Arrays.copyOf(currentRow, currentRow.length);
     }
-
+    
+    /**
+     * offset getter.
+     *
+     * @return current offset.
+     */
+    Integer getOffset() {
+        return currentRowInFileIndex;
+    }
+    
     /**
      * The method to read next page from sas7bdat file and put it into {@link SasFileParser#cachedPage}. If this page
      * has {@link SasFileConstants#PAGE_META_TYPE_1} or {@link SasFileConstants#PAGE_META_TYPE_2} type method process
@@ -719,42 +731,151 @@ public final class SasFileParser {
      */
     private Object processElement(byte[] source, int offset, int currentColumnIndex) {
         byte[] temp;
+        Object rowElements = "";
         int length = columnsDataLength.get(currentColumnIndex);
         if (columns.get(currentColumnIndex).getType() == Number.class) {
+            String format = columns.get(currentColumnIndex).getFormat().toString();
             temp = Arrays.copyOfRange(source, offset + (int) (long) columnsDataOffset.get(currentColumnIndex),
                     offset + (int) (long) columnsDataOffset.get(currentColumnIndex) + length);
             if (columnsDataLength.get(currentColumnIndex) <= 2) {
-                return bytesToShort(temp);
+                rowElements = bytesToShort(temp);
             } else {
                 if (columns.get(currentColumnIndex).getFormat().getName().isEmpty()) {
-                    return convertByteArrayToNumber(temp);
+                    rowElements = convertByteArrayToNumber(temp);
                 } else {
-                    if (DATETIME_FORMAT_STRINGS.containsKey(columns.get(currentColumnIndex).getFormat().getName())) {
-                        return bytesToDateTime(temp);
+                    if (SasFileConstants.DATE_TIME_FORMAT_STRINGS.contains(format)) {
+                        String dateTime = convertSASDateTimetoString(format.toLowerCase(), temp,length);         
+                        rowElements = dateTime;
+                    } else if(SasFileConstants.DATE_FORMAT_STRINGS.contains(format)) {
+                            String date = convertSASDatetoString(format.toLowerCase(), temp);
+                            rowElements = date;
                     } else {
-                        if (DATE_FORMAT_STRINGS.containsKey(columns.get(currentColumnIndex).getFormat().getName())) {
-                            return bytesToDate(temp);
-                        } else {
-                            return convertByteArrayToNumber(temp);
+                            rowElements = convertByteArrayToNumber(temp);
                         }
-                    }
+                    
                 }
             }
         } else {
             byte[] bytes = trimBytesArray(source,
                     offset + columnsDataOffset.get(currentColumnIndex).intValue(), length);
             if (byteOutput) {
-                return bytes;
+                rowElements = bytes;
             } else {
                 try {
-                    return (bytes == null ? null : bytesToString(bytes));
+                    rowElements =  (bytes == null ? null : bytesToString(bytes));
                 } catch (UnsupportedEncodingException e) {
                     LOGGER.error(e.getMessage(), e);
                 }
             }
         }
-        return null;
+        return rowElements;
     }
+    private String convertSASDatetoString(String format, byte[] temp) {
+
+        SimpleDateFormat dateTime = dtFormat("ddMMMYYYY");
+        if ("date5".equals(format) ||"date5.".equals(format))
+            dateTime = dtFormat("ddMMM");
+        else if ("date6".equals(format) || "date6.".equals(format))
+            dateTime = dtFormat(" ddMMM");
+        else if ("date7".equals(format) || "date7.".equals(format))
+            dateTime = dtFormat("ddMMMYY");
+        else if ("date8".equals(format) || "date8.".equals(format))
+            dateTime = dtFormat(" ddMMMYY");
+        else if ("date9".equals(format) || "date9.".equals(format))
+            dateTime = dtFormat("ddMMMYYYY");
+        else if ("date11".equals(format) || "date11.".equals(format))
+            dateTime = dtFormat("dd-MMM-YYYY");
+        
+        String formatted = "";
+        Date date = bytesToDate(temp);
+        if(date!=null) {
+            dateTime.setTimeZone(TimeZone.getTimeZone("UTC"));
+            formatted = dateTime.format(date);          
+        }
+        
+        return formatted.toUpperCase();
+    }
+
+    private String convertSASDateTimetoString(String format, byte[] temp, int length) {
+        SimpleDateFormat dateTime = dtFormat("ddMMMYY:HH:mm:ss");
+        
+        if ("datetime7".equals(format) || "datetime7.".equals(format))
+            dateTime = dtFormat("ddMMMYY");
+        
+        else if ("datetime8".equals(format) || "datetime8.".equals(format))
+            dateTime = dtFormat(" ddMMMYY");
+        
+        else if ("datetime9".equals(format) || "datetime9.".equals(format))
+            dateTime = dtFormat("  ddMMMYY");
+        
+        else if ("datetime10".equals(format) || "datetime10.".equals(format))
+            dateTime = dtFormat("ddMMMYY:HH");
+        
+        else if ("datetime11".equals(format) || "datetime11.".equals(format))
+            dateTime = dtFormat(" ddMMMYY:HH");
+        
+        else if ("datetime12".equals(format) || "datetime12.".equals(format))
+            dateTime = dtFormat("  ddMMMYY:HH");
+        
+        else if ("datetime13".equals(format) || "datetime13.".equals(format))
+            dateTime = dtFormat("ddMMMYY:HH:mm");
+        
+        else if ("datetime14".equals(format) || "datetime14.".equals(format))
+            dateTime = dtFormat(" ddMMMYY:HH:mm");
+        
+        else if ("datetime15".equals(format) || "datetime15.".equals(format))
+            dateTime = dtFormat("  ddMMMYY:HH:mm");
+        
+        else if ("datetime16".equals(format) || "datetime16.".equals(format))
+            dateTime = dtFormat("ddMMMYY:HH:mm:ss");
+        
+        else if ("datetime17".equals(format) || "datetime17.".equals(format))
+            dateTime = dtFormat(" ddMMMYY:HH:mm:ss");
+        
+        else if ("datetime18".equals(format) || "datetime18.".equals(format))
+            dateTime = dtFormat("  ddMMMYY:HH:mm:ss");
+        
+        else if ("datetime18.1".equals(format))
+            dateTime = dtFormat("ddMMMYY:HH:mm:ss.SSS");
+        
+        else if ("datetime19".equals(format) || "datetime19.".equals(format))
+            dateTime = dtFormat(" ddMMMYYYY:HH:mm:ss");
+        
+        else if ("datetime20.1".equals(format))
+            dateTime = dtFormat("ddMMMYYYY:HH:mm:ss.SSS");
+        
+        else if ("datetime21.2".equals(format))
+            dateTime = dtFormat("ddMMMYYYY:HH:mm:ss.SSS");
+        
+        else if ("datetime22.3".equals(format)) {
+            dateTime = dtFormat("ddMMMYYYY:HH:mm:ss.SSS");
+        }
+        
+
+        String formatted = "";
+        Date date = bytesToDateTime(temp);
+        if(date!=null) {
+            dateTime.setTimeZone(TimeZone.getTimeZone("UTC"));
+            formatted = dateTime.format(date);
+            if(format.contains(".")){
+                String decimals = format.substring(format.indexOf(".")+1,format.length());
+                    if(decimals=="1") {
+                    formatted = formatted.substring(0, formatted.length()-2);
+                }
+                    if(decimals=="2") {
+                    formatted = formatted.substring(0, formatted.length()-1);
+                }
+            }
+        }
+        
+        return formatted.toUpperCase();
+    }
+
+    private SimpleDateFormat dtFormat(String format) {
+        SimpleDateFormat datetimeformat = new SimpleDateFormat(format);
+        return datetimeformat;
+    }
+
 
     /**
      * The function to read the list of bytes arrays from the sas7bdat file. The array of offsets and the array of
