@@ -40,4 +40,16 @@ public class BugsTest {
             assertEquals(0, rowCount);
         }
     }
+
+    @Test
+    public void testOOM() throws Exception {
+        try (InputStream is =
+                     Files.newInputStream( Paths.get(this.getClass().getResource(
+                             "/bugs/mixed_data_one.sas7bdat.om").toURI()))) {
+            SasFileReader sasFileReader = new SasFileReaderImpl(is);
+
+            long rowCount = sasFileReader.getSasFileProperties().getRowCount();
+            assertEquals(0, rowCount);
+        }
+    }
 }
