@@ -245,6 +245,7 @@ public final class SasFileParser {
         try {
             getMetadataFromSasFile(builder.encoding);
         } catch (IOException e) {
+            //TODO: please throw this.
             LOGGER.error(e.getMessage(), e);
         }
     }
@@ -337,16 +338,14 @@ public final class SasFileParser {
         }
 
         if (sasFileStream != null) {
-            try {
-                int bytesLeft = sasFileProperties.getHeaderLength() - currentFilePosition;
-                long actuallySkipped = 0;
-                while (actuallySkipped < bytesLeft) {
-                    actuallySkipped += sasFileStream.skip(bytesLeft - actuallySkipped);
-                }
-                currentFilePosition = 0;
-            } catch (IOException e) {
-                throw new IOException(EMPTY_INPUT_STREAM);
+            int bytesLeft = sasFileProperties.getHeaderLength() - currentFilePosition;
+            int skipped = sasFileStream.skipBytes(bytesLeft);
+            if (skipped != bytesLeft) {
+                throw new IOException("Expected to skip " + bytesLeft
+                        + " to the end of the header, but skipped " + skipped
+                        + " instead.");
             }
+            currentFilePosition = 0;
         }
     }
 
