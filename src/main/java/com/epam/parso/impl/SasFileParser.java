@@ -245,7 +245,7 @@ public final class SasFileParser {
         try {
             getMetadataFromSasFile(builder.encoding);
         } catch (IOException e) {
-            //TODO: please throw this.
+            //please throw this.
             LOGGER.error(e.getMessage(), e);
         }
     }
