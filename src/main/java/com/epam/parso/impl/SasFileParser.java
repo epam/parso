@@ -67,6 +67,14 @@ public final class SasFileParser {
      * Object for writing logs.
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SasFileParser.class);
+
+    /**
+     * The default buffer size to use for the skip() methods.
+     */
+    private static final int SKIP_BUFFER_SIZE = 4096;
+
+    private static byte[] SKIP_BYTE_BUFFER;
+
     /**
      * The mapping of subheader signatures to the corresponding elements in {@link SubheaderIndexes}.
      * Depending on the value at the {@link SasFileConstants#ALIGN_2_OFFSET} offset, signatures take 4 bytes
@@ -338,8 +346,8 @@ public final class SasFileParser {
         }
 
         if (sasFileStream != null) {
-            int bytesLeft = sasFileProperties.getHeaderLength() - currentFilePosition;
-            int skipped = sasFileStream.skipBytes(bytesLeft);
+            long bytesLeft = sasFileProperties.getHeaderLength() - currentFilePosition;
+            long skipped = skip(sasFileStream, bytesLeft);
             if (skipped != bytesLeft) {
                 throw new IOException("Expected to skip " + bytesLeft
                         + " to the end of the header, but skipped " + skipped
@@ -769,13 +777,10 @@ public final class SasFileParser {
         if (cachedPage == null) {
             for (int i = 0; i < offset.length; i++) {
                 byte[] temp = new byte[length[i]];
-                long actuallySkipped = 0;
-                while (actuallySkipped < offset[i] - currentFilePosition) {
-                    try {
-                        actuallySkipped += sasFileStream.skip(offset[i] - currentFilePosition - actuallySkipped);
-                    } catch (IOException e) {
-                        throw new IOException(EMPTY_INPUT_STREAM);
-                    }
+                long toSkip = offset[i] - currentFilePosition;
+                long actuallySkipped = skip(sasFileStream, toSkip);
+                if (actuallySkipped != toSkip) {
+                    throw new IOException(EMPTY_INPUT_STREAM);
                 }
                 try {
                     sasFileStream.readFully(temp, 0, length[i]);
@@ -1532,5 +1537,38 @@ public final class SasFileParser {
                                      List<String> columnNames) throws IOException {
             currentRow = processByteArrayWithData(subheaderOffset, subheaderLength, columnNames);
         }
+    }
+
+    /**
+     * Copied from IOUtils.  Safe method for skipping.  Clients must still check the length skipped
+     * in case of EOF.
+     *
+     * @param input
+     * @param toSkip
+     * @return
+     * @throws IOException
+     */
+    private static long skip(InputStream input, long toSkip) throws IOException {
+        if (toSkip < 0) {
+            throw new IllegalArgumentException("Skip count must be non-negative, actual: " + toSkip);
+        }
+        /*
+         * N.B. no need to synchronize this because: - we don't care if the buffer is created multiple times (the data
+         * is ignored) - we always use the same size buffer, so if it it is recreated it will still be OK (if the buffer
+         * size were variable, we would need to synch. to ensure some other thread did not create a smaller one)
+         */
+        if (SKIP_BYTE_BUFFER == null) {
+            SKIP_BYTE_BUFFER = new byte[SKIP_BUFFER_SIZE];
+        }
+        long remain = toSkip;
+        while (remain > 0) {
+            // See https://issues.apache.org/jira/browse/IO-203 for why we use read() rather than delegating to skip()
+            final long n = input.read(SKIP_BYTE_BUFFER, 0, (int) Math.min(remain, SKIP_BUFFER_SIZE));
+            if (n < 0) { // EOF
+                break;
+            }
+            remain -= n;
+        }
+        return toSkip - remain;
     }
 }
