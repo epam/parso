@@ -78,6 +78,9 @@ public final class SasFileParser {
      */
     private static final Map<String, Decompressor> LITERALS_TO_DECOMPRESSOR = new HashMap<String, Decompressor>();
 
+    //sanity check on maximum page length
+    private static final int MAX_PAGE_LENGTH = 10000000;
+
     static {
         Map<Long, SubheaderIndexes> tmpMap = new HashMap<Long, SubheaderIndexes>();
         tmpMap.put((long) 0xF7F7F7F7, SubheaderIndexes.ROW_SIZE_SUBHEADER_INDEX);
@@ -325,7 +328,12 @@ public final class SasFileParser {
         sasFileProperties.setDateCreated(bytesToDateTime(vars.get(4)));
         sasFileProperties.setDateModified(bytesToDateTime(vars.get(5)));
         sasFileProperties.setHeaderLength(bytesToInt(vars.get(6)));
-        sasFileProperties.setPageLength(bytesToInt(vars.get(7)));
+        int pageLength = bytesToInt(vars.get(7));
+        if (pageLength > MAX_PAGE_LENGTH) {
+            throw new IOException("Page limit ("
+                    + pageLength + ") exceeds maximum: "+MAX_PAGE_LENGTH);
+        }
+        sasFileProperties.setPageLength(pageLength);
         sasFileProperties.setPageCount(bytesToLong(vars.get(8)));
         sasFileProperties.setSasRelease(bytesToString(vars.get(9)).trim());
         sasFileProperties.setServerType(bytesToString(vars.get(10)).trim());
