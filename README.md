@@ -1,4 +1,17 @@
 ﻿# Parso Java library
+## Parso 2.0.12
+***19 August 2020***
+
+* Added support for deleted rows ([#38][i38])
+* Added more various time formatters and moved them to interface ([#48][i48])
+* Made SASFileParser API public ([#51][i51])
+* Added sanity check to page length ([#60][i60])
+
+[i38]: https://github.com/epam/parso/issues/38
+[i48]: https://github.com/epam/parso/issues/48
+[i51]: https://github.com/epam/parso/issues/51
+[i60]: https://github.com/epam/parso/issues/60
+
 ## Parso 2.0.11
 ***25 March 2019***
 
