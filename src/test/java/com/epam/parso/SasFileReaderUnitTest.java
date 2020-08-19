@@ -75,7 +75,7 @@ public class SasFileReaderUnitTest {
     private static final List<Integer> COLON_COLUMN_LENGTHS = Arrays.asList(8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8);
     private static final SasFileProperties COLON_SAS_FILE_PROPERTIES = new SasFileProperties();
     private static final int COMPARE_ROWS_COUNT = 300;
-    public static final String COLON_SAS7BDAT_URL = "http://biostat3.net/download/sas/colon.sas7bdat";
+    public static final String COLON_SAS7BDAT_URL = "https://biostat3.net/download/sas/colon.sas7bdat";
 
     static {
         COLON_SAS_FILE_PROPERTIES.setU64(false);
