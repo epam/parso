@@ -1,0 +1,29 @@
+Number,Name,Type,Data length,Format,Label
+1,x1,Numeric,8,BEST12.,
+2,x2,Numeric,8,BEST12.,
+3,x3,Numeric,8,BEST12.,
+4,x4,Numeric,8,BEST12.,
+5,x5,Numeric,8,BEST12.,
+6,x6,Numeric,8,BEST12.,
+7,x7,Numeric,8,BEST12.,
+8,x8,Numeric,8,BEST12.,
+Bitness: x86
+Compressed: null
+Endianness: LITTLE_ENDIANNESS
+Encoding: windows-1252
+Name: TESTSAMPLE
+File type: DATA
+File label: 
+Date created: Tue Mar 12 21:35:01 MSK 2019
+Date modified: Tue Mar 12 22:07:48 MSK 2019
+SAS release: 9.0301M0
+SAS server type: W32_7PRO
+OS name: 
+OS type: 
+Header Length: 1024
+Page Length: 8192
+Page Count: 1
+Row Length: 64
+Row Count: 37
+Mix Page Row Count: 99
+Columns Count: 8

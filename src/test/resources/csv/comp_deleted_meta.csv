@@ -1,0 +1,25 @@
+Number,Name,Type,Data length,Format,Label
+1,olumn1,Numeric,8,BEST8.,
+2,olumn2,Numeric,8,BEST8.,
+3,olumn3,Numeric,8,BEST8.,
+4,column4,Numeric,8,BEST8.,
+Bitness: x86
+Compressed: SASYZCRL
+Endianness: LITTLE_ENDIANNESS
+Encoding: windows-1252
+Name: TEST_4_COMP_3RDROW_REMOVED
+File type: DATA
+File label: 
+Date created: Tue Mar 19 00:10:01 MSK 2019
+Date modified: Tue Mar 19 22:57:33 MSK 2019
+SAS release: 9.0301M0
+SAS server type: W32_7PRO
+OS name: 
+OS type: 
+Header Length: 1024
+Page Length: 4096
+Page Count: 2
+Row Length: 32
+Row Count: 4
+Mix Page Row Count: 82
+Columns Count: 4

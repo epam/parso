@@ -495,7 +495,8 @@ public interface SasFileConstants {
      * {@link SasFileConstants#PAGE_TYPE_LENGTH} bytes and a PAGE_TYPE_OFFSET bytes offset (with addition of
      * {@link SasFileConstants#PAGE_BIT_OFFSET_X86} or {@link SasFileConstants#PAGE_BIT_OFFSET_X64}).
      * There can be {@link SasFileConstants#PAGE_META_TYPE_1}, {@link SasFileConstants#PAGE_META_TYPE_2},
-     * {@link SasFileConstants#PAGE_DATA_TYPE}, or {@link SasFileConstants#PAGE_MIX_TYPE} page types.
+     * {@link SasFileConstants#PAGE_DATA_TYPE}, {@link SasFileConstants#PAGE_MIX_TYPE_1},
+     * {@link SasFileConstants#PAGE_MIX_TYPE_2} or {@link SasFileConstants#PAGE_AMD_TYPE} page types.
      */
     long PAGE_TYPE_OFFSET = 0L;
 
@@ -504,7 +505,8 @@ public interface SasFileConstants {
      * and a {@link SasFileConstants#PAGE_TYPE_OFFSET} bytes offset (with addition of
      * {@link SasFileConstants#PAGE_BIT_OFFSET_X86} or {@link SasFileConstants#PAGE_BIT_OFFSET_X64}).
      * There can be {@link SasFileConstants#PAGE_META_TYPE_1}, {@link SasFileConstants#PAGE_META_TYPE_2},
-     * {@link SasFileConstants#PAGE_DATA_TYPE}, or {@link SasFileConstants#PAGE_MIX_TYPE} page types.
+     * {@link SasFileConstants#PAGE_DATA_TYPE}, {@link SasFileConstants#PAGE_MIX_TYPE_1}
+     * {@link SasFileConstants#PAGE_MIX_TYPE_2} or {@link SasFileConstants#PAGE_AMD_TYPE} page types.
      */
     int PAGE_TYPE_LENGTH = 2;
 
@@ -526,33 +528,42 @@ public interface SasFileConstants {
 
     /**
      * For pages of the {@link SasFileConstants#PAGE_META_TYPE_1}, {@link SasFileConstants#PAGE_META_TYPE_2}
-     * and {@link SasFileConstants#PAGE_MIX_TYPE} types, the sas7bdat file stores the number of subheaders on
-     * the current page as a short value - with the length of {@link SasFileConstants#SUBHEADER_COUNT_LENGTH}
-     * bytes and a SUBHEADER_COUNT_OFFSET bytes offset from the beginning of the page (with addition of
-     * {@link SasFileConstants#PAGE_BIT_OFFSET_X86} or {@link SasFileConstants#PAGE_BIT_OFFSET_X64}).
+     * {@link SasFileConstants#PAGE_MIX_TYPE_1} and {@link SasFileConstants#PAGE_MIX_TYPE_2} types,
+     * the sas7bdat file stores the number of subheaders on the current page as a short value - with the length of
+     * {@link SasFileConstants#SUBHEADER_COUNT_LENGTH} bytes and a SUBHEADER_COUNT_OFFSET bytes offset
+     * from the beginning of the page (with addition of {@link SasFileConstants#PAGE_BIT_OFFSET_X86}
+     * or {@link SasFileConstants#PAGE_BIT_OFFSET_X64}).
      */
     long SUBHEADER_COUNT_OFFSET = 4L;
 
     /**
-     * For pages of the {@link SasFileConstants#PAGE_META_TYPE_1}, {@link SasFileConstants#PAGE_META_TYPE_2}
-     * and {@link SasFileConstants#PAGE_MIX_TYPE} types, the sas7bdat file stores the number of subheaders on
-     * the current page as a short value - with the length of SUBHEADER_COUNT_LENGTH bytes and a
-     * {@link SasFileConstants#SUBHEADER_COUNT_OFFSET} bytes offset from the beginning of the page
-     * (with addition of {@link SasFileConstants#PAGE_BIT_OFFSET_X86} or {@link SasFileConstants#PAGE_BIT_OFFSET_X64}).
+     * For pages of the {@link SasFileConstants#PAGE_META_TYPE_1}, {@link SasFileConstants#PAGE_META_TYPE_2},
+     * {@link SasFileConstants#PAGE_MIX_TYPE_1} and {@link SasFileConstants#PAGE_MIX_TYPE_2} types,
+     * the sas7bdat file stores the number of subheaders on the current page as a short value - with the length of
+     * SUBHEADER_COUNT_LENGTH bytes and a {@link SasFileConstants#SUBHEADER_COUNT_OFFSET} bytes offset from the
+     * beginning of the page (with addition of {@link SasFileConstants#PAGE_BIT_OFFSET_X86}
+     * or {@link SasFileConstants#PAGE_BIT_OFFSET_X64}).
      */
     int SUBHEADER_COUNT_LENGTH = 2;
 
     /**
      * The page type storing metadata as a set of subheaders. It can also store compressed row data in subheaders.
-     * The sas7bdat format has two values that correspond to the page type 'meta'.
+     * The sas7bdat format has three values that correspond to the page type 'meta'.
      */
     int PAGE_META_TYPE_1 = 0;
 
     /**
      * The page type storing metadata as a set of subheaders. It can also store compressed row data in subheaders.
-     * The sas7bdat format has two values that correspond to the page type 'meta'.
+     * The sas7bdat format has three values that correspond to the page type 'meta'.
      */
     int PAGE_META_TYPE_2 = 16384;
+
+    /**
+     * The page type storing metadata as a set of subheaders. It can also store compressed row data in subheaders.
+     * This type is present when there are deleted observations in the dataset.
+     * The sas7bdat format has three values that correspond to the type 'meta'.
+     */
+    int PAGE_CMETA_TYPE = 128;
 
     /**
      * The page type storing only data as a number of table rows.
@@ -560,9 +571,20 @@ public interface SasFileConstants {
     int PAGE_DATA_TYPE = 256;
 
     /**
+     * Another page type for storing only data as a number of table rows.
+     */
+    int PAGE_DATA_TYPE_2 = 384;
+
+    /**
      * The page type storing metadata as a set of subheaders and data as a number of table rows.
      */
-    int PAGE_MIX_TYPE = 512;
+    int PAGE_MIX_TYPE_1 = 512;
+
+    /**
+     * The page type storing metadata as a set of subheaders and data as a number of table rows.
+     * Probably this page type is used for mix pages from which some rows have been deleted.
+     */
+    int PAGE_MIX_TYPE_2 = 640;
 
     /**
      * The page type amd.
@@ -619,8 +641,16 @@ public interface SasFileConstants {
     /**
      * The multiplier whose product with the length of the variable type (that can be int or long depending on the
      * {@link SasFileConstants#ALIGN_2_VALUE} value) is the offset from the subheader beginning
+     * {@link SasFileParser.RowSizeSubheader} at which the number of deleted rows in the table is stored.
+     */
+    int DELETED_ROW_COUNT_OFFSET_MULTIPLIER = 8;
+
+    /**
+     * The multiplier whose product with the length of the variable type (that can be int or long depending on the
+     * {@link SasFileConstants#ALIGN_2_VALUE} value) is the offset from the subheader beginning
      * {@link SasFileParser.RowSizeSubheader} at which the file stores the number of rows in the table
-     * on the last page of the {@link SasFileConstants#PAGE_MIX_TYPE} type.
+     * on the last page of the {@link SasFileConstants#PAGE_MIX_TYPE_1} or {@link SasFileConstants#PAGE_MIX_TYPE_2}
+     * type.
      */
     int ROW_COUNT_ON_MIX_PAGE_OFFSET_MULTIPLIER = 15;
 
@@ -1016,4 +1046,70 @@ public interface SasFileConstants {
      */
     int START_DATES_SECONDS_DIFFERENCE = SECONDS_IN_MINUTE * MINUTES_IN_HOUR * HOURS_IN_DAY
             * START_DATES_DAYS_DIFFERENCE;
+
+    /**
+     * The offset to the pointer for the bitwise representation of deleted records in MIX pages in x64.
+     */
+    long PAGE_DELETED_POINTER_OFFSET_X64 = 24L;
+
+    /**
+     * The offset to the pointer for the bitwise representation of deleted records in MIX pages in x86.
+     */
+    long PAGE_DELETED_POINTER_OFFSET_X86 = 12L;
+
+    /**
+     * The length of the deleted record pointer from the beginning of the
+     * {@link SasFileConstants#PAGE_DELETED_POINTER_OFFSETX64}
+     * or {@link SasFileConstants#PAGE_DELETED_POINTER_OFFSETX86}.
+     */
+    int PAGE_DELETED_POINTER_LENGTH = 4;
+
+    /**
+     * The date formats to store the day, month, and year. Appear in the data of the
+     * {@link SasFileParser.FormatAndLabelSubheader} subheader and are stored in {@link com.epam.parso.Column#format}.
+     */
+    Set<String> DATE_FORMAT_STRINGS = new HashSet<String>(Arrays.asList(
+            "B8601DA",
+            "E8601DA",
+            "DATE",
+            "DAY",
+            "DDMMYY", "DDMMYYB", "DDMMYYC", "DDMMYYD", "DDMMYYN", "DDMMYYP", "DDMMYYS",
+            "WEEKDATE",
+            "WEEKDATX",
+            "WEEKDAY",
+            "DOWNAME",
+            "WORDDATE",
+            "WORDDATX",
+            "YYMM", "YYMMC", "YYMMD", "YYMMN", "YYMMP", "YYMMS",
+            "YYMMDD", "YYMMDDB", "YYMMDDC", "YYMMDDD", "YYMMDDN", "YYMMDDP", "YYMMDDS",
+            "YYMON",
+            "YEAR",
+            "JULDAY",
+            "JULIAN",
+            "MMDDYY", "MMDDYYC", "MMDDYYD", "MMDDYYN", "MMDDYYP", "MMDDYYS",
+            "MMYY", "MMYYC", "MMYYD", "MMYYN", "MMYYP", "MMYYS",
+            "MONNAME",
+            "MONTH",
+            "MONYY"
+    ));
+
+    /**
+     * The date formats to store the day, month, year, hour, minutes, seconds, and milliseconds.
+     * Appear in the data of the {@link SasFileParser.FormatAndLabelSubheader} subheader
+     * and are stored in {@link com.epam.parso.Column#format}.
+     */
+    Set<String> DATE_TIME_FORMAT_STRINGS = new HashSet<String>(Arrays.asList(
+            "B8601DN", "B8601DT", "B8601DX", "B8601DZ", "B8601LX",
+            "E8601DN", "E8601DT", "E8601DX", "E8601DZ", "E8601LX",
+            "DATEAMPM",
+            "DATETIME",
+            "DTDATE",
+            "DTMONYY",
+            "DTWKDATX",
+            "DTMONYY",
+            "DTWKDATX",
+            "DTYEAR",
+            "TOD",
+            "MDYAMPM"
+    ));
 }
