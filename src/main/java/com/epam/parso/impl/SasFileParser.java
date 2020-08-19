@@ -528,6 +528,17 @@ public final class SasFileParser {
         LOGGER.debug(NO_SUPPORTED_COMPRESSION_LITERAL);
         return null;
     }
+    
+    
+    /**
+     * The function to return the index of the current row when reading the file sas7bdat file.
+     *
+     * @return current row index
+     */
+    Integer getOffset() {
+      return currentRowInFileIndex;
+    }
+ 
 
     /**
      * The function to read and process all columns of next row from current sas7bdat file.
