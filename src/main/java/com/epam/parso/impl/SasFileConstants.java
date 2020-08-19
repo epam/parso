@@ -1059,8 +1059,8 @@ public interface SasFileConstants {
 
     /**
      * The length of the deleted record pointer from the beginning of the
-     * {@link SasFileConstants#PAGE_DELETED_POINTER_OFFSETX64}
-     * or {@link SasFileConstants#PAGE_DELETED_POINTER_OFFSETX86}.
+     * {@link SasFileConstants#PAGE_DELETED_POINTER_OFFSET_X64}
+     * or {@link SasFileConstants#PAGE_DELETED_POINTER_OFFSET_X86}.
      */
     int PAGE_DELETED_POINTER_LENGTH = 4;
 
