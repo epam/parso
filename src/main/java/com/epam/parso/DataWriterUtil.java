@@ -21,6 +21,7 @@ package com.epam.parso;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.Format;
@@ -50,7 +51,7 @@ public final class DataWriterUtil {
     /**
      * The class name of array of byte.
      */
-    private static final String BYTE_ARRAY_CLASS_NAME = (new byte[0]).getClass().getName();
+    private static final String BYTE_ARRAY_CLASS_NAME = byte[].class.getName();
 
     /**
      * Encoding used to convert byte arrays to string.
@@ -201,7 +202,7 @@ public final class DataWriterUtil {
         if (valueToPrint.length() > ROUNDING_LENGTH) {
             int lengthBeforeDot = (int) Math.ceil(Math.log10(Math.abs(value)));
             BigDecimal bigDecimal = new BigDecimal(value);
-            bigDecimal = bigDecimal.setScale(ACCURACY - lengthBeforeDot, BigDecimal.ROUND_HALF_UP);
+            bigDecimal = bigDecimal.setScale(ACCURACY - lengthBeforeDot, RoundingMode.HALF_UP);
             valueToPrint = String.valueOf(bigDecimal.doubleValue());
         }
         valueToPrint = trimZerosFromEnd(valueToPrint);
@@ -245,7 +246,7 @@ public final class DataWriterUtil {
      */
     public static List<String> getRowValues(List<Column> columns, Object[] row, Locale locale,
                                             Map<Integer, Format> columnFormatters) throws IOException {
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         for (int currentColumnIndex = 0; currentColumnIndex < columns.size(); currentColumnIndex++) {
             values.add(getValue(columns.get(currentColumnIndex), row[currentColumnIndex], locale, columnFormatters));
         }

@@ -26,7 +26,7 @@ public class ColumnFormat {
     /**
      * The column format name.
      */
-    private String name;
+    private final String name;
     /**
      * The column format width.
      */

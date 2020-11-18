@@ -33,13 +33,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.epam.parso.impl.DateTimeConstants.DATETIME_FORMAT_STRINGS;
 import static com.epam.parso.impl.DateTimeConstants.DATE_FORMAT_STRINGS;
@@ -76,7 +70,7 @@ public final class SasFileParser {
     /**
      * The mapping of the supported string literals to the compression method they mean.
      */
-    private static final Map<String, Decompressor> LITERALS_TO_DECOMPRESSOR = new HashMap<String, Decompressor>();
+    private static final Map<String, Decompressor> LITERALS_TO_DECOMPRESSOR = new HashMap<>();
 
     /**
      * Sanity check on maximum page length.
@@ -84,7 +78,7 @@ public final class SasFileParser {
     private static final int MAX_PAGE_LENGTH = 10000000;
 
     static {
-        Map<Long, SubheaderIndexes> tmpMap = new HashMap<Long, SubheaderIndexes>();
+        Map<Long, SubheaderIndexes> tmpMap = new HashMap<>();
         tmpMap.put((long) 0xF7F7F7F7, SubheaderIndexes.ROW_SIZE_SUBHEADER_INDEX);
         tmpMap.put((long) 0xF6F6F6F6, SubheaderIndexes.COLUMN_SIZE_SUBHEADER_INDEX);
         tmpMap.put((long) 0xFFFFFC00, SubheaderIndexes.SUBHEADER_COUNTS_SUBHEADER_INDEX);
@@ -124,7 +118,7 @@ public final class SasFileParser {
     /**
      * The list of current page data subheaders.
      */
-    private final List<SubheaderPointer> currentPageDataSubheaderPointers = new ArrayList<SubheaderPointer>();
+    private final List<SubheaderPointer> currentPageDataSubheaderPointers = new ArrayList<>();
     /**
      * The variable to store all the properties from the sas7bdat file.
      */
@@ -134,27 +128,27 @@ public final class SasFileParser {
      * Every element corresponds to a {@link SasFileParser.ColumnTextSubheader}. The first text block includes
      * the information about compression.
      */
-    private final List<byte[]> columnsNamesBytes = new ArrayList<byte[]>();
+    private final List<byte[]> columnsNamesBytes = new ArrayList<>();
     /**
      * The list of column names.
      */
-    private final List<String> columnsNamesList = new ArrayList<String>();
+    private final List<String> columnsNamesList = new ArrayList<>();
     /**
      * The list of column types. There can be {@link Number} and {@link String} types.
      */
-    private final List<Class<?>> columnsTypesList = new ArrayList<Class<?>>();
+    private final List<Class<?>> columnsTypesList = new ArrayList<>();
     /**
      * The list of offsets of data in every column inside a row. Used to locate the left border of a cell.
      */
-    private final List<Long> columnsDataOffset = new ArrayList<Long>();
+    private final List<Long> columnsDataOffset = new ArrayList<>();
     /**
      * The list of data lengths of every column inside a row. Used to locate the right border of a cell.
      */
-    private final List<Integer> columnsDataLength = new ArrayList<Integer>();
+    private final List<Integer> columnsDataLength = new ArrayList<>();
     /**
      * The list of table columns to store their name, label, and format.
      */
-    private final List<Column> columns = new ArrayList<Column>();
+    private final List<Column> columns = new ArrayList<>();
     /**
      * The mapping between elements from {@link SubheaderIndexes} and classes corresponding
      * to each subheader. This is necessary because defining the subheader type being processed is dynamic.
@@ -223,7 +217,7 @@ public final class SasFileParser {
     /**
      * The list of missing column information.
      */
-    private List<ColumnMissingInfo> columnMissingInfoList = new ArrayList<ColumnMissingInfo>();
+    private final List<ColumnMissingInfo> columnMissingInfoList = new ArrayList<>();
 
     /**
      * An bit representation in String marking deleted records.
@@ -240,7 +234,7 @@ public final class SasFileParser {
         sasFileStream = new DataInputStream(builder.sasFileStream);
         byteOutput = builder.byteOutput;
 
-        Map<SubheaderIndexes, ProcessingSubheader> tmpMap = new HashMap<SubheaderIndexes, ProcessingSubheader>();
+        Map<SubheaderIndexes, ProcessingSubheader> tmpMap = new HashMap<>();
         tmpMap.put(SubheaderIndexes.ROW_SIZE_SUBHEADER_INDEX, new RowSizeSubheader());
         tmpMap.put(SubheaderIndexes.COLUMN_SIZE_SUBHEADER_INDEX, new ColumnSizeSubheader());
         tmpMap.put(SubheaderIndexes.SUBHEADER_COUNTS_SUBHEADER_INDEX, new SubheaderCountsSubheader());
@@ -391,7 +385,7 @@ public final class SasFileParser {
     private boolean processSasFilePageMeta() throws IOException {
         int bitOffset = sasFileProperties.isU64() ? PAGE_BIT_OFFSET_X64 : PAGE_BIT_OFFSET_X86;
         readPageHeader();
-        List<SubheaderPointer> subheaderPointers = new ArrayList<SubheaderPointer>();
+        List<SubheaderPointer> subheaderPointers = new ArrayList<>();
         if (PageType.PAGE_TYPE_META.contains(currentPageType) || PageType.PAGE_TYPE_MIX.contains(currentPageType)) {
             processPageMetadata(bitOffset, subheaderPointers);
         }
@@ -436,7 +430,6 @@ public final class SasFileParser {
                 }
             } catch (Exception e) {
                 LOGGER.warn("Encountered broken page metadata. Skipping subheader.");
-                continue;
             }
         }
     }
@@ -528,8 +521,8 @@ public final class SasFileParser {
         LOGGER.debug(NO_SUPPORTED_COMPRESSION_LITERAL);
         return null;
     }
-    
-    
+
+
     /**
      * The function to return the index of the current row when reading the file sas7bdat file.
      *
@@ -538,7 +531,7 @@ public final class SasFileParser {
     Integer getOffset() {
       return currentRowInFileIndex;
     }
- 
+
 
     /**
      * The function to read and process all columns of next row from current sas7bdat file.
@@ -599,7 +592,7 @@ public final class SasFileParser {
                 break;
             case PAGE_MIX_TYPE_2:
                 // Mix pages that contain valid and deleted records
-                if (deletedMarkers == "") {
+                if (Objects.equals(deletedMarkers, "")) {
                     readDeletedInfo();
                     LOGGER.info(deletedMarkers);
                 }
@@ -632,7 +625,7 @@ public final class SasFileParser {
                 break;
             case PAGE_DATA_TYPE_2:
                 // Data pages that contain valid and deleted records
-                if (deletedMarkers == "") {
+                if (Objects.equals(deletedMarkers, "")) {
                     readDeletedInfo();
                     LOGGER.info(deletedMarkers);
                     LOGGER.info(Integer.toString(deletedMarkers.length()));
@@ -698,7 +691,7 @@ public final class SasFileParser {
         readPageHeader();
         if (PageType.PAGE_TYPE_META.contains(currentPageType) || PageType.PAGE_TYPE_AMD.contains(currentPageType)
                 || PageType.PAGE_TYPE_MIX.contains(currentPageType)) {
-            List<SubheaderPointer> subheaderPointers = new ArrayList<SubheaderPointer>();
+            List<SubheaderPointer> subheaderPointers = new ArrayList<>();
             processPageMetadata(bitOffset, subheaderPointers);
             readDeletedInfo();
             if (PageType.PAGE_TYPE_AMD.contains(currentPageType)) {
@@ -785,8 +778,8 @@ public final class SasFileParser {
             new Integer[] {(int) Math.ceil((currentPageBlockCount - currentPageSubheadersCount) / 8.0)});
 
         byte[] x = bytes.get(0);
-        for (int i = 0; i < x.length; i++) {
-            deletedMarkers += String.format("%8s", Integer.toString(x[i] & 0xFF, 2)).replace(" ", "0");
+        for (byte b : x) {
+            deletedMarkers += String.format("%8s", Integer.toString(b & 0xFF, 2)).replace(" ", "0");
         }
     }
 
@@ -890,7 +883,7 @@ public final class SasFileParser {
      * @throws IOException if reading from the {@link SasFileParser#sasFileStream} stream is impossible.
      */
     private List<byte[]> getBytesFromFile(Long[] offset, Integer[] length) throws IOException {
-        List<byte[]> vars = new ArrayList<byte[]>();
+        List<byte[]> vars = new ArrayList<>();
         if (cachedPage == null) {
             for (int i = 0; i < offset.length; i++) {
                 byte[] temp = new byte[length[i]];
@@ -1285,7 +1278,7 @@ public final class SasFileParser {
      * {@link SasFileConstants#COMPRESSED_SUBHEADER_ID}, {@link SasFileConstants#COMPRESSED_SUBHEADER_TYPE}
      * for details).
      */
-    class SubheaderPointer {
+    static class SubheaderPointer {
         /**
          * The offset from the beginning of a page at which a subheader is stored.
          */
@@ -1406,7 +1399,7 @@ public final class SasFileParser {
      * The class to process subheaders of the SubheaderCountsSubheader type that does not contain
      * any information relevant to the current issues.
      */
-    class SubheaderCountsSubheader implements ProcessingSubheader {
+    static class SubheaderCountsSubheader implements ProcessingSubheader {
         /**
          * The function to read metadata. At the moment the function is empty as the information in
          * SubheaderCountsSubheader is not needed for the current issues.
@@ -1616,7 +1609,7 @@ public final class SasFileParser {
      * The class to process subheaders of the ColumnListSubheader type that do not store any information relevant
      * to the current tasks.
      */
-    class ColumnListSubheader implements ProcessingSubheader {
+    static class ColumnListSubheader implements ProcessingSubheader {
         /**
          * The method to read metadata. It is empty at the moment because the data stored in ColumnListSubheader
          * are not used.

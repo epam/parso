@@ -161,7 +161,7 @@ public class SasFileReaderUnitTest {
         long programStart = System.currentTimeMillis();
         InputStream fileInputStream = getResourceAsStream(fileName);
         logger.info("Processing file {}", fileName);
-        Writer writer = new StringWriter();
+        StringWriter writer = new StringWriter();
         InputStreamReader inputStreamReader = new InputStreamReader(
                 getResourceAsStream(fileName.toLowerCase().replace("sas7bdat", "csv")));
         try {
@@ -175,7 +175,7 @@ public class SasFileReaderUnitTest {
                 csvDataWriter.writeRow(sasFileReader.getColumns(), sasFileReader.readNext());
                 if (i != 0 && i % COMPARE_ROWS_COUNT == 0) {
                     compareResultWithControl(controlReader, writer, i - COMPARE_ROWS_COUNT, columns);
-                    ((StringWriter) writer).getBuffer().setLength(0);
+                    writer.getBuffer().setLength(0);
                 }
             }
             compareResultWithControl(controlReader, writer, (int) (rowCount - rowCount % COMPARE_ROWS_COUNT), columns);
@@ -408,7 +408,7 @@ public class SasFileReaderUnitTest {
         }
     }
 
-    private class ZeroAvailableBytesInputStream extends FileInputStream {
+    private static class ZeroAvailableBytesInputStream extends FileInputStream {
 
         public ZeroAvailableBytesInputStream(String name) throws FileNotFoundException {
             super(name);
