@@ -522,7 +522,6 @@ public final class SasFileParser {
         return null;
     }
 
-
     /**
      * The function to return the index of the current row when reading the file sas7bdat file.
      *
@@ -531,7 +530,6 @@ public final class SasFileParser {
     Integer getOffset() {
       return currentRowInFileIndex;
     }
-
 
     /**
      * The function to read and process all columns of next row from current sas7bdat file.
