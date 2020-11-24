@@ -26,27 +26,27 @@ public class ColumnMissingInfo {
     /**
      * The column id.
      */
-    private int columnId;
+    private final int columnId;
 
     /**
      * The text subheader index that stores offset and length of missing info.
      */
-    private int textSubheaderIndex;
+    private final int textSubheaderIndex;
 
     /**
      * The missing information offset.
      */
-    private int offset;
+    private final int offset;
 
     /**
      * The missing information length.
      */
-    private int length;
+    private final int length;
 
     /**
      * The missing information type.
      */
-    private MissingInfoType missingInfoType;
+    private final MissingInfoType missingInfoType;
 
     /**
      * The constructor that defines all parameters of the ColumnMissingInfo class.

@@ -56,7 +56,7 @@ public class SasFileReaderImpl implements SasFileReader {
     /**
      * List of columns obtained by names.
      */
-    private final List<Column> columnsByName = new ArrayList<Column>();
+    private final List<Column> columnsByName = new ArrayList<>();
 
     /**
      * Builds an object of the SasFileReaderImpl class from the file contained in the input stream.
@@ -112,7 +112,7 @@ public class SasFileReaderImpl implements SasFileReader {
     @Override
     public List<Column> getColumns(List<String> columnNames) {
         if (columnsByName.isEmpty()) {
-            Map<String, Column> columnsMap = new HashMap<String, Column>();
+            Map<String, Column> columnsMap = new HashMap<>();
             List<Column> allColumns = sasFileParser.getColumns();
             for (Column column : allColumns) {
                 columnsMap.put(column.getName(), column);

@@ -40,7 +40,7 @@ public class CSVDataWriterImpl extends AbstractCSVWriter implements CSVDataWrite
      * The map to store (@link Column#id) column identifier and the formatter
      * for converting locale-sensitive values stored in this column into string.
      */
-    private Map<Integer, Format> columnFormatters = new HashMap<>();
+    private final Map<Integer, Format> columnFormatters = new HashMap<>();
 
     /**
      * The constructor that defines writer variable to output result csv file.
