@@ -191,7 +191,7 @@ public class SasFileReaderImpl implements SasFileReader {
     public Object[] readNext(List<String> columnNames) throws IOException {
         return sasFileParser.readNext(columnNames);
     }
-    
+
     /**
      * The function to return the index of the current row when reading the file sas7bdat file.
      *
