@@ -44,7 +44,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import static com.epam.parso.TestUtils.getResourceAsStream;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SasFileReaderUnitTest {
     private static final Logger logger = LoggerFactory.getLogger(SasFileReaderUnitTest.class);
@@ -206,7 +206,7 @@ public class SasFileReaderUnitTest {
         Object[][] data = reader.readAll();
         closeInputStream(is);
 
-        assertThat(data).hasSize(15564);
+        assertThat(data).hasDimensions(15564, 13);
         assertThat(data[0][1]).isEqualTo(77L);
         assertThat(data[15563][1]).isEqualTo(84L);
     }
