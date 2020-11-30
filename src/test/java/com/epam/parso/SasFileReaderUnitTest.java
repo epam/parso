@@ -77,6 +77,7 @@ public class SasFileReaderUnitTest {
     private static final SasFileProperties COLON_SAS_FILE_PROPERTIES = new SasFileProperties();
     private static final int COMPARE_ROWS_COUNT = 300;
     public static final String COLON_SAS7BDAT_URL = "https://biostat3.net/download/sas/colon.sas7bdat";
+    public static final Locale CSV_DATA_WRITER_LOCALE = Locale.US;
 
     static {
         COLON_SAS_FILE_PROPERTIES.setU64(false);
@@ -169,7 +170,7 @@ public class SasFileReaderUnitTest {
             long rowCount = sasFileReader.getSasFileProperties().getRowCount();
             List<Column> columns = sasFileReader.getColumns();
             CSVReader controlReader = new CSVReader(inputStreamReader);
-            CSVDataWriter csvDataWriter = new CSVDataWriterImpl(writer, ",", "\n", Locale.UK);
+            CSVDataWriter csvDataWriter = new CSVDataWriterImpl(writer, ",", "\n", CSV_DATA_WRITER_LOCALE);
             controlReader.readNext();
             for (int i = 0; i < rowCount; i++) {
                 csvDataWriter.writeRow(sasFileReader.getColumns(), sasFileReader.readNext());
@@ -294,7 +295,7 @@ public class SasFileReaderUnitTest {
             SasFileReader sasFileReader = new SasFileReaderImpl(fileInputStream);
             long rowCount = sasFileReader.getSasFileProperties().getRowCount();
             CSVReader controlReader = new CSVReader(inputStreamReader);
-            CSVDataWriter csvDataWriter = new CSVDataWriterImpl(writer, ",", "\n", Locale.UK);
+            CSVDataWriter csvDataWriter = new CSVDataWriterImpl(writer, ",", "\n", CSV_DATA_WRITER_LOCALE);
             controlReader.readNext();
             for (int i = 0; i < rowCount; i++) {
                 csvDataWriter.writeRow(sasFileReader.getColumns(columnNames), sasFileReader.readNext(columnNames));
