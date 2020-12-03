@@ -999,6 +999,43 @@ public interface SasFileConstants {
     int FILE_FORMAT_LENGTH_LENGTH = 2;
 
     /**
+     * The sas7bdat file stores the offset of the compression method name (in symbols):
+     * - with the length of {@link SasFileConstants#COMPRESSION_METHOD_OFFSET_LENGTH} bytes,
+     * - at an offset calculated as COMPRESSION_METHOD_OFFSET bytes +
+     * 82 * the size of value types (int or long depending on {@link SasFileConstants#ALIGN_2_VALUE})
+     * from the beginning of the {@link SasFileParser.RowSizeSubheader} subheader.
+     */
+    long COMPRESSION_METHOD_OFFSET = 36L;
+
+    /**
+     * The sas7bdat file stores the length of the compression method name (in symbols):
+     * - with the length of {@link SasFileConstants#COMPRESSION_METHOD_LENGTH_LENGTH} bytes.
+     * - at an offset calculated as COMPRESSION_METHOD_LENGTH_OFFSET bytes +
+     * 82 * the size of value types(int or long depending on {@link SasFileConstants#ALIGN_2_VALUE})
+     * from the beginning of the {@link SasFileParser.RowSizeSubheader} subheader.
+     */
+    long COMPRESSION_METHOD_LENGTH_OFFSET = 38L;
+
+    /**
+     * The sas7bdat file stores the offset of the compression method name (in symbols):
+     * - with the length of COMPRESSION_METHOD_OFFSET_LENGTH bytes,
+     * - at an offset calculated as {@link SasFileConstants#COMPRESSION_METHOD_OFFSET} bytes +
+     * 82 * the size of value types (int or long depending on {@link SasFileConstants#ALIGN_2_VALUE})
+     * from the beginning of the {@link SasFileParser.RowSizeSubheader} subheader.
+     */
+    int COMPRESSION_METHOD_OFFSET_LENGTH = 2;
+
+    /**
+     * The sas7bdat file stores the length of the compression method name (in symbols):
+     * - with the length of COMPRESSION_METHOD_LENGTH_LENGTH bytes.
+     * - at an offset calculated as {@link SasFileConstants#COMPRESSION_METHOD_LENGTH_OFFSET} bytes +
+     * 82 * the size of value types (int or long depending on {@link SasFileConstants#ALIGN_2_VALUE})
+     * from the beginning of the {@link SasFileParser.RowSizeSubheader} subheader.
+     */
+    int COMPRESSION_METHOD_LENGTH_LENGTH = 2;
+
+
+    /**
      * Accuracy to define whether the numeric result of {@link SasFileParser#convertByteArrayToNumber(byte[])} is
      * a long or double value.
      */

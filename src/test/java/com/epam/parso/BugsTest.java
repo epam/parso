@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 public class BugsTest {
@@ -36,6 +37,34 @@ public class BugsTest {
             SasFileReader sasFileReader = new SasFileReaderImpl(is);
             long rowCount = sasFileReader.getSasFileProperties().getRowCount();
             assertEquals(0, rowCount);
+        }
+    }
+
+    @Test
+    public void testCompressionMethodsIssue55() throws Exception {
+        try (InputStream is = this.getClass().getResourceAsStream("/sas7bdat/mix_data_misc.sas7bdat")) {
+            SasFileReader sasFileReader = new SasFileReaderImpl(is);
+            assertThat(sasFileReader.getSasFileProperties().getCompressionMethod()).isEqualTo("SASYZCRL");
+        }
+
+        try (InputStream is = this.getClass().getResourceAsStream("/sas7bdat/comp_deleted.sas7bdat")) {
+            SasFileReader sasFileReader = new SasFileReaderImpl(is);
+            assertThat(sasFileReader.getSasFileProperties().getCompressionMethod()).isEqualTo("SASYZCRL");
+        }
+
+        try (InputStream is = this.getClass().getResourceAsStream("/sas7bdat/tmp868_14.sas7bdat")) {
+            SasFileReader sasFileReader = new SasFileReaderImpl(is);
+            assertThat(sasFileReader.getSasFileProperties().getCompressionMethod()).isEqualTo("SASYZCRL");
+        }
+
+        try (InputStream is = this.getClass().getResourceAsStream("/sas7bdat/all_rand_normal_with_deleted.sas7bdat")) {
+            SasFileReader sasFileReader = new SasFileReaderImpl(is);
+            assertThat(sasFileReader.getSasFileProperties().getCompressionMethod()).isNull();
+        }
+
+        try (InputStream is = this.getClass().getResourceAsStream("/sas7bdat/charset_sjis.sas7bdat")) {
+            SasFileReader sasFileReader = new SasFileReaderImpl(is);
+            assertThat(sasFileReader.getSasFileProperties().getCompressionMethod()).isNull();
         }
     }
 }
