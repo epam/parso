@@ -1558,8 +1558,8 @@ public final class SasFileParser {
         @Override
         public void processSubheader(long subheaderOffset, long subheaderLength) throws IOException {
             int intOrLongLength = sasFileProperties.isU64() ? BYTES_IN_LONG : BYTES_IN_INT;
-            Long[] offset = {subheaderOffset + COLUMN_FORMAT_WIDTH_OFFSET + intOrLongLength,
-                    subheaderOffset + COLUMN_FORMAT_PRECISION_OFFSET + intOrLongLength,
+            Long[] offset = {subheaderOffset + COLUMN_FORMAT_WIDTH_OFFSET + 3 * intOrLongLength,
+                    subheaderOffset + COLUMN_FORMAT_PRECISION_OFFSET + 3 * intOrLongLength,
                     subheaderOffset + COLUMN_FORMAT_TEXT_SUBHEADER_INDEX_OFFSET + 3 * intOrLongLength,
                     subheaderOffset + COLUMN_FORMAT_OFFSET_OFFSET + 3 * intOrLongLength,
                     subheaderOffset + COLUMN_FORMAT_LENGTH_OFFSET + 3 * intOrLongLength,
