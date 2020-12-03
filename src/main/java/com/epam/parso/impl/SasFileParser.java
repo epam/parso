@@ -209,6 +209,19 @@ public final class SasFileParser {
     private int fileLabelOffset;
 
     /**
+     * The offset of the compression method from the beginning of the
+     * {@link SasFileParser.ColumnTextSubheader} subheader.
+     */
+    private int compressionMethodOffset;
+
+    /**
+     * The length of the compression method which is stored in the
+     * {@link SasFileParser.ColumnTextSubheader} subheader
+     * with {@link SasFileParser#compressionMethodOffset} offset.
+     */
+    private int compressionMethodLength;
+
+    /**
      * The length of file label which is stored in the {@link SasFileParser.ColumnTextSubheader} subheader
      * with {@link SasFileParser#fileLabelOffset} offset.
      */
@@ -500,26 +513,21 @@ public final class SasFileParser {
     }
 
     /**
-     * Return the compression literal if it is contained in the input string.
-     * If the are many the first match is return.
-     * If there are no matches, <code>null</code> is returned
+     * Match the input string against the known compression methods.
      *
-     * @param src input string to look for matches
-     * @return First match of a supported compression literal or null if no literal matches the input string.
+     * @param compressionMethod the name of the compression method, like "SASYZCRL"
+     * @return true if the method is matched or false otherwise.
      */
-    private String findCompressionLiteral(String src) {
-        if (src == null) {
+    private boolean matchCompressionMethod(String compressionMethod) {
+        if (compressionMethod == null) {
             LOGGER.warn(NULL_COMPRESSION_LITERAL);
-            return null;
+            return false;
         }
-
-        for (String supported : LITERALS_TO_DECOMPRESSOR.keySet()) {
-            if (src.contains(supported)) {
-                return supported;
-            }
+        if (LITERALS_TO_DECOMPRESSOR.containsKey(compressionMethod)) {
+            return true;
         }
         LOGGER.debug(NO_SUPPORTED_COMPRESSION_LITERAL);
-        return null;
+        return false;
     }
 
     /**
@@ -1345,9 +1353,14 @@ public final class SasFileParser {
                     subheaderOffset + ROW_COUNT_ON_MIX_PAGE_OFFSET_MULTIPLIER * intOrLongLength,
                     subheaderOffset + FILE_FORMAT_OFFSET_OFFSET + 82 * intOrLongLength,
                     subheaderOffset + FILE_FORMAT_LENGTH_OFFSET + 82 * intOrLongLength,
-                    subheaderOffset + DELETED_ROW_COUNT_OFFSET_MULTIPLIER * intOrLongLength};
-            Integer[] length = {intOrLongLength, intOrLongLength, intOrLongLength, FILE_FORMAT_OFFSET_LENGTH,
-                    FILE_FORMAT_LENGTH_LENGTH, intOrLongLength};
+                    subheaderOffset + DELETED_ROW_COUNT_OFFSET_MULTIPLIER * intOrLongLength,
+                    subheaderOffset + COMPRESSION_METHOD_OFFSET + 82 * intOrLongLength,
+                    subheaderOffset + COMPRESSION_METHOD_LENGTH_OFFSET + 82 * intOrLongLength,
+            };
+            Integer[] length = {intOrLongLength, intOrLongLength, intOrLongLength,
+                    FILE_FORMAT_OFFSET_LENGTH, FILE_FORMAT_LENGTH_LENGTH,
+                    intOrLongLength,
+                    COMPRESSION_METHOD_OFFSET_LENGTH, COMPRESSION_METHOD_LENGTH_LENGTH};
             List<byte[]> vars = getBytesFromFile(offset, length);
 
             if (sasFileProperties.getRowLength() == 0) {
@@ -1366,6 +1379,9 @@ public final class SasFileParser {
             if (sasFileProperties.getDeletedRowCount() == 0) {
                 sasFileProperties.setDeletedRowCount(bytesToLong(vars.get(5)));
             }
+
+            compressionMethodOffset = bytesToShort(vars.get(6));
+            compressionMethodLength = bytesToShort(vars.get(7));
         }
     }
 
@@ -1443,8 +1459,10 @@ public final class SasFileParser {
             columnsNamesBytes.add(vars.get(0));
             if (columnsNamesBytes.size() == 1) {
                 byte[] columnName = columnsNamesBytes.get(0);
-                String compessionLiteral = findCompressionLiteral(bytesToString(columnName));
-                sasFileProperties.setCompressionMethod(compessionLiteral); //might be null
+                String compressionMethod = bytesToString(columnName, compressionMethodOffset, compressionMethodLength);
+                if (matchCompressionMethod(compressionMethod)) {
+                    sasFileProperties.setCompressionMethod(compressionMethod);
+                }
                 sasFileProperties.setFileLabel(bytesToString(columnName, fileLabelOffset, fileLabelLength));
             }
         }
