@@ -809,7 +809,7 @@ public interface SasFileConstants {
      * (int or long depending on {@link SasFileConstants#ALIGN_2_VALUE}) from
      * the beginning of the {@link SasFileParser.FormatAndLabelSubheader} subheader.
      */
-    long COLUMN_FORMAT_WIDTH_OFFSET = 8L;
+    long COLUMN_FORMAT_WIDTH_OFFSET = 0L;
 
     /**
      * For some table column, the sas7bdat file stores width of format:
@@ -827,7 +827,7 @@ public interface SasFileConstants {
      * (int or long depending on {@link SasFileConstants#ALIGN_2_VALUE}) from
      * the beginning of the {@link SasFileParser.FormatAndLabelSubheader} subheader.
      */
-    long COLUMN_FORMAT_PRECISION_OFFSET = 10L;
+    long COLUMN_FORMAT_PRECISION_OFFSET = 2L;
 
     /**
      * For some table column, the sas7bdat file stores width of format:
