@@ -1,0 +1,49 @@
+name: Parso CI
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-parso-ci-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-parso-ci-m2
+
+      - name: Validate
+        run: mvn -B -V clean validate -Dcheckstyle.failOnViolation=true
+
+      - name: Publish checkstyle report
+        if: always()
+        uses: jwgmeligmeyling/checkstyle-github-action@v1.2
+        with:
+          name: Checkstyle Report
+          path: '**/checkstyle-result.xml'
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compile
+        run: mvn -B -V clean compile -Dcheckstyle.skip=true
+
+      - name: Test
+        run: mvn -B -V verify -Dmaven.test.failure.ignore=true -Dcheckstyle.skip=true
+
+      - name: Publish test report
+        uses: scacap/action-surefire-report@v1
+        with:
+          check_name: Test Report
+          report_paths: '**/*-reports/TEST-*.xml'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          fail_on_test_failures: true

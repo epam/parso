@@ -1,4 +1,8 @@
-﻿# Parso Java library
+﻿![Build Status](https://github.com/epam/parso/workflows/Parso%20CI/badge.svg)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+![Version](https://img.shields.io/maven-central/v/com.epam/parso)
+
+# Parso Java library
 ## Parso 2.0.12
 ***19 August 2020***
 
