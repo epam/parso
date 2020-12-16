@@ -1,14 +1,28 @@
 name: Parso CI
 on:
   push:
-    branches:
-      - master
-  pull_request:
+    branches: [ master ]
+  # provides an ability to run workflows against pull requests from forks with token that has read and write access
+  # in order to add comments on PR (https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request_target)
+  pull_request_target:
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # checkout pull-request head reference with required security restrictions in case of "pull_request_target" event
+      - name: Checkout PR
+        if: github.event_name == 'pull_request_target'
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          # don't persists credentials in order to reduce security issues related to "pull_request_target" event
+          # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request_target
+          # https://securitylab.github.com/research/github-actions-preventing-pwn-requests
+          persist-credentials: false
+
+      # checkout commit reference not related to pull request in case of "pull_request_target" event absence
       - name: Checkout
+        if: github.event_name != 'pull_request_target'
         uses: actions/checkout@v2
 
       - name: Set up JDK 8
@@ -16,7 +30,11 @@ jobs:
         with:
           java-version: 1.8
 
+      # don't cache ~/.m2 directory in order to reduce security issues related to "pull_request_target" event
+      # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request_target
+      # https://securitylab.github.com/research/github-actions-preventing-pwn-requests
       - name: Cache Maven packages
+        if: github.event_name != 'pull_request_target'
         uses: actions/cache@v2
         with:
           path: ~/.m2
@@ -27,8 +45,9 @@ jobs:
         run: mvn -B -V clean validate -Dcheckstyle.failOnViolation=true
 
       - name: Publish checkstyle report
-        if: always()
-        uses: jwgmeligmeyling/checkstyle-github-action@v1.2
+        if: always() # in order to publish report even if previous step is failed
+        # use sha commit references in order to reduce security issues related to unverified actions and their creators
+        uses: jwgmeligmeyling/checkstyle-github-action@50292990e18466f2c5d95d04ff5fab931254fa5f
         with:
           name: Checkstyle Report
           path: '**/checkstyle-result.xml'
@@ -41,9 +60,17 @@ jobs:
         run: mvn -B -V verify -Dmaven.test.failure.ignore=true -Dcheckstyle.skip=true
 
       - name: Publish test report
-        uses: scacap/action-surefire-report@v1
+        # use sha commit references in order to reduce security issues related to unverified actions and their creators
+        uses: scacap/action-surefire-report@ad808943e6bfbd2e6acba7c53fdb5c89534da533
         with:
           check_name: Test Report
           report_paths: '**/*-reports/TEST-*.xml'
           github_token: ${{ secrets.GITHUB_TOKEN }}
           fail_on_test_failures: true
+
+      - name: Attach artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: parso-artifacts
+          path: target/parso-*.jar
+          if-no-files-found: error
