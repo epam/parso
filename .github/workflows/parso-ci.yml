@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10 # reasonable limits to be on the safe side
     steps:
       # checkout pull-request head reference with required security restrictions in case of "pull_request_target" event
       - name: Checkout PR
@@ -84,6 +85,7 @@ jobs:
 
   publish-snapshot:
     needs: [ build ]
+    timeout-minutes: 10 # reasonable limits to be on the safe side
     # runs only if the event is triggered against secure environment ("master" branch) and
     # produced artifact version is related to SNAPSHOT
     if: >
@@ -121,6 +123,7 @@ jobs:
 
   publish-final:
     needs: [ build ]
+    timeout-minutes: 10 # reasonable limits to be on the safe side
     # runs only if the event is triggered against secure environment ("master" branch) and
     # produced artifact version is final
     if: >

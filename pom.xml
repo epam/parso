@@ -186,6 +186,9 @@
                         <configuration>
                             <gpgArguments>
                                 <arg>--no-tty</arg>
+                                <!-- Prevent `gpg` from using pinentry programs -->
+                                <arg>--pinentry-mode</arg>
+                                <arg>loopback</arg>
                             </gpgArguments>
                         </configuration>
                         <executions>
