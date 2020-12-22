@@ -1,29 +1,21 @@
+# Used Github Actions:
+# - Checkout - https://github.com/marketplace/actions/checkout
+# - Setup Java JDK - https://github.com/marketplace/actions/setup-java-jdk
+# - Cache - https://github.com/marketplace/actions/cache
+# - Push Checkstyle report - https://github.com/marketplace/actions/push-checkstyle-report
+# - Surefire Report - https://github.com/marketplace/actions/surefire-report
+# - Upload a Build Artifact - https://github.com/marketplace/actions/upload-a-build-artifact
+# - Upload To Github Release - https://github.com/marketplace/actions/upload-to-github-release
 name: Parso CI
 on:
   push:
     branches: [ master ]
-  # provides an ability to run workflows against pull requests from forks with token that has read and write access
-  # in order to add comments on PR (https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request_target)
-  pull_request_target:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 10 # reasonable limits to be on the safe side
+    timeout-minutes: 5 # reasonable limits to be on the safe side
     steps:
-      # checkout pull-request head reference with required security restrictions in case of "pull_request_target" event
-      - name: Checkout PR
-        if: github.event_name == 'pull_request_target'
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          # don't persists credentials in order to reduce security issues related to "pull_request_target" event
-          # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request_target
-          # https://securitylab.github.com/research/github-actions-preventing-pwn-requests
-          persist-credentials: false
-
-      # checkout commit reference not related to pull request in case of "pull_request_target" event absence
       - name: Checkout
-        if: github.event_name != 'pull_request_target'
         uses: actions/checkout@v2
 
       - name: Set up JDK 8
@@ -31,11 +23,7 @@ jobs:
         with:
           java-version: 1.8
 
-      # don't cache ~/.m2 directory in order to reduce security issues related to "pull_request_target" event
-      # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request_target
-      # https://securitylab.github.com/research/github-actions-preventing-pwn-requests
       - name: Cache Maven packages
-        if: github.event_name != 'pull_request_target'
         uses: actions/cache@v2
         with:
           path: ~/.m2
@@ -47,7 +35,7 @@ jobs:
 
       - name: Publish checkstyle report
         if: always() # in order to publish report even if previous step is failed
-        # use sha commit references in order to reduce security issues related to unverified actions and their creators
+        # use sha commit references in order to avoid security issues related to unverified actions and their creators
         uses: jwgmeligmeyling/checkstyle-github-action@50292990e18466f2c5d95d04ff5fab931254fa5f
         with:
           name: Checkstyle Report
@@ -61,7 +49,7 @@ jobs:
         run: mvn -B -V verify -Dmaven.test.failure.ignore=true -Dcheckstyle.skip=true
 
       - name: Publish test report
-        # use sha commit references in order to reduce security issues related to unverified actions and their creators
+        # use sha commit references in order to avoid security issues related to unverified actions and their creators
         uses: scacap/action-surefire-report@ad808943e6bfbd2e6acba7c53fdb5c89534da533
         with:
           check_name: Test Report
@@ -86,11 +74,8 @@ jobs:
   publish-snapshot:
     needs: [ build ]
     timeout-minutes: 10 # reasonable limits to be on the safe side
-    # runs only if the event is triggered against secure environment ("master" branch) and
-    # produced artifact version is related to SNAPSHOT
-    if: >
-      github.ref == 'refs/heads/master' && github.event_name == 'push' &&
-      endsWith(needs.build.outputs.artifact_version, '-SNAPSHOT')
+    # runs only if produced artifact version is related to SNAPSHOT
+    if: ${{ endsWith(needs.build.outputs.artifact_version, '-SNAPSHOT') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -103,7 +88,7 @@ jobs:
           server-id: ossrh # value of the distributionManagement/repository/id field of the pom.xml
           server-username: MAVEN_SERVER_USERNAME # env variable for username in deploy
           server-password: MAVEN_SERVER_PASSWORD # env variable for token in deploy
-          settings-path: ${{ github.workspace }} # store not in a default location to not overwrite by cache restoring
+          settings-path: ${{ github.workspace }} # store not in a default location to be not overwritten by cache restoring
 
       - name: Cache Maven packages
         uses: actions/cache@v2
@@ -124,11 +109,8 @@ jobs:
   publish-final:
     needs: [ build ]
     timeout-minutes: 10 # reasonable limits to be on the safe side
-    # runs only if the event is triggered against secure environment ("master" branch) and
-    # produced artifact version is final
-    if: >
-      github.ref == 'refs/heads/master' && github.event_name == 'push' &&
-      !endsWith(needs.build.outputs.artifact_version, '-SNAPSHOT')
+    # runs only if produced artifact version is final
+    if: ${{ !endsWith(needs.build.outputs.artifact_version, '-SNAPSHOT') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -143,7 +125,7 @@ jobs:
           server-password: MAVEN_SERVER_PASSWORD # env variable for token in deploy
           gpg-private-key: ${{ secrets.IP_GPG_PRIVATE_KEY }} # value of the GPG private key to import
           gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
-          settings-path: ${{ github.workspace }}
+          settings-path: ${{ github.workspace }} # store not in a default location to be not overwritten by cache restoring
 
       - name: Cache Maven packages
         uses: actions/cache@v2
@@ -164,7 +146,7 @@ jobs:
         run: mvn -B -V -s $GITHUB_WORKSPACE/settings.xml clean deploy -DskipTests=true -Dcheckstyle.skip=true -DperformRelease=true
 
       - name: Create draft release
-        # use sha commit references in order to reduce security issues related to unverified actions and their creators
+        # use sha commit references in order to avoid security issues related to unverified actions and their creators
         uses: xresloader/upload-to-github-release@3ad14478ee4fb9bd65e84c6d496a7d6862892f43
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
