@@ -1,24 +1,24 @@
 # Used Github Actions:
 # - Checkout - https://github.com/marketplace/actions/checkout
 # - Setup Java JDK - https://github.com/marketplace/actions/setup-java-jdk
-# - Push Checkstyle report - https://github.com/marketplace/actions/push-checkstyle-report
-# - Surefire Report - https://github.com/marketplace/actions/surefire-report
 #
 # Important notice - this is a separate workflow from "Parso CI" even if they share the similar steps due to the following:
-# - "pull_request_target" provides access to github token with read and write permission for code from
-#   fork pull request (untrusted source) and shared steps can be mistakenly used on untrusted source
-# - used actions as a reaction on "pull_request_target" event are supposed to do only limited set of activities
+# - "pull_request" provides access to github token with read permissions only for code from
+#   fork pull request (untrusted source) and shared steps can be mistakenly used on untrusted source that
+#   require write permissions in order to publish checkstyle and validation results
+# - used actions as a reaction on "pull_request" event are supposed to do only limited set of activities
 #   with minimal security footprint (don't cache, don't expose secrets to environment variables, etc.)
 # - signing / artifact publishing / etc. should be done only from trusted source (target source of pull request - merged code)
 #
 # More to read:
+# - https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request
 # - https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request_target
 # - https://securitylab.github.com/research/github-actions-preventing-pwn-requests
 name: Parso Pull Request
 on:
-  # provides an ability to run workflows against pull requests from forks with token that has read and write access
-  # in order to add comments on PR (https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request_target)
-  pull_request_target:
+  # provides an ability to run workflows against pull requests from forks with token that has read access only
+  # therefore there is no ability to comment pull request about related checkstyle errors and failed tests due to the security reasons
+  pull_request:
 jobs:
   build-pr:
     runs-on: ubuntu-latest
@@ -27,10 +27,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          # don't persist credentials in order to avoid security issues related to "pull_request_target" event
-          # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request_target
-          # https://securitylab.github.com/research/github-actions-preventing-pwn-requests
           persist-credentials: false
 
       - name: Set up JDK 8
@@ -38,33 +34,14 @@ jobs:
         with:
           java-version: 1.8
 
-      # don't cache ~/.m2 directory in order to avoid security issues related to "pull_request_target" event
-      # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request_target
+      # don't cache ~/.m2 directory in order to avoid security issues related to "pull_request" event
       # https://securitylab.github.com/research/github-actions-preventing-pwn-requests
 
       - name: Validate
         run: mvn -B -V clean validate -Dcheckstyle.failOnViolation=true
 
-      - name: Publish checkstyle report
-        if: always() # in order to publish report even if previous step is failed
-        # use sha commit references in order to avoid security issues related to unverified actions and their creators
-        uses: jwgmeligmeyling/checkstyle-github-action@50292990e18466f2c5d95d04ff5fab931254fa5f
-        with:
-          name: Checkstyle Report
-          path: '**/checkstyle-result.xml'
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Compile
         run: mvn -B -V clean compile -Dcheckstyle.skip=true
 
       - name: Test
-        run: mvn -B -V clean verify -Dmaven.test.failure.ignore=true -Dcheckstyle.skip=true
-
-      - name: Publish test report
-        # use sha commit references in order to avoid security issues related to unverified actions and their creators
-        uses: scacap/action-surefire-report@ad808943e6bfbd2e6acba7c53fdb5c89534da533
-        with:
-          check_name: Test Report
-          report_paths: '**/*-reports/TEST-*.xml'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          fail_on_test_failures: true
+        run: mvn -B -V clean verify -Dcheckstyle.skip=true
