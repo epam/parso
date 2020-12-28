@@ -33,7 +33,7 @@ public class BugsTest {
         try (InputStream is = this.getClass().getResourceAsStream("/bugs/mixed_data_one.sas7bdat.oom")) {
             SasFileReader sasFileReader = new SasFileReaderImpl(is);
             long rowCount = sasFileReader.getSasFileProperties().getRowCount();
-            assertThat(rowCount).isEqualTo(0);
+            assertThat(rowCount).isEqualTo(1);
         }
     }
 

@@ -20,6 +20,7 @@
 package com.epam.parso;
 
 import java.io.IOException;
+import java.io.BufferedInputStream;
 import java.util.List;
 
 /**
