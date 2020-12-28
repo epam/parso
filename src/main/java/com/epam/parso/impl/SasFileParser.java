@@ -776,7 +776,7 @@ public final class SasFileParser {
         List<byte[]> vars = getBytesFromFile(new Long[] {deletedPointerOffset},
                 new Integer[] {PAGE_DELETED_POINTER_LENGTH});
 
-        long currentPageDeletedPointer = bytesToShort(vars.get(0));
+        long currentPageDeletedPointer = bytesToInt(vars.get(0));
         long deletedMapOffset = bitOffset + currentPageDeletedPointer + alignCorrection
                 + (currentPageSubheadersCount * subheaderPointerLength)
                 + ((currentPageBlockCount - currentPageSubheadersCount) * sasFileProperties.getRowLength());

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.epam</groupId>
     <artifactId>parso</artifactId>
-    <version>2.0.13-SNAPSHOT</version>
+    <version>2.0.14-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>parso</name>
     <description>Parso is a lightweight Java library designed to read SAS7BDAT datasets. The Parso interfaces
@@ -184,9 +184,11 @@
                         <artifactId>maven-gpg-plugin</artifactId>
                         <version>1.6</version>
                         <configuration>
-                            <passphrase>${gpg.passhprase}</passphrase>
                             <gpgArguments>
                                 <arg>--no-tty</arg>
+                                <!-- Prevent `gpg` from using pinentry programs -->
+                                <arg>--pinentry-mode</arg>
+                                <arg>loopback</arg>
                             </gpgArguments>
                         </configuration>
                         <executions>

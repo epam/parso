@@ -1,4 +1,24 @@
-﻿# Parso Java library
+﻿![Build Status](https://github.com/epam/parso/workflows/Parso%20CI/badge.svg?branch=master&event=push)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+![Version](https://img.shields.io/maven-central/v/com.epam/parso)
+
+# Parso Java library
+## Parso 2.0.13
+***17 December 2020***
+
+* Integrated with github actions ([#66][i66])
+* Fixed format and precision reading for 64 bit files ([#54][i54])
+* Fixed encoding issues in compressed files ([#55][i55])
+* Code improvements, switching to assertj from fest-assert ([#71][i71], [#72][i72])
+* Fixed offset calculation for deleted records ([#77][i77])
+
+[i54]: https://github.com/epam/parso/issues/54
+[i55]: https://github.com/epam/parso/issues/55
+[i66]: https://github.com/epam/parso/issues/66
+[i71]: https://github.com/epam/parso/issues/71
+[i72]: https://github.com/epam/parso/issues/72
+[i77]: https://github.com/epam/parso/issues/77
+
 ## Parso 2.0.12
 ***19 August 2020***
 
@@ -139,7 +159,7 @@ If you use Maven, add the following dependency into the pom.xml file:
 <dependency>
     <groupId>com.epam</groupId>
     <artifactId>parso</artifactId>
-    <version>2.0.12</version>
+    <version>2.0.13</version>
 </dependency>
 ```
 
