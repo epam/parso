@@ -20,7 +20,11 @@ package com.epam.parso;
 import com.epam.parso.impl.SasFileReaderImpl;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -137,6 +141,79 @@ public class BugsTest {
         try (InputStream is = this.getClass().getResourceAsStream("/sas7bdat/charset_sjis.sas7bdat")) {
             SasFileReader sasFileReader = new SasFileReaderImpl(is);
             assertThat(sasFileReader.getSasFileProperties().getCompressionMethod()).isNull();
+        }
+    }
+
+    @Test(timeout = 1000)
+    public void testInfinityLoopOnEmptyStreamIssue56() {
+        ByteArrayInputStream emptyStream = new ByteArrayInputStream(new byte[]{});
+        SasFileReaderImpl sasFileReader = new SasFileReaderImpl(emptyStream);
+        assertThat(sasFileReader.getSasFileProperties().getRowCount()).isEqualTo(0);
+    }
+
+    @Test(timeout = 1000)
+    public void testInfinityLoopOnIncompleteStreamIssue56() {
+        ByteArrayInputStream emptyStream = new ByteArrayInputStream(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9});
+        SasFileReaderImpl sasFileReader = new SasFileReaderImpl(emptyStream);
+        assertThat(sasFileReader.getSasFileProperties().getRowCount()).isEqualTo(0);
+    }
+
+    /**
+     * This has invalid page and header lengths:
+     * - page length = 31612 (7C 7B 00 00)
+     * - header length = 32126 (7E 7D 00 00)
+     * See this row in a hex editor:
+     * 000000C0:  00 00 00 00 7E 7D 00 00 │ 7C 7B 00 00 B8 00 00 00
+     * <p>
+     * File size is 17408 - it is smaller than specified lengths, so both lengths refer
+     * to the  out of file bounds offsets.
+     */
+    private static final String INVALID_FILE_NAME = "invalid_lengths.sas7bdat";
+
+    @Test(timeout = 1000)
+    public void testBrokenFileOnFileChannelIssue58() throws Exception {
+        // These skips were performed performed for the FileChannel by the parser before the fix:
+        // [32, 2, 1, 32, 21, 16, 8, 17120, 0, 0, 0, ... infinity loop of zeros]
+        try (InputStream is = Files.newInputStream(
+                Paths.get(this.getClass().getResource("/bugs/" + INVALID_FILE_NAME).toURI()))) {
+            SasFileReader sasFileReader = new SasFileReaderImpl(is);
+            assertThat(sasFileReader.getSasFileProperties().getRowCount()).isEqualTo(0);
+        }
+    }
+
+    @Test(timeout = 1000)
+    public void testBrokenFileOnBufferedFileInputStreamIssue58() throws Exception {
+        // These skips were performed performed for the buffered stream by the parser before the fix:
+        // [32, 2, 1, 32, 21, 16, 8, 7936, 23902]
+        try (InputStream is = this.getClass().getResourceAsStream("/bugs/" + INVALID_FILE_NAME)) {
+            SasFileReader sasFileReader = new SasFileReaderImpl(is);
+            assertThat(sasFileReader.getSasFileProperties().getRowCount()).isEqualTo(0);
+        }
+    }
+
+    @Test(timeout = 1000)
+    public void testBrokenFileOnUnbufferedFileInputStreamIssue58() throws Exception {
+        // These skips were performed for the buffered stream by the parser before the fix:
+        // [32, 2, 1, 32, 21, 16, 8, 31838]
+        try (InputStream is = new FileInputStream("target/test-classes/bugs/" + INVALID_FILE_NAME)) {
+            SasFileReader sasFileReader = new SasFileReaderImpl(is);
+            assertThat(sasFileReader.getSasFileProperties().getRowCount()).isEqualTo(0);
+        }
+    }
+
+    @Test(timeout = 1000)
+    public void testInfinityLoopBufferedIssue58() throws Exception {
+        try (InputStream is = this.getClass().getResourceAsStream("/bugs/sas_infinite_loop.sas7bdat")) {
+            SasFileReader sasFileReader = new SasFileReaderImpl(is);
+            assertThat(sasFileReader.getSasFileProperties().getRowCount()).isEqualTo(0);
+        }
+    }
+
+    @Test(timeout = 1000)
+    public void testInfinityLoopUnbufferedIssue58() throws Exception {
+        try (InputStream is = new FileInputStream("target/test-classes/bugs/sas_infinite_loop.sas7bdat")) {
+            SasFileReader sasFileReader = new SasFileReaderImpl(is);
+            assertThat(sasFileReader.getSasFileProperties().getRowCount()).isEqualTo(0);
         }
     }
 }

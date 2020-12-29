@@ -359,16 +359,40 @@ public final class SasFileParser {
         }
 
         if (sasFileStream != null) {
+            skipBytes(sasFileProperties.getHeaderLength() - currentFilePosition);
+            currentFilePosition = 0;
+        }
+    }
+
+    /**
+     * Skip specified number of bytes of data from the input stream,
+     * or fail if there are not enough left.
+     *
+     * @param numberOfBytesToSkip the number of bytes to skip
+     * @throws IOException if the number of bytes skipped was incorrect
+     */
+    private void skipBytes(long numberOfBytesToSkip) throws IOException {
+        byte[] skipBuffer = new byte[8192];
+
+        long remainBytes = numberOfBytesToSkip;
+        long readBytes;
+        while (remainBytes > 0) {
             try {
-                int bytesLeft = sasFileProperties.getHeaderLength() - currentFilePosition;
-                long actuallySkipped = 0;
-                while (actuallySkipped < bytesLeft) {
-                    actuallySkipped += sasFileStream.skip(bytesLeft - actuallySkipped);
+                readBytes = sasFileStream.read(skipBuffer, 0, (int) Math.min(remainBytes, skipBuffer.length));
+                if (readBytes < 0) { // EOF
+                    break;
                 }
-                currentFilePosition = 0;
             } catch (IOException e) {
                 throw new IOException(EMPTY_INPUT_STREAM);
             }
+            remainBytes -= readBytes;
+        }
+
+        long actuallySkipped = numberOfBytesToSkip - remainBytes;
+
+        if (actuallySkipped != numberOfBytesToSkip) {
+            throw new IOException("Expected to skip " + numberOfBytesToSkip
+                    + " to the end of the header, but skipped " + actuallySkipped + " instead.");
         }
     }
 
@@ -893,14 +917,7 @@ public final class SasFileParser {
         if (cachedPage == null) {
             for (int i = 0; i < offset.length; i++) {
                 byte[] temp = new byte[length[i]];
-                long actuallySkipped = 0;
-                while (actuallySkipped < offset[i] - currentFilePosition) {
-                    try {
-                        actuallySkipped += sasFileStream.skip(offset[i] - currentFilePosition - actuallySkipped);
-                    } catch (IOException e) {
-                        throw new IOException(EMPTY_INPUT_STREAM);
-                    }
-                }
+                skipBytes(offset[i] - currentFilePosition);
                 try {
                     sasFileStream.readFully(temp, 0, length[i]);
                 } catch (EOFException e) {
