@@ -77,6 +77,13 @@ public final class SasFileParser {
      */
     private static final int MAX_PAGE_LENGTH = 10000000;
 
+    /**
+     * Byte buffer used for skip operations.
+     * Actually the data containing in this buffer is ignored,
+     * because it only used for dummy reads.
+     */
+    private static final byte[] SKIP_BYTE_BUFFER = new byte[4096];
+
     static {
         Map<Long, SubheaderIndexes> tmpMap = new HashMap<>();
         tmpMap.put((long) 0xF7F7F7F7, SubheaderIndexes.ROW_SIZE_SUBHEADER_INDEX);
@@ -372,13 +379,13 @@ public final class SasFileParser {
      * @throws IOException if the number of bytes skipped was incorrect
      */
     private void skipBytes(long numberOfBytesToSkip) throws IOException {
-        byte[] skipBuffer = new byte[8192];
 
         long remainBytes = numberOfBytesToSkip;
         long readBytes;
         while (remainBytes > 0) {
             try {
-                readBytes = sasFileStream.read(skipBuffer, 0, (int) Math.min(remainBytes, skipBuffer.length));
+                readBytes = sasFileStream.read(SKIP_BYTE_BUFFER, 0,
+                        (int) Math.min(remainBytes, SKIP_BYTE_BUFFER.length));
                 if (readBytes < 0) { // EOF
                     break;
                 }
