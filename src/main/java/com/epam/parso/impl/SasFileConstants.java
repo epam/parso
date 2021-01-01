@@ -1078,11 +1078,15 @@ public interface SasFileConstants {
     int START_DATES_DAYS_DIFFERENCE = DAYS_IN_YEAR * 10 + 3;
 
     /**
+     * The number of seconds in a day.
+     */
+    int SECONDS_IN_DAY = SECONDS_IN_MINUTE * MINUTES_IN_HOUR * HOURS_IN_DAY;
+
+    /**
      * The difference in seconds between 01/01/1960 (the dates starting point in SAS) and 01/01/1970 (the dates starting
      * point in Java).
      */
-    int START_DATES_SECONDS_DIFFERENCE = SECONDS_IN_MINUTE * MINUTES_IN_HOUR * HOURS_IN_DAY
-            * START_DATES_DAYS_DIFFERENCE;
+    int START_DATES_SECONDS_DIFFERENCE = SECONDS_IN_DAY * START_DATES_DAYS_DIFFERENCE;
 
     /**
      * The offset to the pointer for the bitwise representation of deleted records in MIX pages in x64.
