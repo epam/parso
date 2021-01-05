@@ -1069,8 +1069,12 @@ public final class SasFileParser {
      */
     private Date bytesToDateTime(byte[] bytes) {
         double doubleSeconds = bytesToDouble(bytes);
-        return Double.isNaN(doubleSeconds) ? null : new Date((long) ((doubleSeconds - START_DATES_SECONDS_DIFFERENCE)
-                * MILLISECONDS_IN_SECONDS));
+        if (Double.isNaN(doubleSeconds)) {
+            return null;
+        } else {
+            double seconds = SasDateFormat.sasLeapDaysFix(doubleSeconds) - START_DATES_SECONDS_DIFFERENCE;
+            return new Date((long) (seconds * MILLISECONDS_IN_SECONDS));
+        }
     }
 
     /**
@@ -1083,8 +1087,12 @@ public final class SasFileParser {
      */
     private Date bytesToDate(byte[] bytes) {
         double doubleDays = bytesToDouble(bytes);
-        return Double.isNaN(doubleDays) ? null : new Date((long) ((doubleDays - START_DATES_DAYS_DIFFERENCE)
-                * SECONDS_IN_MINUTE * MINUTES_IN_HOUR * HOURS_IN_DAY * MILLISECONDS_IN_SECONDS));
+        if (Double.isNaN(doubleDays)) {
+            return null;
+        } else {
+            double seconds = SasDateFormat.sasLeapDaysFix(doubleDays * SECONDS_IN_DAY) - START_DATES_SECONDS_DIFFERENCE;
+            return new Date((long) (seconds * MILLISECONDS_IN_SECONDS));
+        }
     }
 
     /**
