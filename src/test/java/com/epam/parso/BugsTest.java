@@ -25,9 +25,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Date;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -216,33 +213,6 @@ public class BugsTest {
         try (InputStream is = new FileInputStream("target/test-classes/bugs/sas_infinite_loop.sas7bdat")) {
             SasFileReader sasFileReader = new SasFileReaderImpl(is);
             assertThat(sasFileReader.getSasFileProperties().getRowCount()).isEqualTo(0);
-        }
-    }
-
-    /**
-     * Converts year, month and day to UTC Date.
-     */
-    private static Date dateOf(int year, int month, int day) {
-        return Date.from(LocalDateTime.of(year, month, day, 0, 0).toInstant(ZoneOffset.UTC));
-    }
-
-    @Test
-    public void testLeapDayFixIssue81() throws Exception {
-        try (InputStream is = this.getClass().getResourceAsStream("/bugs/81-dates.sas7bdat")) {
-            SasFileReader sasFileReader = new SasFileReaderImpl(is);
-
-            Object[][] result = sasFileReader.readAll();
-            assertThat(result.length).isEqualTo(10);
-            assertThat(result[0][1]).isEqualTo(dateOf(9999, 12, 31));
-            assertThat(result[1][1]).isEqualTo(dateOf(2049, 12, 31));
-            assertThat(result[2][1]).isEqualTo(dateOf(2099, 12, 31));
-            assertThat(result[3][1]).isEqualTo(dateOf(4000, 2, 28));
-            assertThat(result[4][1]).isEqualTo(dateOf(4000, 3, 1));
-            assertThat(result[5][1]).isEqualTo(dateOf(4000, 12, 31));
-            assertThat(result[6][1]).isEqualTo(dateOf(8000, 2, 28));
-            assertThat(result[7][1]).isEqualTo(dateOf(8000, 3, 1));
-            assertThat(result[8][1]).isEqualTo(dateOf(8000, 12, 31));
-            assertThat(result[9][1]).isEqualTo(dateOf(8001, 2, 21));
         }
     }
 }

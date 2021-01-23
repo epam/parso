@@ -22,6 +22,7 @@ package com.epam.parso.impl;
 import com.epam.parso.Column;
 import com.epam.parso.SasFileProperties;
 import com.epam.parso.SasFileReader;
+import com.epam.parso.date.OutputDateType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +79,21 @@ public class SasFileReaderImpl implements SasFileReader {
      */
     public SasFileReaderImpl(InputStream inputStream, String encoding) {
         sasFileParser = new SasFileParser.Builder(inputStream).encoding(encoding).build();
+    }
+
+    /**
+     * Builds an instance of SasFileReaderImpl from the file contained in the input stream
+     * with the specified encoding and type of output date formatting.
+     * Reads only metadata (properties and column information) of the sas7bdat file.
+     *
+     * @param inputStream    an input stream which should contain a correct sas7bdat file.
+     * @param encoding       the string containing the encoding to use in strings output
+     * @param outputDateType type of formatting for date columns
+     */
+    public SasFileReaderImpl(InputStream inputStream, String encoding,
+                             OutputDateType outputDateType) {
+        sasFileParser = new SasFileParser.Builder(inputStream).encoding(encoding)
+                .outputDateType(outputDateType).build();
     }
 
     /**
