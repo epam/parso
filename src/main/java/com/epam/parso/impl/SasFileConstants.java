@@ -1048,44 +1048,60 @@ public interface SasFileConstants {
 
     /**
      * The number of milliseconds in a second.
+     * Deprecated: dates-related functionality moved to date package.
      */
+    @Deprecated
     long MILLISECONDS_IN_SECONDS = 1000L;
 
     /**
      * The number of seconds in a minute.
+     * Deprecated: dates-related functionality moved to date package.
      */
+    @Deprecated
     int SECONDS_IN_MINUTE = 60;
 
     /**
      * The number of minutes in an hour.
+     * Deprecated: dates-related functionality moved to date package.
      */
+    @Deprecated
     int MINUTES_IN_HOUR = 60;
 
     /**
      * The number of hours in a day.
+     * Deprecated: dates-related functionality moved to date package.
      */
+    @Deprecated
     int HOURS_IN_DAY = 24;
 
     /**
      * The number of days in a non-leap year.
+     * Deprecated: dates-related functionality moved to date package.
      */
+    @Deprecated
     int DAYS_IN_YEAR = 365;
 
     /**
      * The difference in days between 01/01/1960 (the dates starting point in SAS) and 01/01/1970 (the dates starting
      * point in Java).
+     * Deprecated: dates-related functionality moved to date package.
      */
+    @Deprecated
     int START_DATES_DAYS_DIFFERENCE = DAYS_IN_YEAR * 10 + 3;
 
     /**
      * The number of seconds in a day.
+     * Deprecated: dates-related functionality moved to date package.
      */
+    @Deprecated
     int SECONDS_IN_DAY = SECONDS_IN_MINUTE * MINUTES_IN_HOUR * HOURS_IN_DAY;
 
     /**
      * The difference in seconds between 01/01/1960 (the dates starting point in SAS) and 01/01/1970 (the dates starting
      * point in Java).
+     * Deprecated: no reason to make it public.
      */
+    @Deprecated
     int START_DATES_SECONDS_DIFFERENCE = SECONDS_IN_DAY * START_DATES_DAYS_DIFFERENCE;
 
     /**
