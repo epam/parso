@@ -23,6 +23,8 @@ import com.epam.parso.Column;
 import com.epam.parso.ColumnFormat;
 import com.epam.parso.ColumnMissingInfo;
 import com.epam.parso.SasFileProperties;
+import com.epam.parso.date.OutputDateType;
+import com.epam.parso.date.SasTemporalFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,8 +37,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
 
-import static com.epam.parso.impl.DateTimeConstants.DATETIME_FORMAT_STRINGS;
-import static com.epam.parso.impl.DateTimeConstants.DATE_FORMAT_STRINGS;
 import static com.epam.parso.impl.ParserMessageConstants.BLOCK_COUNT;
 import static com.epam.parso.impl.ParserMessageConstants.COLUMN_FORMAT;
 import static com.epam.parso.impl.ParserMessageConstants.EMPTY_INPUT_STREAM;
@@ -122,6 +122,12 @@ public final class SasFileParser {
      * The flag of data output in binary or string format.
      */
     private final Boolean byteOutput;
+
+    /**
+     * Output date type.
+     */
+    private final OutputDateType outputDateType;
+
     /**
      * The list of current page data subheaders.
      */
@@ -245,6 +251,11 @@ public final class SasFileParser {
     private String deletedMarkers = "";
 
     /**
+     * Instance of SasDateFormatter.
+     */
+    private final SasTemporalFormatter sasTemporalFormatter = new SasTemporalFormatter();
+
+    /**
      * The constructor that reads metadata from the sas7bdat, parses it and puts the results in
      * {@link SasFileParser#sasFileProperties}.
      *
@@ -253,6 +264,7 @@ public final class SasFileParser {
     private SasFileParser(Builder builder) {
         sasFileStream = new DataInputStream(builder.sasFileStream);
         byteOutput = builder.byteOutput;
+        outputDateType = builder.outputDateType;
 
         Map<SubheaderIndexes, ProcessingSubheader> tmpMap = new HashMap<>();
         tmpMap.put(SubheaderIndexes.ROW_SIZE_SUBHEADER_INDEX, new RowSizeSubheader());
@@ -883,14 +895,16 @@ public final class SasFileParser {
                 if (columns.get(currentColumnIndex).getFormat().getName().isEmpty()) {
                     return convertByteArrayToNumber(temp);
                 } else {
-                    if (DATETIME_FORMAT_STRINGS.containsKey(columns.get(currentColumnIndex).getFormat().getName())) {
-                        return bytesToDateTime(temp);
+                    ColumnFormat columnFormat = columns.get(currentColumnIndex).getFormat();
+                    String sasDateFormat = columnFormat.getName();
+                    if (SasTemporalFormatter.isDateTimeFormat(sasDateFormat)) {
+                        return bytesToDateTime(temp, outputDateType, columnFormat);
+                    } else if (SasTemporalFormatter.isDateFormat(sasDateFormat)) {
+                        return bytesToDate(temp, outputDateType, columnFormat);
+                    } else if (SasTemporalFormatter.isTimeFormat(sasDateFormat)) {
+                        return bytesToTime(temp, outputDateType, columnFormat);
                     } else {
-                        if (DATE_FORMAT_STRINGS.containsKey(columns.get(currentColumnIndex).getFormat().getName())) {
-                            return bytesToDate(temp);
-                        } else {
-                            return convertByteArrayToNumber(temp);
-                        }
+                        return convertByteArrayToNumber(temp);
                     }
                 }
             }
@@ -1060,9 +1074,8 @@ public final class SasFileParser {
     }
 
     /**
-     * The function to convert an array of bytes that stores the number of seconds elapsed from 01/01/1960 into
-     * a variable of the {@link Date} type. The {@link SasFileConstants#DATE_TIME_FORMAT_STRINGS} variable stores
-     * the formats of the columns that store such data.
+     * The function to convert an array of bytes that stores the number of seconds
+     * elapsed from 01/01/1960 into a variable of the {@link Date} type.
      *
      * @param bytes an array of bytes that stores the type.
      * @return a variable of the {@link Date} type.
@@ -1072,27 +1085,54 @@ public final class SasFileParser {
         if (Double.isNaN(doubleSeconds)) {
             return null;
         } else {
-            double seconds = SasDateFormat.sasLeapDaysFix(doubleSeconds) - START_DATES_SECONDS_DIFFERENCE;
-            return new Date((long) (seconds * MILLISECONDS_IN_SECONDS));
+            return sasTemporalFormatter.formatSasSecondsAsJavaDate(doubleSeconds);
         }
     }
 
     /**
-     * The function to convert an array of bytes that stores the number of days elapsed from 01/01/1960 into a variable
-     * of the {@link Date} type. {@link SasFileConstants#DATE_FORMAT_STRINGS} stores the formats of columns that contain
-     * such data.
+     * The function to convert an array of bytes that stores the number of seconds
+     * elapsed from 01/01/1960 into the date represented according to outputDateType.
      *
-     * @param bytes the array of bytes that stores the number of days from 01/01/1960.
-     * @return a variable of the {@link Date} type.
+     * @param bytes          an array of bytes that stores the type.
+     * @param outputDateType type of the date formatting
+     * @param columnFormat   SAS date format
+     * @return datetime representation
      */
-    private Date bytesToDate(byte[] bytes) {
+    private Object bytesToDateTime(byte[] bytes, OutputDateType outputDateType, ColumnFormat columnFormat) {
+        double doubleSeconds = bytesToDouble(bytes);
+        return sasTemporalFormatter.formatSasDateTime(doubleSeconds, outputDateType,
+                columnFormat.getName(), columnFormat.getWidth(), columnFormat.getPrecision());
+    }
+
+    /**
+     * The function to convert an array of bytes that stores the number of seconds
+     * since midnight into the date represented according to outputDateType.
+     *
+     * @param bytes          an array of bytes that stores the type.
+     * @param outputDateType type of the date formatting
+     * @param columnFormat   SAS date format
+     * @return time representation
+     */
+    private Object bytesToTime(byte[] bytes, OutputDateType outputDateType, ColumnFormat columnFormat) {
+        double doubleSeconds = bytesToDouble(bytes);
+        return sasTemporalFormatter.formatSasTime(doubleSeconds, outputDateType,
+                columnFormat.getName(), columnFormat.getWidth(), columnFormat.getPrecision());
+    }
+
+
+    /**
+     * The function to convert an array of bytes that stores the number of days
+     * elapsed from 01/01/1960  into the date represented according to outputDateType.
+     *
+     * @param bytes          the array of bytes that stores the number of days from 01/01/1960.
+     * @param outputDateType type of the date formatting
+     * @param columnFormat   SAS date format
+     * @return date representation
+     */
+    private Object bytesToDate(byte[] bytes, OutputDateType outputDateType, ColumnFormat columnFormat) {
         double doubleDays = bytesToDouble(bytes);
-        if (Double.isNaN(doubleDays)) {
-            return null;
-        } else {
-            double seconds = SasDateFormat.sasLeapDaysFix(doubleDays * SECONDS_IN_DAY) - START_DATES_SECONDS_DIFFERENCE;
-            return new Date((long) (seconds * MILLISECONDS_IN_SECONDS));
-        }
+        return sasTemporalFormatter.formatSasDate(doubleDays, outputDateType,
+                columnFormat.getName(), columnFormat.getWidth(), columnFormat.getPrecision());
     }
 
     /**
@@ -1265,6 +1305,11 @@ public final class SasFileParser {
         private String encoding;
 
         /**
+         * Default value for {@link SasFileParser#outputDateType} variable.
+         */
+        private OutputDateType outputDateType = OutputDateType.JAVA_DATE_LEGACY;
+
+        /**
          * Default value for {@link SasFileParser#byteOutput} variable.
          */
         private Boolean byteOutput = false;
@@ -1286,6 +1331,19 @@ public final class SasFileParser {
          */
         public Builder encoding(String val) {
             encoding = val;
+            return this;
+        }
+
+        /**
+         * Sets the specified type of the output date format.
+         *
+         * @param val value to be set.
+         * @return result builder.
+         */
+        public Builder outputDateType(OutputDateType val) {
+            if (val != null) {
+                outputDateType = val;
+            }
             return this;
         }
 
