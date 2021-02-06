@@ -19,6 +19,7 @@
 
 package com.epam.parso;
 
+import com.epam.parso.xport.XportFileProperties;
 import java.io.IOException;
 import java.util.List;
 
@@ -41,4 +42,12 @@ public interface CSVMetadataWriter {
      * @throws IOException appears if the output into writer is impossible.
      */
     void writeSasFileProperties(SasFileProperties sasFileProperties) throws IOException;
+
+    /**
+     * The method to output the xport file properties.
+     *
+     * @param xportFileProperties the variable with sas file properties data.
+     * @throws IOException appears if the output into writer is impossible.
+     */
+    void writeXportFileProperties(XportFileProperties xportFileProperties) throws IOException;
 }

@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import static com.epam.parso.TestUtils.compareResultWithControl;
 import static com.epam.parso.TestUtils.getResourceAsStream;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -105,20 +106,18 @@ public class SasFileReaderUnitTest {
     private String fileName = DEFAULT_FILE_NAME;
 
     @Test
-    public void testColumns() throws IOException {
-        InputStream is;
-        try {
-            is = new URL(COLON_SAS7BDAT_URL).openStream();
+    public void testColumns() {
+
+        long programStart = System.currentTimeMillis();
+        List<Column> columns;
+        try (InputStream is = new URL(COLON_SAS7BDAT_URL).openStream()) {
+
+            SasFileReader sasFileReader = new SasFileReaderImpl(is);
+            columns = sasFileReader.getColumns();
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
             return;
         }
-
-        long programStart = System.currentTimeMillis();
-        SasFileReader sasFileReader = new SasFileReaderImpl(is);
-
-        List<Column> columns = sasFileReader.getColumns();
-        closeInputStream(is);
 
         logger.info("Processing file {}", fileName);
         for (int i = 0; i < columns.size(); i++) {
@@ -135,37 +134,37 @@ public class SasFileReaderUnitTest {
     @Test
     public void testMetadata() {
         TimeZone.setDefault(TimeZone.getTimeZone("Europe/Moscow"));
-        InputStream fileInputStream = getResourceAsStream(fileName);
+
         long programStart = System.currentTimeMillis();
-        SasFileReader sasFileReader = new SasFileReaderImpl(fileInputStream);
         logger.info("Processing file {}", fileName);
         CSVReader controlReader = null;
-        Writer writer = new StringWriter();
-        try {
+
+        try (InputStream fileInputStream = getResourceAsStream(fileName);
+             Writer writer = new StringWriter()) {
+            SasFileReader sasFileReader = new SasFileReaderImpl(fileInputStream);
             controlReader = new CSVReader(new InputStreamReader(getResourceAsStream(
-                    fileName.replace(".sas7bdat", "").replace("sas7bdat", "csv") + "_meta.csv")));
+                fileName.replace(".sas7bdat", "").replace("sas7bdat", "csv") + "_meta.csv")));
             CSVMetadataWriter csvMetadataWriter = new CSVMetadataWriterImpl(writer);
             csvMetadataWriter.writeMetadata(sasFileReader.getColumns());
             csvMetadataWriter.writeSasFileProperties(sasFileReader.getSasFileProperties());
+            compareResultWithControl(controlReader, writer);
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
-        } finally {
-            closeWriter(writer);
-            closeInputStream(fileInputStream);
         }
-        compareResultWithControl(controlReader, writer);
+
         logger.info("Time passed: {} ms", System.currentTimeMillis() - programStart);
     }
 
     @Test
     public void testData() {
         long programStart = System.currentTimeMillis();
-        InputStream fileInputStream = getResourceAsStream(fileName);
+
         logger.info("Processing file {}", fileName);
-        StringWriter writer = new StringWriter();
-        InputStreamReader inputStreamReader = new InputStreamReader(
-                getResourceAsStream(fileName.toLowerCase().replace("sas7bdat", "csv")));
-        try {
+
+        try (InputStream fileInputStream = getResourceAsStream(fileName);
+             StringWriter writer = new StringWriter();
+             InputStreamReader inputStreamReader = new InputStreamReader(
+                 getResourceAsStream(fileName.toLowerCase().replace("sas7bdat", "csv")))) {
             SasFileReader sasFileReader = new SasFileReaderImpl(fileInputStream);
             long rowCount = sasFileReader.getSasFileProperties().getRowCount();
             List<Column> columns = sasFileReader.getColumns();
@@ -183,30 +182,21 @@ public class SasFileReaderUnitTest {
             assertThat(controlReader.readNext()).isNull();
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
-        } finally {
-            closeWriter(writer);
-            closeInputStream(fileInputStream);
-            closeInputStreamReader(inputStreamReader);
         }
         logger.info("Time passed: {} ms", System.currentTimeMillis() - programStart);
     }
 
     @Test
     public void testRowsCount() {
-        InputStream is;
-        try {
-            is = new URL(COLON_SAS7BDAT_URL).openStream();
+
+        Object[][] data;
+        try (InputStream is = new URL(COLON_SAS7BDAT_URL).openStream()) {
+            SasFileReader reader = new SasFileReaderImpl(is);
+            data = reader.readAll();
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
             return;
         }
-
-
-        SasFileReader reader = new SasFileReaderImpl(is);
-
-        Object[][] data = reader.readAll();
-        closeInputStream(is);
-
         assertThat(data).hasDimensions(15564, 13);
         assertThat(data[0][1]).isEqualTo(77L);
         assertThat(data[15563][1]).isEqualTo(84L);
@@ -214,31 +204,29 @@ public class SasFileReaderUnitTest {
 
     @Test
     public void testStringValue() throws IOException {
-        InputStream is = getResourceAsStream("sas7bdat/mixed_data_one.sas7bdat");
-        SasFileReader reader = new SasFileReaderImpl(is);
 
-        Object[] data = reader.readNext();
-        closeInputStream(is);
-
-        assertThat(data[2]).isEqualTo("AAAAAAAA");
+        try (InputStream is = getResourceAsStream("sas7bdat/mixed_data_one.sas7bdat")) {
+            SasFileReader reader = new SasFileReaderImpl(is);
+            Object[] data = reader.readNext();
+            assertThat(data[2]).isEqualTo("AAAAAAAA");
+        }
     }
 
     @Test
     public void testSasFileProperties() throws IOException {
-        InputStream is;
-        try {
-            is = new URL(COLON_SAS7BDAT_URL).openStream();
+
+        long programStart = System.currentTimeMillis();
+
+        SasFileProperties sasFileProperties;
+        try (InputStream is = new URL(COLON_SAS7BDAT_URL).openStream()) {
+
+            SasFileReader sasFileReader = new SasFileReaderImpl(is);
+
+            sasFileProperties = sasFileReader.getSasFileProperties();
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
             return;
         }
-
-
-        long programStart = System.currentTimeMillis();
-        SasFileReader sasFileReader = new SasFileReaderImpl(is);
-
-        SasFileProperties sasFileProperties = sasFileReader.getSasFileProperties();
-        closeInputStream(is);
 
         assertThat(sasFileProperties.isU64()).isEqualTo(COLON_SAS_FILE_PROPERTIES.isU64());
         assertThat(sasFileProperties.isCompressed()).isEqualTo(COLON_SAS_FILE_PROPERTIES.isCompressed());
@@ -267,23 +255,18 @@ public class SasFileReaderUnitTest {
     @Test
     public void testInputStream() throws IOException {
         String fileName = getClass().getClassLoader().getResource("sas7bdat/mixed_data_one.sas7bdat").getFile();
-        ZeroAvailableBytesInputStream is = new ZeroAvailableBytesInputStream(fileName);
-        SasFileReader reader = new SasFileReaderImpl(is);
-        Object[][] data = reader.readAll();
-        closeInputStream(is);
-
-        assertThat(data[0][2]).isEqualTo("AAAAAAAA");
-        assertThat(data.length).isEqualTo(24);
+        try (ZeroAvailableBytesInputStream is = new ZeroAvailableBytesInputStream(fileName)) {
+            SasFileReader reader = new SasFileReaderImpl(is);
+            Object[][] data = reader.readAll();
+            assertThat(data[0][2]).isEqualTo("AAAAAAAA");
+            assertThat(data.length).isEqualTo(24);
+        }
     }
 
     @Test
     public void testPartialReadingOfColumns() {
         long programStart = System.currentTimeMillis();
-        InputStream fileInputStream = getResourceAsStream(fileName);
         logger.info("Processing file {}", fileName);
-        Writer writer = new StringWriter();
-        InputStreamReader inputStreamReader = new InputStreamReader(
-                getResourceAsStream(fileName.toLowerCase().replace("sas7bdat", "csv")));
 
         List<String> columnNames = new ArrayList<String>() {{
             add("x1");
@@ -291,7 +274,10 @@ public class SasFileReaderUnitTest {
             add("x8");
         }};
 
-        try {
+        try (InputStream fileInputStream = getResourceAsStream(fileName);
+             Writer writer = new StringWriter();
+             InputStreamReader inputStreamReader = new InputStreamReader(
+                 getResourceAsStream(fileName.toLowerCase().replace("sas7bdat", "csv")))) {
             SasFileReader sasFileReader = new SasFileReaderImpl(fileInputStream);
             long rowCount = sasFileReader.getSasFileProperties().getRowCount();
             CSVReader controlReader = new CSVReader(inputStreamReader);
@@ -312,101 +298,12 @@ public class SasFileReaderUnitTest {
             assertThat(controlReader.readNext()).isNull();
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
-        } finally {
-            closeWriter(writer);
-            closeInputStream(fileInputStream);
-            closeInputStreamReader(inputStreamReader);
         }
         logger.info("Time passed: {} ms", System.currentTimeMillis() - programStart);
     }
 
-    private void compareResultWithControl(CSVReader controlReader, Writer writer, int lineNumber,
-                                          List<Column> columns) {
-        CSVReader resultReader = null;
-        lineNumber++;
-        try {
-            resultReader = new CSVReader(new StringReader(writer.toString()));
-            String[] controlLine;
-            String[] resultLine;
-            while ((resultLine = resultReader.readNext()) != null && (controlLine = controlReader.readNext()) != null) {
-                assertThat(resultLine.length).isEqualTo(controlLine.length);
-                for (int i = 0; i < controlLine.length && i < columns.size(); i++) {
-                    assertThat("Element in line number " + lineNumber + " and column " + columns.get(i).getName() +
-                            " number " + (i + 1) + " : " + resultLine[i]).isEqualTo("Element in line number " +
-                            lineNumber + " and column " + columns.get(i).getName() + " number " + (i + 1) + " : " +
-                            controlLine[i]);
-                }
-                lineNumber++;
-            }
-            assertThat(resultReader.readNext()).isNull();
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-        } finally {
-            closeCSVReader(resultReader);
-        }
-    }
-
-    private void compareResultWithControl(CSVReader controlReader, Writer writer) {
-        CSVReader resultReader = null;
-        int lineNumber = 1;
-        try {
-            resultReader = new CSVReader(new StringReader(writer.toString()));
-            String[] controlLine;
-            String[] resultLine;
-            while ((resultLine = resultReader.readNext()) != null && (controlLine = controlReader.readNext()) != null) {
-                assertThat(resultLine.length).isEqualTo(controlLine.length);
-                for (int i = 0; i < controlLine.length; i++) {
-                    assertThat("Element in line number " + lineNumber + " : " + resultLine[i])
-                            .isEqualTo("Element in line number " + lineNumber + " : " + controlLine[i]);
-                }
-                lineNumber++;
-            }
-            assertThat(resultReader.readNext()).isNull();
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-        } finally {
-            closeCSVReader(resultReader);
-        }
-    }
-
     public void setFileName(String fileName) {
         this.fileName = fileName;
-    }
-
-    private void closeWriter(Writer writer) {
-        try {
-            if (writer != null) {
-                writer.close();
-            }
-        } catch (IOException ignore) {
-        }
-    }
-
-    private void closeInputStream(InputStream inputStream) {
-        try {
-            if (inputStream != null) {
-                inputStream.close();
-            }
-        } catch (IOException ignore) {
-        }
-    }
-
-    private void closeInputStreamReader(InputStreamReader inputStreamReader) {
-        try {
-            if (inputStreamReader != null) {
-                inputStreamReader.close();
-            }
-        } catch (IOException ignore) {
-        }
-    }
-
-    private void closeCSVReader(CSVReader csvReader) {
-        try {
-            if (csvReader != null) {
-                csvReader.close();
-            }
-        } catch (IOException ignore) {
-        }
     }
 
     private static class ZeroAvailableBytesInputStream extends FileInputStream {

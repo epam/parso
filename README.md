@@ -3,6 +3,14 @@
 ![Version](https://img.shields.io/maven-central/v/com.epam/parso)
 
 # Parso Java library
+
+## Parso 3.0
+***1 February 2021***
+
+* Implemented reading of SAS Transport File Format (XPORT): Version 5 and Version 8 (not tested)
+  
+[i54]: https://github.com/epam/parso/issues/76
+
 ## Parso 2.0.13
 ***17 December 2020***
 
@@ -159,9 +167,11 @@ If you use Maven, add the following dependency into the pom.xml file:
 <dependency>
     <groupId>com.epam</groupId>
     <artifactId>parso</artifactId>
-    <version>2.0.13</version>
+    <version>3.0</version>
 </dependency>
 ```
+
+***Working with SAS7BDAT files***
 
 Create a variable of the SasFileReader class and indicate your InputStream that contains the SAS7BDAT file as a parameter in the SasFileReader constructor:
 ```java
@@ -210,6 +220,72 @@ To write rows one by one to the ‘writer’ variable:
 
 ```java
 csvDataWriter.writeRow(sasFileReader.getColumns(), sasFileReader.readNext());
+```
+
+***Working with XPORT files***
+
+Create a variable of the XportFileReader class and specify your XPORT source file (Version 5 or 8) 
+and Xport version:
+```java
+com.epam.parso.xport.XportFileReader xportFileReader = new XportFileReaderImpl(file, XportVersion.VERSION_5);
+```
+
+To get the properties of a XPORT file, use:
+```java
+xportFileReader.getXportFileProperties();
+```
+
+XPORT file can contain several datasets. 
+
+You can process the file iteratively.
+When you create xportFileReader instance, the cursor is set to the start of the first dataset (with index 0). 
+
+To read current dataset line by line, use:
+
+```java
+sasFileReader.readNext(); //to read rows one by one
+```
+
+To switch to the next dataset, use:
+
+```java
+xportFileReader.nextDataset();
+```
+
+To get all data of the XPORT file, use:
+
+```java
+xportFileReader.readAll(); //to read all rows in all datasets at once
+
+xportFileReader.readAllInDatasets(); //to read all rows in specified datasets at once
+
+xportFileReader.readAllInCurrentDataset(); //to read all rows in current dataset. You can use it if you know that your file contains only one dataset
+```
+
+To convert the metadata of the file into CSV format, use:
+
+```java
+Writer writer = new StringWriter();
+CSVMetadataWriter csvMetadataWriter = new CSVMetadataWriterImpl(writer);
+csvMetadataWriter.writeMetadata(xportFileReader.getColumns());
+```
+To convert the data of the file into CSV format, use:
+
+```java
+Writer writer = new StringWriter();
+CSVDataWriter csvDataWriter = new CSVDataWriterImpl(writer);
+csvDataWriter.writeColumnNames(xportFileReader.getCurrentDatasetMetadata().getColumns());
+```
+
+To write all rows at once to the ‘writer’ variable:
+
+```java
+csvDataWriter.writeRowsArray(xportFileReader.getCurrentDatasetMetadata().getColumns(), xportFileReader.readAllInCurrentDataset());
+```
+To write rows one by one to the ‘writer’ variable:
+
+```java
+csvDataWriter.writeRow(xportFileReader.getCurrentDatasetMetadata().getColumns(), xportFileReader.readNext());
 ```
 
 ## License

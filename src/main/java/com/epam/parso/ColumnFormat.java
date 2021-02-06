@@ -40,7 +40,7 @@ public class ColumnFormat {
      * The constructor that defines all parameters of the ColumnFormat class.
      *
      * @param name      - column format name.
-     * @param width     - olumn format width.
+     * @param width     - column format width.
      * @param precision - column format precision.
      */
     public ColumnFormat(String name, int width, int precision) {

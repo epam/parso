@@ -22,10 +22,11 @@ package com.epam.parso.impl;
 import com.epam.parso.CSVMetadataWriter;
 import com.epam.parso.Column;
 import com.epam.parso.SasFileProperties;
-
+import com.epam.parso.xport.XportFileProperties;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
+import lombok.SneakyThrows;
 
 /**
  * This is a class to export the sas7bdat file metadata into the CSV format.
@@ -189,13 +190,42 @@ public class CSVMetadataWriterImpl extends AbstractCSVWriter implements CSVMetad
     }
 
     /**
+     * The method to output the XPORT file properties.
+     *
+     * @param xportFileProperties the variable with sas file properties data.
+     */
+    @SneakyThrows
+    @Override
+    public void writeXportFileProperties(XportFileProperties xportFileProperties) {
+        constructPropertiesString("Sas OS: ", xportFileProperties.getSasOs());
+        constructPropertiesString("Sas version: ", xportFileProperties.getSasVersion());
+        constructPropertiesString("Encoding: ", xportFileProperties.getEncoding());
+        constructPropertiesString("Date created: ", xportFileProperties.getDateCreated());
+        constructPropertiesString("Date modified: ", xportFileProperties.getDateModified());
+        constructPropertiesString("Number of datasets: ", xportFileProperties.getDatasetProperties().size());
+        getWriter().write("\nDatasets:\n");
+        xportFileProperties.getDatasetProperties().forEach(dataset -> {
+            constructPropertiesString("\nDataset index: ", dataset.getDatasetIndex());
+            constructPropertiesString("Dataset name: ", dataset.getDatasetName());
+            constructPropertiesString("Dataset label: ", dataset.getDatasetLabel());
+            constructPropertiesString("Dataset type: ", dataset.getDatasetType());
+            constructPropertiesString("Header Length: ", dataset.getDataOffset());
+            constructPropertiesString("Row Length: ", dataset.getRowLength());
+            constructPropertiesString("Row Count: ", dataset.getRowCount());
+            constructPropertiesString("Columns Count: ", dataset.getColumnsCount());
+        });
+
+        getWriter().flush();
+    }
+
+    /**
      * The method to output string containing information about passed property using writer.
      *
      * @param propertyName the string containing name of a property.
      * @param property     a property value.
-     * @throws IOException appears if the output into writer is impossible.
      */
-    private void constructPropertiesString(String propertyName, Object property) throws IOException {
+    @SneakyThrows
+    private void constructPropertiesString(String propertyName, Object property) {
         getWriter().write(propertyName + property + "\n");
     }
 }

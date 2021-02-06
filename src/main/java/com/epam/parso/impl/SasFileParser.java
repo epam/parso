@@ -19,42 +19,51 @@
 
 package com.epam.parso.impl;
 
+import static com.epam.parso.common.BytesHelper.byteArrayToByteBuffer;
+import static com.epam.parso.common.BytesHelper.convertDoubleToNumber;
+import static com.epam.parso.common.BytesHelper.ieeeBytesToDouble;
+import static com.epam.parso.common.BytesHelper.skipBytes;
+import static com.epam.parso.common.ParserMessageConstants.BLOCK_COUNT;
+import static com.epam.parso.common.ParserMessageConstants.COLUMN_FORMAT;
+import static com.epam.parso.common.ParserMessageConstants.EMPTY_INPUT_STREAM;
+import static com.epam.parso.common.ParserMessageConstants.FILE_NOT_VALID;
+import static com.epam.parso.common.ParserMessageConstants.NO_SUPPORTED_COMPRESSION_LITERAL;
+import static com.epam.parso.common.ParserMessageConstants.NULL_COMPRESSION_LITERAL;
+import static com.epam.parso.common.ParserMessageConstants.PAGE_TYPE;
+import static com.epam.parso.common.ParserMessageConstants.SUBHEADER_COUNT;
+import static com.epam.parso.common.ParserMessageConstants.SUBHEADER_PROCESS_FUNCTION_NAME;
+import static com.epam.parso.common.ParserMessageConstants.UNKNOWN_SUBHEADER_SIGNATURE;
+import static com.epam.parso.impl.DateTimeConstants.DATETIME_FORMAT_STRINGS;
+import static com.epam.parso.impl.DateTimeConstants.DATE_FORMAT_STRINGS;
+import static com.epam.parso.impl.SasFileConstants.*;
+
 import com.epam.parso.Column;
 import com.epam.parso.ColumnFormat;
 import com.epam.parso.ColumnMissingInfo;
 import com.epam.parso.SasFileProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.*;
-
-import static com.epam.parso.impl.DateTimeConstants.DATETIME_FORMAT_STRINGS;
-import static com.epam.parso.impl.DateTimeConstants.DATE_FORMAT_STRINGS;
-import static com.epam.parso.impl.ParserMessageConstants.BLOCK_COUNT;
-import static com.epam.parso.impl.ParserMessageConstants.COLUMN_FORMAT;
-import static com.epam.parso.impl.ParserMessageConstants.EMPTY_INPUT_STREAM;
-import static com.epam.parso.impl.ParserMessageConstants.FILE_NOT_VALID;
-import static com.epam.parso.impl.ParserMessageConstants.NO_SUPPORTED_COMPRESSION_LITERAL;
-import static com.epam.parso.impl.ParserMessageConstants.NULL_COMPRESSION_LITERAL;
-import static com.epam.parso.impl.ParserMessageConstants.PAGE_TYPE;
-import static com.epam.parso.impl.ParserMessageConstants.SUBHEADER_COUNT;
-import static com.epam.parso.impl.ParserMessageConstants.SUBHEADER_PROCESS_FUNCTION_NAME;
-import static com.epam.parso.impl.ParserMessageConstants.UNKNOWN_SUBHEADER_SIGNATURE;
-import static com.epam.parso.impl.SasFileConstants.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is a class that parses sas7bdat files. When parsing a sas7bdat file, to interact with the library
  * use {@link SasFileReaderImpl} which is a wrapper for SasFileParser. Despite this, SasFileParser
  * is publicly available, it can be instanced via {@link SasFileParser.Builder} and used directly.
  * Public access to the SasFileParser class was added in scope of this issue:
- * @see <a href="https://github.com/epam/parso/issues/51"></a>.
+ * See <a href="https://github.com/epam/parso/issues/51">https://github.com/epam/parso/issues/51</a>.
  */
 public final class SasFileParser {
     /**
@@ -366,40 +375,8 @@ public final class SasFileParser {
         }
 
         if (sasFileStream != null) {
-            skipBytes(sasFileProperties.getHeaderLength() - currentFilePosition);
+            skipBytes(sasFileStream, SKIP_BYTE_BUFFER, sasFileProperties.getHeaderLength() - currentFilePosition);
             currentFilePosition = 0;
-        }
-    }
-
-    /**
-     * Skip specified number of bytes of data from the input stream,
-     * or fail if there are not enough left.
-     *
-     * @param numberOfBytesToSkip the number of bytes to skip
-     * @throws IOException if the number of bytes skipped was incorrect
-     */
-    private void skipBytes(long numberOfBytesToSkip) throws IOException {
-
-        long remainBytes = numberOfBytesToSkip;
-        long readBytes;
-        while (remainBytes > 0) {
-            try {
-                readBytes = sasFileStream.read(SKIP_BYTE_BUFFER, 0,
-                        (int) Math.min(remainBytes, SKIP_BYTE_BUFFER.length));
-                if (readBytes < 0) { // EOF
-                    break;
-                }
-            } catch (IOException e) {
-                throw new IOException(EMPTY_INPUT_STREAM);
-            }
-            remainBytes -= readBytes;
-        }
-
-        long actuallySkipped = numberOfBytesToSkip - remainBytes;
-
-        if (actuallySkipped != numberOfBytesToSkip) {
-            throw new IOException("Expected to skip " + numberOfBytesToSkip
-                    + " to the end of the header, but skipped " + actuallySkipped + " instead.");
         }
     }
 
@@ -924,7 +901,7 @@ public final class SasFileParser {
         if (cachedPage == null) {
             for (int i = 0; i < offset.length; i++) {
                 byte[] temp = new byte[length[i]];
-                skipBytes(offset[i] - currentFilePosition);
+                skipBytes(sasFileStream, SKIP_BYTE_BUFFER, offset[i] - currentFilePosition);
                 try {
                     sasFileStream.readFully(temp, 0, length[i]);
                 } catch (EOFException e) {
@@ -961,25 +938,6 @@ public final class SasFileParser {
     }
 
     /**
-     * The function to convert an array of bytes with any order of bytes into {@link ByteBuffer}.
-     * {@link ByteBuffer} has the order of bytes defined in the file located at the
-     * {@link SasFileConstants#ALIGN_2_OFFSET} offset.
-     * Later the parser converts result {@link ByteBuffer} into a number.
-     *
-     * @param data the input array of bytes with the little-endian or big-endian order.
-     * @return {@link ByteBuffer} with the order of bytes defined in the file located at
-     * the {@link SasFileConstants#ALIGN_2_OFFSET} offset.
-     */
-    private ByteBuffer byteArrayToByteBuffer(byte[] data) {
-        ByteBuffer byteBuffer = ByteBuffer.wrap(data);
-        if (sasFileProperties.getEndianness() == 0) {
-            return byteBuffer;
-        } else {
-            return byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-        }
-    }
-
-    /**
      * The function to convert an array of bytes into a number. The result can be double or long values.
      * The numbers are stored in the IEEE 754 format. A number is considered long if the difference between the whole
      * number and its integer part is less than {@link SasFileConstants#EPSILON}.
@@ -988,18 +946,8 @@ public final class SasFileParser {
      * @return number of a long or double type.
      */
     private Object convertByteArrayToNumber(byte[] mass) {
-        double resultDouble = bytesToDouble(mass);
-
-        if (Double.isNaN(resultDouble) || (resultDouble < NAN_EPSILON && resultDouble > 0)) {
-            return null;
-        }
-
-        long resultLong = Math.round(resultDouble);
-        if (Math.abs(resultDouble - resultLong) >= EPSILON) {
-            return resultDouble;
-        } else {
-            return resultLong;
-        }
+        double resultDouble = ieeeBytesToDouble(mass, sasFileProperties.getEndianness());
+        return convertDoubleToNumber(resultDouble);
     }
 
     /**
@@ -1010,7 +958,7 @@ public final class SasFileParser {
      * @return a number of the int type that is the conversion result.
      */
     private int bytesToShort(byte[] bytes) {
-        return byteArrayToByteBuffer(bytes).getShort();
+        return byteArrayToByteBuffer(bytes, sasFileProperties.getEndianness()).getShort();
     }
 
     /**
@@ -1020,7 +968,7 @@ public final class SasFileParser {
      * @return a number of the int type that is the conversion result.
      */
     private int bytesToInt(byte[] bytes) {
-        return byteArrayToByteBuffer(bytes).getInt();
+        return byteArrayToByteBuffer(bytes, sasFileProperties.getEndianness()).getInt();
     }
 
     /**
@@ -1030,7 +978,7 @@ public final class SasFileParser {
      * @return a number of the long type that is the conversion result.
      */
     private long bytesToLong(byte[] bytes) {
-        return correctLongProcess(byteArrayToByteBuffer(bytes));
+        return correctLongProcess(byteArrayToByteBuffer(bytes, sasFileProperties.getEndianness()));
     }
 
     /**
@@ -1068,7 +1016,7 @@ public final class SasFileParser {
      * @return a variable of the {@link Date} type.
      */
     private Date bytesToDateTime(byte[] bytes) {
-        double doubleSeconds = bytesToDouble(bytes);
+        double doubleSeconds = ieeeBytesToDouble(bytes, sasFileProperties.getEndianness());
         if (Double.isNaN(doubleSeconds)) {
             return null;
         } else {
@@ -1086,36 +1034,13 @@ public final class SasFileParser {
      * @return a variable of the {@link Date} type.
      */
     private Date bytesToDate(byte[] bytes) {
-        double doubleDays = bytesToDouble(bytes);
+        double doubleDays = ieeeBytesToDouble(bytes, sasFileProperties.getEndianness());
         if (Double.isNaN(doubleDays)) {
             return null;
         } else {
             double seconds = SasDateFormat.sasLeapDaysFix(doubleDays * SECONDS_IN_DAY) - START_DATES_SECONDS_DIFFERENCE;
             return new Date((long) (seconds * MILLISECONDS_IN_SECONDS));
         }
-    }
-
-    /**
-     * The function to convert an array of bytes into a double number.
-     *
-     * @param bytes a double number represented by an array of bytes.
-     * @return a number of the double type that is the conversion result.
-     */
-    private double bytesToDouble(byte[] bytes) {
-        ByteBuffer original = byteArrayToByteBuffer(bytes);
-
-        if (bytes.length < BYTES_IN_DOUBLE) {
-            ByteBuffer byteBuffer = ByteBuffer.allocate(BYTES_IN_DOUBLE);
-            if (sasFileProperties.getEndianness() == 1) {
-                byteBuffer.position(BYTES_IN_DOUBLE - bytes.length);
-            }
-            byteBuffer.put(original);
-            byteBuffer.order(original.order());
-            byteBuffer.position(0);
-            original = byteBuffer;
-        }
-
-        return original.getDouble();
     }
 
     /**
@@ -1482,7 +1407,7 @@ public final class SasFileParser {
             Long[] offset = {subheaderOffset + intOrLongLength};
             Integer[] length = {TEXT_BLOCK_SIZE_LENGTH};
             List<byte[]> vars = getBytesFromFile(offset, length);
-            textBlockSize = byteArrayToByteBuffer(vars.get(0)).getShort();
+            textBlockSize = byteArrayToByteBuffer(vars.get(0), sasFileProperties.getEndianness()).getShort();
 
             offset[0] = subheaderOffset + intOrLongLength;
             length[0] = textBlockSize;

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.epam</groupId>
     <artifactId>parso</artifactId>
-    <version>2.0.14-SNAPSHOT</version>
+    <version>3.0</version>
     <packaging>jar</packaging>
     <name>parso</name>
     <description>Parso is a lightweight Java library designed to read SAS7BDAT datasets. The Parso interfaces
@@ -212,6 +212,20 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.16</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- 'bigdoc' allows searching bytes or words in gigabyte order files with high performance -->
+        <dependency>
+            <groupId>org.riversun</groupId>
+            <artifactId>bigdoc</artifactId>
+            <version>0.3.0</version>
         </dependency>
 
         <!-- Test dependencies -->

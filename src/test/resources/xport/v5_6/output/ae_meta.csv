@@ -1,0 +1,55 @@
+Number,Name,Type,Data length,Format,Label
+1,STUDYID,Character,12,,Study Identifier
+2,DOMAIN,Character,2,,Domain Abbreviation
+3,USUBJID,Character,11,,Unique Subject Identifier
+4,AESEQ,Numeric,8,,Sequence Number
+5,AESPID,Character,3,,Sponsor-Defined Identifier
+6,AETERM,Character,46,,Reported Term for the Adverse Event
+7,AELLT,Character,46,,Lowest Level Term
+8,AELLTCD,Numeric,8,,Lowest Level Term Code
+9,AEDECOD,Character,46,,Dictionary-Derived Term
+10,AEPTCD,Numeric,8,,Preferred Term Code
+11,AEHLT,Character,8,,High Level Term
+12,AEHLTCD,Numeric,8,,High Level Term Code
+13,AEHLGT,Character,9,,High Level Group Term
+14,AEHLGTCD,Numeric,8,,High Level Group Term Code
+15,AEBODSYS,Character,67,,Body System or Organ Class
+16,AEBDSYCD,Numeric,8,,Body System or Organ Class Code
+17,AESOC,Character,67,,Primary System Organ Class
+18,AESOCCD,Numeric,8,,Primary System Organ Class Code
+19,AESEV,Character,8,,Severity/Intensity
+20,AESER,Character,1,,Serious Event
+21,AEACN,Character,1,,Action Taken with Study Treatment
+22,AEREL,Character,8,,Causality
+23,AEOUT,Character,26,,Outcome of Adverse Event
+24,AESCAN,Character,1,,Involves Cancer
+25,AESCONG,Character,1,,Congenital Anomaly or Birth Defect
+26,AESDISAB,Character,1,,Persist or Signif Disability/Incapacity
+27,AESDTH,Character,1,,Results in Death
+28,AESHOSP,Character,1,,Requires or Prolongs Hospitalization
+29,AESLIFE,Character,1,,Is Life Threatening
+30,AESOD,Character,1,,Occurred with Overdose
+31,EPOCH,Character,9,,Epoch
+32,AEDTC,Character,10,,Date/Time of Collection
+33,AESTDTC,Character,10,,Start Date/Time of Adverse Event
+34,AEENDTC,Character,10,,End Date/Time of Adverse Event
+35,AEDY,Numeric,8,,Study Day of Visit/Collection/Exam
+36,AESTDY,Numeric,8,,Study Day of Start of Adverse Event
+37,AEENDY,Numeric,8,,Study Day of End of Adverse Event
+Sas OS: R 3.4.0
+Sas version: 7.00
+Encoding: ASCII
+Date created: 06SEP17:20:23:53
+Date modified: 06SEP17:20:23:53
+Number of datasets: 1
+
+Datasets:
+
+Dataset index: 0
+Dataset name: AE
+Dataset label: 
+Dataset type: 
+Header Length: 5920
+Row Length: 487
+Row Count: 961
+Columns Count: 37

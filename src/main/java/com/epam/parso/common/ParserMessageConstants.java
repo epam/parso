@@ -17,13 +17,13 @@
  * *************************************************************************
  */
 
-package com.epam.parso.impl;
+package com.epam.parso.common;
 
 /**
  * This is a class to store debugging info, info about errors and warnings which can be received
  * when parsing the sas7bdat file.
  */
-interface ParserMessageConstants {
+public interface ParserMessageConstants {
     /**
      * Error string if there are no available bytes in the input stream.
      */
@@ -32,6 +32,10 @@ interface ParserMessageConstants {
      * Error string if the sas7bdat file is invalid.
      */
     String FILE_NOT_VALID = "Can not read metadata from sas7bdat file.";
+    /**
+     * Error string if the XPORT file is invalid.
+     */
+    String XPORT_FILE_NOT_VALID = "Can not read metadata from XPORT file.";
     /**
      * Debug info in case of an unknown subheader signature.
      */
