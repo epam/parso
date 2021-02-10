@@ -414,12 +414,4 @@ public class SasDateFormatTest {
         assertThat(SasDateTimeFormat.DATETIME.getFormatFunction(1, 0, true).apply(null)).isEqualTo(".");
         assertThat(SasTimeFormat.TIME.getFormatFunction(1, 0, true).apply(null)).isEqualTo(".");
     }
-
-
-    @Test
-    public void test() {
-        System.out.println(SasDateTimeFormat.TOD.getFormatFunction(10, 0, true).apply(315619199.999));
-//        System.out.println(SasDateTimeFormat.TOD.getFormatFunction(12, 2, true).apply((37 - 1112) * 100.001));
-//        System.out.println(SasDateTimeFormat.TOD.getFormatFunction(12, 2, true).apply((47 - 1112) * 100.001));
-    }
 }

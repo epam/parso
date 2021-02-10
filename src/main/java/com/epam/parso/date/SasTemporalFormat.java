@@ -63,8 +63,8 @@ interface SasTemporalFormat {
      * In most cases the created function has state (it may have pre-calculated
      * patterns or options for the given width and precision)
      *
-     * @param width     sas format width
-     * @param precision format precision
+     * @param width     column format width
+     * @param precision column format precision
      * @param trim      true to keep result trimmed
      * @return format function
      */

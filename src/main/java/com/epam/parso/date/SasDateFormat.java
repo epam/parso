@@ -905,8 +905,8 @@ enum SasDateFormat implements SasTemporalFormat {
     /**
      * Creates width-specific date pattern compatible with the java.time.format.DateTimeFormatter.
      *
-     * @param width     sas format width
-     * @param precision sas format precision
+     * @param width     column format width
+     * @param precision column format precision
      * @return java date pattern
      */
     protected abstract String getDatePattern(int width, int precision);

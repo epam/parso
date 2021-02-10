@@ -35,9 +35,9 @@ enum SasTimeFormat implements SasTemporalFormat {
          * 9:59:59.9987  9:59:59.999  10:00:00.0  10:00:00:0  __10:00:00  _10:00:00
          * 9:59:59.9999  10:00:00.00  10:00:00.0  10:00:00:0  __10:00:00  _10:00:00
          *
-         * @param sasSeconds       sas seconds
-         * @param width            column width
-         * @param precision        column precision, adjusted according to actual size
+         * @param sasSeconds       SAS seconds
+         * @param width            column format width
+         * @param precision        column format precision, adjusted according to actual size
          * @param minIntegralWidth width to fit concatenation of integral part "hours:minutes:seconds"
          * @return integral and remainder parts of dividing given seconds by seconds in a hour.
          */
@@ -178,9 +178,9 @@ enum SasTimeFormat implements SasTemporalFormat {
         /**
          * Round seconds to hours.
          *
-         * @param sasSeconds sas seconds
-         * @param width      column width
-         * @param precision  column precision
+         * @param sasSeconds SAS seconds
+         * @param width      column format width
+         * @param precision  column format precision
          * @return rounded seconds
          */
         private BigDecimal roundAdjustHours(double sasSeconds, int width, int precision) {
@@ -203,7 +203,7 @@ enum SasTimeFormat implements SasTemporalFormat {
          * Try to store large hours as a number in E-notation.
          *
          * @param hours hours
-         * @param width column width
+         * @param width column format width
          * @return hours representation
          */
         private String eNotation(BigDecimal hours, int width) {
@@ -329,7 +329,7 @@ enum SasTimeFormat implements SasTemporalFormat {
     private static final Logger LOGGER = LoggerFactory.getLogger(SasTimeFormat.class);
 
     /**
-     * Default column width.
+     * Default column format width.
      */
     private final int defaultWidth;
 

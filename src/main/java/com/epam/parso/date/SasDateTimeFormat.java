@@ -27,7 +27,7 @@ enum SasDateTimeFormat implements SasTemporalFormat {
     DATETIME(16) {
         /**
          * Calculate pattern string based on width, without fractional part.
-         * @param width column width
+         * @param width column format width
          * @return pattern
          */
         private String getNoFractionDatePattern(int width) {
@@ -347,9 +347,9 @@ enum SasDateTimeFormat implements SasTemporalFormat {
         }
 
         /**
-         * Round and truncate sas seconds to a single day.
-         * @param sasSeconds sas seconds
-         * @param precision column precision
+         * Round and truncate SAS seconds to a single day.
+         * @param sasSeconds SAS seconds
+         * @param precision column format precision
          * @return seconds
          */
         private BigDecimal daySeconds(double sasSeconds, int precision) {
@@ -434,8 +434,8 @@ enum SasDateTimeFormat implements SasTemporalFormat {
     /**
      * Creates width-specific date pattern compatible with the java.time.format.DateTimeFormatter.
      *
-     * @param width     sas format width
-     * @param precision sas format precision
+     * @param width     column format width
+     * @param precision column format precision
      * @return java date pattern
      */
     protected abstract String getDatePattern(int width, int precision);

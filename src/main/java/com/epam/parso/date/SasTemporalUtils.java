@@ -56,8 +56,8 @@ final class SasTemporalUtils {
     /**
      * Convert SAS days to unix epoch seconds.
      *
-     * @param sasDays sas days
-     * @return unix seconds
+     * @param sasDays SAS days
+     * @return UNIX seconds
      */
     static double sasDaysToEpochSeconds(double sasDays) {
         return sasDays * SECONDS_IN_DAY - SAS_VS_EPOCH_DIFF_SECONDS;
@@ -66,8 +66,8 @@ final class SasTemporalUtils {
     /**
      * Convert SAS seconds to unix epoch seconds.
      *
-     * @param sasSeconds sas seconds
-     * @return unix seconds
+     * @param sasSeconds SAS seconds
+     * @return UNIX seconds
      */
     static double sasSecondsToEpochSeconds(double sasSeconds) {
         return sasSeconds - SAS_VS_EPOCH_DIFF_SECONDS;
@@ -76,7 +76,7 @@ final class SasTemporalUtils {
     /**
      * Convert SAS days to Java Date.
      *
-     * @param sasDays sas days
+     * @param sasDays SAS days
      * @return date
      */
     static Date sasDaysToDate(double sasDays) {
@@ -86,7 +86,7 @@ final class SasTemporalUtils {
     /**
      * Convert SAS seconds to Java date.
      *
-     * @param sasSeconds sas seconds
+     * @param sasSeconds SAS seconds
      * @return date
      */
     static Date sasSecondsToDate(double sasSeconds) {
@@ -96,7 +96,7 @@ final class SasTemporalUtils {
     /**
      * Convert SAS days to Java LocalDate.
      *
-     * @param sasDays sas days
+     * @param sasDays SAS days
      * @return date
      */
     static LocalDate sasDaysToLocalDate(double sasDays) {
@@ -104,11 +104,32 @@ final class SasTemporalUtils {
     }
 
     /**
-     * Round sas seconds.
-     * TODO
+     * Round SAS seconds. It is not a regular rounding.
+     * SAS rounds negative (dates before 1960 year) and positive dates (after 1960 year)
+     * in different ways.
+     * See examples
+     * <p>
+     * SAS value        SAS format DATE22.2        SAS format DATE22.3
+     * ----------------|------------------------|-----------------------
+     * negative dates rounding
+     * -395163560.356     24JUN1947:08:20:39.64  24JUN1947:08:20:39.644
+     * -394053550.355     07JUL1947:04:40:49.65  07JUL1947:04:40:49.645
+     * -392943540.354     20JUL1947:01:00:59.65  20JUL1947:01:00:59.646
+     * <p>
+     * positive dates rounding
+     * 392943540.354     13JUN1972:22:59:00.35   13JUN1972:22:59:00.354
+     * 394053550.355     26JUN1972:19:19:10.35   26JUN1972:19:19:10.355
+     * 395163560.356     09JUL1972:15:39:20.36   09JUL1972:15:39:20.356
+     * <p>
+     * rounding near to 24h
+     * -11896934400.001  31DEC1582:23:59:59.99   31DEC1582:23:59:59.999
+     * 1679183999.999    17MAR2013:23:59:59.99   17MAR2013:23:59:59.999
+     * <p>
+     * Rounding UP may increase seconds, minutes or hours, but it never
+     * increase day. So the biggest rounded time is always less than 24.
      *
-     * @param sasSeconds sas seconds
-     * @param precision  column precision
+     * @param sasSeconds SAS seconds
+     * @param precision  column format precision
      * @return rounded seconds with fraction
      */
     static BigDecimal roundSeconds(Double sasSeconds, int precision) {
@@ -128,8 +149,8 @@ final class SasTemporalUtils {
      * Convert SAS seconds to Java LocalDateTime.
      * Internally it applies SAS-specific rounding for negative dates.
      *
-     * @param sasSeconds sas seconds
-     * @param precision  column precision
+     * @param sasSeconds SAS seconds
+     * @param precision  column format precision
      * @return date
      */
     static LocalDateTime sasSecondsToLocalDateTime(double sasSeconds, int precision) {
@@ -228,7 +249,8 @@ final class SasTemporalUtils {
 
     /**
      * The same as sasLeapSecondsFix but for days.
-     * @param sasDays sas days
+     *
+     * @param sasDays SAS days
      * @return fixed days
      */
     static double sasLeapDaysFix(double sasDays) {
