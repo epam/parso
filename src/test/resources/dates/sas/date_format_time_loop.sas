@@ -1,0 +1,48 @@
+options bufsize=32768 pagesize=10000;
+
+data dev.date_format_time_loop(drop=i v);
+    format TIME TIME.
+        TIME2 TIME2. TIME3 TIME3. TIME4 TIME4. TIME5 TIME5. TIME6 TIME6. TIME7 TIME7. TIME8 TIME8. TIME9 TIME9.
+        TIME10 TIME10. TIME11 TIME11. TIME12 TIME12.
+        TIME2_1 TIME2.1 TIME3_1 TIME3.1 TIME4_1 TIME4.1 TIME5_1 TIME5.1 TIME6_1 TIME6.1 TIME7_1 TIME7.1 TIME8_1 TIME8.1 TIME9_1 TIME9.1
+        TIME10_1 TIME10.1 TIME11_1 TIME11.1 TIME12_1 TIME12.1
+        TIME3_2 TIME3.2 TIME4_2 TIME4.2 TIME5_2 TIME5.2 TIME6_2 TIME6.2 TIME7_2 TIME7.2 TIME8_2 TIME8.2 TIME9_2 TIME9.2
+        TIME10_2 TIME10.2 TIME11_2 TIME11.2 TIME12_2 TIME12.2
+        TIME4_3 TIME4.3 TIME5_3 TIME5.3 TIME6_3 TIME6.3 TIME7_3 TIME7.3 TIME8_3 TIME8.3 TIME9_3 TIME9.3
+        TIME10_3 TIME10.3 TIME11_3 TIME11.3 TIME12_3 TIME12.3
+    ;
+
+    do i=-1111 to 1111;
+        v=i*10.001;
+        TIME=v;
+        TIME2=v; TIME2_1=v;
+        TIME3=v; TIME3_1=v; TIME3_2=v;
+        TIME4=v; TIME4_1=v; TIME4_2=v; TIME4_3=v;
+        TIME5=v; TIME5_1=v; TIME5_2=v; TIME5_3=v;
+        TIME6=v; TIME6_1=v; TIME6_2=v; TIME6_3=v;
+        TIME7=v; TIME7_1=v; TIME7_2=v; TIME7_3=v;
+        TIME8=v; TIME8_1=v; TIME8_2=v; TIME8_3=v;
+        TIME9=v; TIME9_1=v; TIME9_2=v; TIME9_3=v;
+        TIME10=v; TIME10_1=v; TIME10_2=v; TIME10_3=v;
+        TIME11=v; TIME11_1=v; TIME11_2=v; TIME11_3=v;
+        TIME12=v; TIME12_1=v; TIME12_2=v; TIME12_3=v;
+        output;
+    end;
+
+    do i=-1111 to 1111;
+        v=i*100.01;
+        TIME=v;
+        TIME2=v; TIME2_1=v;
+        TIME3=v; TIME3_1=v; TIME3_2=v;
+        TIME4=v; TIME4_1=v; TIME4_2=v; TIME4_3=v;
+        TIME5=v; TIME5_1=v; TIME5_2=v; TIME5_3=v;
+        TIME6=v; TIME6_1=v; TIME6_2=v; TIME6_3=v;
+        TIME7=v; TIME7_1=v; TIME7_2=v; TIME7_3=v;
+        TIME8=v; TIME8_1=v; TIME8_2=v; TIME8_3=v;
+        TIME9=v; TIME9_1=v; TIME9_2=v; TIME9_3=v;
+        TIME10=v; TIME10_1=v; TIME10_2=v; TIME10_3=v;
+        TIME11=v; TIME11_1=v; TIME11_2=v; TIME11_3=v;
+        TIME12=v; TIME12_1=v; TIME12_2=v; TIME12_3=v;
+        output;
+    end;
+run;

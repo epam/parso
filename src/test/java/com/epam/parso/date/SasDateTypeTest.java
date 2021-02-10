@@ -1,5 +1,6 @@
-package com.epam.parso;
+package com.epam.parso.date;
 
+import com.epam.parso.SasFileReader;
 import com.epam.parso.impl.SasFileReaderImpl;
 import org.junit.Test;
 
@@ -37,7 +38,7 @@ public class SasDateTypeTest {
         try (InputStream is = getClass().getResourceAsStream("/dates/sas7bdat/date_format_date.sas7bdat")) {
             SasFileReader sasFileReader = new SasFileReaderImpl(is, null, JAVA_DATE_LEGACY);
             Object[][] result = sasFileReader.readAll();
-            assertEquals(utcDateOf(2013, 3, 17), result[0][0]);
+            assertEquals(utcDateOf(2019, 10, 25), result[10][0]);
         }
         try (InputStream is = getClass().getResourceAsStream("/dates/sas7bdat/date_format_datetime.sas7bdat")) {
             SasFileReader sasFileReader = new SasFileReaderImpl(is, null, JAVA_DATE_LEGACY);
@@ -56,12 +57,12 @@ public class SasDateTypeTest {
         try (InputStream is = getClass().getResourceAsStream("/dates/sas7bdat/date_format_date.sas7bdat")) {
             SasFileReader sasFileReader = new SasFileReaderImpl(is, null, JAVA_TEMPORAL);
             Object[][] result = sasFileReader.readAll();
-            assertEquals(result[0][0], LocalDate.of(2013, 3, 17));
+            assertEquals(result[10][0], LocalDate.of(2019, 10, 25));
         }
         try (InputStream is = getClass().getResourceAsStream("/dates/sas7bdat/date_format_datetime.sas7bdat")) {
             SasFileReader sasFileReader = new SasFileReaderImpl(is, null, JAVA_TEMPORAL);
             Object[][] result = sasFileReader.readAll();
-            assertEquals(LocalDateTime.of(2013, 3, 17, 19, 53, 1, 321000000), result[0][0]);
+            assertEquals(LocalDateTime.of(2013, 3, 17, 19, 53, 1, 321000099), result[0][0]);
         }
         try (InputStream is = getClass().getResourceAsStream("/dates/sas7bdat/date_format_time.sas7bdat")) {
             SasFileReader sasFileReader = new SasFileReaderImpl(is, null, JAVA_TEMPORAL);
@@ -75,7 +76,7 @@ public class SasDateTypeTest {
         try (InputStream is = getClass().getResourceAsStream("/dates/sas7bdat/date_format_date.sas7bdat")) {
             SasFileReader sasFileReader = new SasFileReaderImpl(is, null, SAS_VALUE);
             Object[][] result = sasFileReader.readAll();
-            assertEquals(19434.0, result[0][0]);
+            assertEquals(21847.0, result[10][0]);
         }
         try (InputStream is = getClass().getResourceAsStream("/dates/sas7bdat/date_format_datetime.sas7bdat")) {
             SasFileReader sasFileReader = new SasFileReaderImpl(is, null, SAS_VALUE);
@@ -94,7 +95,7 @@ public class SasDateTypeTest {
         try (InputStream is = getClass().getResourceAsStream("/dates/sas7bdat/date_format_date.sas7bdat")) {
             SasFileReader sasFileReader = new SasFileReaderImpl(is, null, EPOCH_SECONDS);
             Object[][] result = sasFileReader.readAll();
-            assertEquals(1363478400.0, result[0][0]);
+            assertEquals(1571961600.0, result[10][0]);
         }
         try (InputStream is = getClass().getResourceAsStream("/dates/sas7bdat/date_format_datetime.sas7bdat")) {
             SasFileReader sasFileReader = new SasFileReaderImpl(is, null, EPOCH_SECONDS);
