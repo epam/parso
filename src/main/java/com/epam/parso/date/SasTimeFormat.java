@@ -84,16 +84,6 @@ enum SasTimeFormat implements SasTemporalFormat {
                     if (hhmm.length() > width - 3) {
                         return hhmm;
                     } else {
-//                        if (bigSeconds.longValue() > sasSeconds.longValue()) {
-//                            bigSeconds = bigSeconds.remainder(BIG_SECONDS_IN_MINUTE)
-//                            .setScale(bigSeconds.scale(), HALF_UP);
-//                        } else {
-//                            bigSeconds = BigDecimal.valueOf(sasSeconds % 60)
-//                            .setScale(bigSeconds.scale(), HALF_UP);
-//                        }
-//
-//                        String ss = bigSeconds.toString();
-
                         String ss = parts[1].toString();
                         return hhmm + (ss.length() > 1 && ss.charAt(1) != '.' ? ":" : ":0") + ss;
                     }

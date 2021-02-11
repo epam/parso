@@ -32,7 +32,7 @@ public class SasDateFormatTest {
 
     private static void assertSasDateFormatIgnoreSasRoundingBugs(String dataset) throws Exception {
         assertSasDateFormat(dataset, true, true);
-//        assertSasDateFormat(dataset, false, true);
+        assertSasDateFormat(dataset, false, true);
     }
 
     private static void assertSasDateFormat(String dataset, boolean trim, boolean ignoreSasRoundingBugs) throws Exception {
@@ -102,7 +102,6 @@ public class SasDateFormatTest {
                                 expected, actual)
                         ).isEqualTo(expected);
                     }
-                    // System.out.println(expected + "\t" + actual + "\t" + expected.equals(actual));
                 }
             }
             if (sasRoundingBugsCount > 0) {

@@ -27,7 +27,7 @@ public class SasTemporalUtilsTest {
         assertThat(roundSeconds(86398.94, 0)).isEqualTo("86399");
         assertThat(roundSeconds(86398.94, 1)).isEqualTo("86398.9");
         assertThat(roundSeconds(86398.95, 0)).isEqualTo("86399");
-        //assertThat(roundSeconds(86398.95, 1)).isEqualTo("86399.0");
+        assertThat(roundSeconds(86398.95, 1)).isEqualTo("86398.9"); //exceptional case due to IEEE 754
         assertThat(roundSeconds(86398.999, 2)).isEqualTo("86399.00");
 
         assertThat(roundSeconds(86399.0, 0)).isEqualTo("86399");
