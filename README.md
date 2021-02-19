@@ -3,6 +3,17 @@
 ![Version](https://img.shields.io/maven-central/v/com.epam/parso)
 
 # Parso Java library
+## Parso 2.0.14
+***19 February 2021***
+
+* Extended support for additional date/time formats ([#86][i86])
+* Fixed incorrect date calculation for years > 4000([#81][i81])
+* Fixed infinite loop on fuzzed file bug ([#58][i58])
+
+[i58]: https://github.com/epam/parso/issues/58
+[i81]: https://github.com/epam/parso/issues/81
+[i86]: https://github.com/epam/parso/pull/86
+
 ## Parso 2.0.13
 ***17 December 2020***
 
@@ -159,7 +170,7 @@ If you use Maven, add the following dependency into the pom.xml file:
 <dependency>
     <groupId>com.epam</groupId>
     <artifactId>parso</artifactId>
-    <version>2.0.13</version>
+    <version>2.0.14</version>
 </dependency>
 ```
 
