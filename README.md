@@ -7,7 +7,7 @@
 ***19 February 2021***
 
 * Extended support for additional date/time formats ([#86][i86])
-* Fixed incorrect date calculation for years > 4000([#81][i81])
+* Fixed incorrect date calculation for years > 4000 ([#81][i81])
 * Fixed infinite loop on fuzzed file bug ([#58][i58])
 
 [i58]: https://github.com/epam/parso/issues/58
