@@ -3,6 +3,13 @@
 ![Version](https://img.shields.io/maven-central/v/com.epam/parso)
 
 # Parso Java library
+
+## Parso 2.0.15
+***XX MMM 2021***
+
+* Added the ability to read raw data (unformatted) from SAS files. This allows for comparable output compared to SAS unformatted export and is the fastest option to read SAS data. Made the getColumns call of SasFileParser public.
+
+
 ## Parso 2.0.14
 ***19 February 2021***
 

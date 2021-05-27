@@ -109,6 +109,15 @@ public class SasFileReaderImpl implements SasFileReader {
     }
 
     /**
+     * Builds an object of the SasFileReaderImpl class with use of builder instance provided.
+     *
+     * @param builder - sas file parser builder
+     */
+    public SasFileReaderImpl(SasFileParser.Builder builder) {
+        sasFileParser = builder.build();
+    }
+
+    /**
      * The function to get the {@link Column} list from {@link SasFileParser}.
      *
      * @return a list of columns.

@@ -129,6 +129,10 @@ public final class SasFileParser {
     private final OutputDateType outputDateType;
 
     /**
+     * The flag to use data output as unformatted data.
+     */
+    private final Boolean unformatted;
+    /**
      * The list of current page data subheaders.
      */
     private final List<SubheaderPointer> currentPageDataSubheaderPointers = new ArrayList<>();
@@ -265,6 +269,8 @@ public final class SasFileParser {
         sasFileStream = new DataInputStream(builder.sasFileStream);
         byteOutput = builder.byteOutput;
         outputDateType = builder.outputDateType;
+        unformatted = builder.unformatted;
+
 
         Map<SubheaderIndexes, ProcessingSubheader> tmpMap = new HashMap<>();
         tmpMap.put(SubheaderIndexes.ROW_SIZE_SUBHEADER_INDEX, new RowSizeSubheader());
@@ -892,7 +898,7 @@ public final class SasFileParser {
             if (columnsDataLength.get(currentColumnIndex) <= 2) {
                 return bytesToShort(temp);
             } else {
-                if (columns.get(currentColumnIndex).getFormat().getName().isEmpty()) {
+                if (unformatted || columns.get(currentColumnIndex).getFormat().getName().isEmpty()) {
                     return convertByteArrayToNumber(temp);
                 } else {
                     ColumnFormat columnFormat = columns.get(currentColumnIndex).getFormat();
@@ -1188,7 +1194,7 @@ public final class SasFileParser {
      *
      * @return columns list.
      */
-    List<Column> getColumns() {
+    public List<Column> getColumns() {
         return columns;
     }
 
@@ -1315,6 +1321,10 @@ public final class SasFileParser {
         private Boolean byteOutput = false;
 
         /**
+         * Default value for {@link SasFileParser#unformatted} variable.
+         */
+        private Boolean unformatted = false;
+        /**
          * The constructor that specifies builders sasFileStream variable.
          *
          * @param sasFileStream value for {@link SasFileParser#sasFileStream} variable.
@@ -1355,6 +1365,17 @@ public final class SasFileParser {
          */
         public Builder byteOutput(Boolean val) {
             byteOutput = val;
+            return this;
+        }
+
+        /**
+         * The function to specify builders unformatted variable.
+         *
+         * @param val value to be set.
+         * @return result builder.
+         */
+        public Builder unformatted(Boolean val) {
+            unformatted = val;
             return this;
         }
 
