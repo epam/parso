@@ -1,0 +1,9 @@
+x1,x2,x3,x4,x5,x6
+1,27,japanese date/time,2015年01月20日 11時57分37秒,2,20
+2,55,japanese w/ explanation,jp: year=年 month=月 day=日 hour=時 minute=分 second=秒,j,jp
+3,12,japanese just the date/time words,年月日時分秒,年,年
+4,13,japanese the date/time words with latin comma in the middle,"年月日,時分秒",年,年
+5,13,japanese the date/time words with latin dbl-quote in the middle,"年月日""時分秒",年,年
+6,6,latin just abcdef,abcdef,a,ab
+7,7,latin abcdef with comma in the middle,"abc,def",a,ab
+8,7,latin abcdef with dbl-quote in the middle,"abc""def",a,ab

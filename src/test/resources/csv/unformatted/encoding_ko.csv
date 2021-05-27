@@ -1,0 +1,9 @@
+x1,x2,x3,x4,x5,x6
+1,30,korean date/time,2015년 01월 21일  18시44분30초,2,20
+2,55,korean w/ explanation,ko: year=년 month=월 day=일 hour=시 minute=분 second=초,k,ko
+3,12,korean just the date/time words,년월일시분초,년,년
+4,13,korean the date/time words with latin comma in the middle,"년월일,시분초",년,년
+5,13,korean the date/time words with latin dbl-quote in the middle,"년월일""시분초",년,년
+6,6,latin just abcdef,abcdef,a,ab
+7,7,latin abcdef with comma in the middle,"abc,def",a,ab
+8,7,latin abcdef with dbl-quote in the middle,"abc""def",a,ab

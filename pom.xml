@@ -43,7 +43,11 @@
             <name>Matthew Kastin</name>
             <email>Fried.Egg@verizon.net</email>
         </contributor>
-    </contributors>
+        <contributor>
+                <name>Ronald Steinhau</name>
+            <email>st@entimo.de</email>
+        </contributor>
+</contributors>
 
     <scm>
         <connection>scm:git:git@github.com:epam/parso.git</connection>

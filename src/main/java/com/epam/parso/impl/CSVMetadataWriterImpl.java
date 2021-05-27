@@ -196,6 +196,6 @@ public class CSVMetadataWriterImpl extends AbstractCSVWriter implements CSVMetad
      * @throws IOException appears if the output into writer is impossible.
      */
     private void constructPropertiesString(String propertyName, Object property) throws IOException {
-        getWriter().write(propertyName + property + "\n");
+        getWriter().write(propertyName + String.valueOf(property) + "\n");
     }
 }
