@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.epam</groupId>
     <artifactId>parso</artifactId>
-    <version>2.0.15-SNAPSHOT</version>
+    <version>2.0.15-RC1</version>
     <packaging>jar</packaging>
     <name>parso</name>
     <description>Parso is a lightweight Java library designed to read SAS7BDAT datasets. The Parso interfaces
@@ -43,7 +43,11 @@
             <name>Matthew Kastin</name>
             <email>Fried.Egg@verizon.net</email>
         </contributor>
-    </contributors>
+        <contributor>
+                <name>Ronald Steinhau</name>
+            <email>st@entimo.de</email>
+        </contributor>
+</contributors>
 
     <scm>
         <connection>scm:git:git@github.com:epam/parso.git</connection>
@@ -56,9 +60,13 @@
             <id>ossrh</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
-        <repository>
+        <!--<repository>
             <id>ossrh</id>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>-->
+        <repository>
+            <id>entimo-nexus</id>
+            <url>http://auto-test-w002.vm.entimo.de:8081/repository/maven-releases/</url>
         </repository>
     </distributionManagement>
 
@@ -121,9 +129,14 @@
                         <phase>deploy</phase>
                     </execution>
                 </executions>
-                <configuration>
+                <!--<configuration>
                     <serverId>ossrh</serverId>
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                </configuration>-->
+                <configuration>
+                    <serverId>entimo-nexus</serverId>
+                    <nexusUrl>http://auto-test-w002.vm.entimo.de:8081/repository/maven-releases/</nexusUrl>
                     <autoReleaseAfterClose>false</autoReleaseAfterClose>
                 </configuration>
             </plugin>

@@ -36,9 +36,11 @@ public class CSVDataWriterUnitTest {
         if (resourcesPath != null) {
             List<File> files = getSas7bdatFilesList(resourcesPath.getFile() + "//" + FOLDER_NAME);
             for (File currentFile : files) {
-                SasFileReaderUnitTest sasFileReaderUnitTest = new SasFileReaderUnitTest();
-                sasFileReaderUnitTest.setFileName(FOLDER_NAME + "//" + currentFile.getName());
-                sasFileReaderUnitTest.testData();
+                if (currentFile.isFile()) {
+                    SasFileReaderUnitTest sasFileReaderUnitTest = new SasFileReaderUnitTest();
+                    sasFileReaderUnitTest.setFileName(FOLDER_NAME + "//" + currentFile.getName());
+                    sasFileReaderUnitTest.testData();
+                }
             }
         }
     }

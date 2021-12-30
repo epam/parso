@@ -22,6 +22,7 @@ package com.epam.parso;
 import au.com.bytecode.opencsv.CSVReader;
 import com.epam.parso.impl.CSVDataWriterImpl;
 import com.epam.parso.impl.CSVMetadataWriterImpl;
+import com.epam.parso.impl.SasFileParser;
 import com.epam.parso.impl.SasFileReaderImpl;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -154,6 +155,45 @@ public class SasFileReaderUnitTest {
             closeInputStream(fileInputStream);
         }
         compareResultWithControl(controlReader, writer);
+        logger.info("Time passed: {} ms", System.currentTimeMillis() - programStart);
+    }
+
+    @Test
+    public void testUnformatted() {
+        long programStart = System.currentTimeMillis();
+        InputStream fileInputStream = getResourceAsStream(fileName);
+        logger.info("Processing file {}", fileName);
+        StringWriter writer = new StringWriter();
+        InputStreamReader inputStreamReader = new InputStreamReader(
+            getResourceAsStream(fileName.toLowerCase().replace("sas7bdat/", "csv/").
+                replace(".sas7bdat", ".csv")));
+        try {
+            SasFileParser.Builder builder =
+                new SasFileParser.Builder(fileInputStream).unformatted(true);
+            SasFileReader sasFileReader = new SasFileReaderImpl(builder);
+            long rowCount = sasFileReader.getSasFileProperties().getRowCount();
+            List<Column> columns = sasFileReader.getColumns();
+            CSVReader controlReader = new CSVReader(inputStreamReader);
+            CSVDataWriter csvDataWriter = new CSVDataWriterImpl(writer, ",", "\n", Locale.UK);
+            controlReader.readNext();
+            for (int i = 0; i < rowCount; i++) {
+                csvDataWriter.writeRow(sasFileReader.getColumns(), sasFileReader.readNext());
+                if (i != 0 && i % COMPARE_ROWS_COUNT == 0) {
+                    compareResultWithControl(controlReader, writer, i - COMPARE_ROWS_COUNT,
+                        columns);
+                    writer.getBuffer().setLength(0);
+                }
+            }
+            compareResultWithControl(controlReader, writer,
+                (int) (rowCount - rowCount % COMPARE_ROWS_COUNT), columns);
+            assertThat(controlReader.readNext()).isNull();
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        } finally {
+            closeWriter(writer);
+            closeInputStream(fileInputStream);
+            closeInputStreamReader(inputStreamReader);
+        }
         logger.info("Time passed: {} ms", System.currentTimeMillis() - programStart);
     }
 

@@ -1,0 +1,9 @@
+x1,x2,x3,x4,x5,x6
+1,54,russian date/time,2015 год 12 месяц 24 день  10 час 11 минута 12 секунда,2,20
+2,71,russian w/ explanation,ru: year=год month=месяц day=день hour=час minute=минута second=секунда,r,ru
+3,33,russian just the date/time words,год месяц день час минута секунда,г,го
+4,35,russian the date/time words with latin comma in the middle,"год месяц день , час минута секунда",г,го
+5,35,russian the date/time words with latin dbl-quote in the middle,"год месяц день "" час минута секунда",г,го
+6,6,latin just abcdef,abcdef,a,ab
+7,7,latin abcdef with comma in the middle,"abc,def",a,ab
+8,7,latin abcdef with dbl-quote in the middle,"abc""def",a,ab
