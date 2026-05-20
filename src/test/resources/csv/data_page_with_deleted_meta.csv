@@ -1,0 +1,24 @@
+Number,Name,Type,Data length,Format,Label
+1,VAR1,Character,7,$7.,
+2,VAR2,Character,7,$7.,
+3,VAR3,Character,7,$7.,
+Bitness: x86
+Compressed: null
+Endianness: LITTLE_ENDIANNESS
+Encoding: windows-1252
+Name: TEST
+File type: DATA
+File label: 
+Date created: Fri May 03 20:01:17 MSK 2019
+Date modified: Fri May 03 20:13:19 MSK 2019
+SAS release: 9.0301M0
+SAS server type: W32_7PRO
+OS name: 
+OS type: 
+Header Length: 1024
+Page Length: 4096
+Page Count: 6
+Row Length: 21
+Row Count: 998
+Mix Page Row Count: 130
+Columns Count: 3

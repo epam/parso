@@ -41,9 +41,10 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import static com.epam.parso.TestUtils.getResourceAsStream;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SasFileReaderUnitTest {
     private static final Logger logger = LoggerFactory.getLogger(SasFileReaderUnitTest.class);
@@ -75,7 +76,8 @@ public class SasFileReaderUnitTest {
     private static final List<Integer> COLON_COLUMN_LENGTHS = Arrays.asList(8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8);
     private static final SasFileProperties COLON_SAS_FILE_PROPERTIES = new SasFileProperties();
     private static final int COMPARE_ROWS_COUNT = 300;
-    public static final String COLON_SAS7BDAT_URL = "http://biostat3.net/download/sas/colon.sas7bdat";
+    public static final String COLON_SAS7BDAT_URL = "https://biostat3.net/download/sas/colon.sas7bdat";
+    public static final Locale CSV_DATA_WRITER_LOCALE = Locale.US;
 
     static {
         COLON_SAS_FILE_PROPERTIES.setU64(false);
@@ -132,6 +134,7 @@ public class SasFileReaderUnitTest {
 
     @Test
     public void testMetadata() {
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Moscow"));
         InputStream fileInputStream = getResourceAsStream(fileName);
         long programStart = System.currentTimeMillis();
         SasFileReader sasFileReader = new SasFileReaderImpl(fileInputStream);
@@ -159,7 +162,7 @@ public class SasFileReaderUnitTest {
         long programStart = System.currentTimeMillis();
         InputStream fileInputStream = getResourceAsStream(fileName);
         logger.info("Processing file {}", fileName);
-        Writer writer = new StringWriter();
+        StringWriter writer = new StringWriter();
         InputStreamReader inputStreamReader = new InputStreamReader(
                 getResourceAsStream(fileName.toLowerCase().replace("sas7bdat", "csv")));
         try {
@@ -167,13 +170,13 @@ public class SasFileReaderUnitTest {
             long rowCount = sasFileReader.getSasFileProperties().getRowCount();
             List<Column> columns = sasFileReader.getColumns();
             CSVReader controlReader = new CSVReader(inputStreamReader);
-            CSVDataWriter csvDataWriter = new CSVDataWriterImpl(writer, ",", "\n", Locale.UK);
+            CSVDataWriter csvDataWriter = new CSVDataWriterImpl(writer, ",", "\n", CSV_DATA_WRITER_LOCALE);
             controlReader.readNext();
             for (int i = 0; i < rowCount; i++) {
                 csvDataWriter.writeRow(sasFileReader.getColumns(), sasFileReader.readNext());
                 if (i != 0 && i % COMPARE_ROWS_COUNT == 0) {
                     compareResultWithControl(controlReader, writer, i - COMPARE_ROWS_COUNT, columns);
-                    ((StringWriter) writer).getBuffer().setLength(0);
+                    writer.getBuffer().setLength(0);
                 }
             }
             compareResultWithControl(controlReader, writer, (int) (rowCount - rowCount % COMPARE_ROWS_COUNT), columns);
@@ -204,7 +207,7 @@ public class SasFileReaderUnitTest {
         Object[][] data = reader.readAll();
         closeInputStream(is);
 
-        assertThat(data).hasSize(15564);
+        assertThat(data).hasDimensions(15564, 13);
         assertThat(data[0][1]).isEqualTo(77L);
         assertThat(data[15563][1]).isEqualTo(84L);
     }
@@ -292,7 +295,7 @@ public class SasFileReaderUnitTest {
             SasFileReader sasFileReader = new SasFileReaderImpl(fileInputStream);
             long rowCount = sasFileReader.getSasFileProperties().getRowCount();
             CSVReader controlReader = new CSVReader(inputStreamReader);
-            CSVDataWriter csvDataWriter = new CSVDataWriterImpl(writer, ",", "\n", Locale.UK);
+            CSVDataWriter csvDataWriter = new CSVDataWriterImpl(writer, ",", "\n", CSV_DATA_WRITER_LOCALE);
             controlReader.readNext();
             for (int i = 0; i < rowCount; i++) {
                 csvDataWriter.writeRow(sasFileReader.getColumns(columnNames), sasFileReader.readNext(columnNames));
@@ -406,7 +409,7 @@ public class SasFileReaderUnitTest {
         }
     }
 
-    private class ZeroAvailableBytesInputStream extends FileInputStream {
+    private static class ZeroAvailableBytesInputStream extends FileInputStream {
 
         public ZeroAvailableBytesInputStream(String name) throws FileNotFoundException {
             super(name);

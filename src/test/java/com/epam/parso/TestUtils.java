@@ -35,7 +35,7 @@ public class TestUtils {
     }
 
     public static List<File> getSas7bdatFilesList(String fileOrFolderName) {
-        List<File> filesList = new ArrayList<File>();
+        List<File> filesList = new ArrayList<>();
         try {
             File fileOrFolder = new File(fileOrFolderName);
             if (fileOrFolder.isFile()) {

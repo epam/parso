@@ -1,0 +1,28 @@
+Number,Name,Type,Data length,Format,Label
+1,E8601LZ,Numeric,8,E8601LZ.,
+2,E8601TM,Numeric,8,E8601TM.,
+3,HHMM,Numeric,8,HHMM.,
+4,HOUR,Numeric,8,HOUR.,
+5,MMSS,Numeric,8,MMSS.,
+6,TIME,Numeric,8,TIME.,
+7,TIMEAMPM,Numeric,8,TIMEAMPM.,
+Bitness: x64
+Compressed: null
+Endianness: LITTLE_ENDIANNESS
+Encoding: UTF-8
+Name: TIME_FORMATS
+File type: DATA
+File label: 
+Date created: Fri Jul 19 09:35:30 MSK 2019
+Date modified: Fri Jul 19 09:35:30 MSK 2019
+SAS release: 9.0401M6
+SAS server type: Linux
+OS name: x86_64
+OS type: 2.6.32-754.6.3.e
+Header Length: 65536
+Page Length: 65536
+Page Count: 1
+Row Length: 56
+Row Count: 1
+Mix Page Row Count: 1119
+Columns Count: 7

@@ -21,20 +21,22 @@ package com.epam.parso;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TimeZone;
+
+import static com.epam.parso.impl.DateTimeConstants.DATETIME_FORMAT_STRINGS;
+import static com.epam.parso.impl.DateTimeConstants.DATE_FORMAT_STRINGS;
+import static com.epam.parso.impl.DateTimeConstants.TIME_FORMAT_STRINGS;
 
 /**
  * A helper class to allow re-use formatted values from sas7bdat file.
@@ -49,7 +51,7 @@ public final class DataWriterUtil {
     /**
      * The class name of array of byte.
      */
-    private static final String BYTE_ARRAY_CLASS_NAME = (new byte[0]).getClass().getName();
+    private static final String BYTE_ARRAY_CLASS_NAME = byte[].class.getName();
 
     /**
      * Encoding used to convert byte arrays to string.
@@ -87,13 +89,6 @@ public final class DataWriterUtil {
     private static final String TIME_DELIMETER = ":";
 
     /**
-     * The date formats to store the hour, minutes, seconds, and milliseconds. Appear in the data of
-     * the {@link com.epam.parso.impl.SasFileParser.FormatAndLabelSubheader} subheader
-     * and are stored in {@link Column#format}.
-     */
-    private static final List<String> TIME_FORMAT_STRINGS = Arrays.asList("TIME", "HHMM");
-
-    /**
      * The format to store the percentage values. Appear in the data of
      * the {@link com.epam.parso.impl.SasFileParser.FormatAndLabelSubheader} subheader
      * and are stored in {@link Column#format}.
@@ -119,90 +114,6 @@ public final class DataWriterUtil {
      * Error string if column format is unknown.
      */
     private static final String UNKNOWN_DATE_FORMAT_EXCEPTION = "Unknown date format";
-
-    /**
-     * These are sas7bdat format references to {@link java.text.SimpleDateFormat} date formats.
-     * <p>
-     * UNSUPPORTED FORMATS:
-     * DTYYQC, PDJULG, PDJULI, QTR, QTRR, WEEKU, WEEKV, WEEKW,
-     * YYQ, YYQC, YYQD, YYQN, YYQP, YYQS, YYQR, YYQRC, YYQRD, YYQRN, YYQRP, YYQRS
-     */
-    private static final Map<String, String>
-            DATE_OUTPUT_FORMAT_STRINGS = Collections.unmodifiableMap(new HashMap<String, String>() {
-        {
-            /* date formats */
-            put("B8601DA", "yyyyMMdd");
-            put("E8601DA", "yyyy-MM-dd");
-            put("DATE", "ddMMMyyyy");
-            put("DAY", "dd");
-            put("DDMMYY", "dd/MM/yyyy");
-            put("DDMMYYB", "dd MM yyyy");
-            put("DDMMYYC", "dd:MM:yyyy");
-            put("DDMMYYD", "dd-MM-yyyy");
-            put("DDMMYYN", "ddMMyyyy");
-            put("DDMMYYP", "dd.MM.yyyy");
-            put("DDMMYYS", "dd/MM/yyyy");
-            put("JULDAY", "D");
-            put("JULIAN", "yyyyD");
-            put("MMDDYY", "MM/dd/yyyy");
-            put("MMDDYYB", "MM dd yyyy");
-            put("MMDDYYC", "MM:dd:yyyy");
-            put("MMDDYYD", "MM-dd-yyyy");
-            put("MMDDYYN", "MMddyyyy");
-            put("MMDDYYP", "MM.dd.yyyy");
-            put("MMDDYYS", "MM/dd/yyyy");
-            put("MMYY", "MM'M'yyyy");
-            put("MMYYC", "MM:yyyy");
-            put("MMYYD", "MM-yyyy");
-            put("MMYYN", "MMyyyy");
-            put("MMYYP", "MM.yyyy");
-            put("MMYYS", "MM/yyyy");
-            put("MONNAME", "MMMM");
-            put("MONTH", "M");
-            put("MONYY", "MMMyyyy");
-            put("WEEKDATE", "EEEE, MMMM dd, yyyy");
-            put("WEEKDATX", "EEEE, dd MMMM, yyyy");
-            put("WEEKDAY", "u");
-            put("DOWNAME", "EEEE");
-            put("WORDDATE", "MMMM d, yyyy");
-            put("WORDDATX", "d MMMM yyyy");
-            put("YYMM", "yyyy'M'MM");
-            put("YYMMC", "yyyy:MM");
-            put("YYMMD", "yyyy-MM");
-            put("YYMMN", "yyyyMM");
-            put("YYMMP", "yyyy.MM");
-            put("YYMMS", "yyyy/MM");
-            put("YYMMDD", "yyyy-MM-dd");
-            put("YYMMDDB", "yyyy MM dd");
-            put("YYMMDDC", "yyyy:MM:dd");
-            put("YYMMDDD", "yyyy-MM-dd");
-            put("YYMMDDN", "yyyyMMdd");
-            put("YYMMDDP", "yyyy.MM.dd");
-            put("YYMMDDS", "yyyy/MM/dd");
-            put("YYMON", "yyyyMMM");
-            put("YEAR", "yyyy");
-
-            /* datetime formats */
-            put("B8601DN", "yyyyMMdd");
-            put("B8601DT", "yyyyMMdd'T'HHmmssSSS");
-            put("B8601DX", "yyyyMMdd'T'HHmmssZ");
-            put("B8601DZ", "yyyyMMdd'T'HHmmssZ");
-            put("B8601LX", "yyyyMMdd'T'HHmmssZ");
-            put("E8601DN", "yyyy-MM-dd");
-            put("E8601DT", "yyyy-MM-dd'T'HH:mm:ss.SSS");
-            put("E8601DX", "yyyy-MM-dd'T'HH:mm:ssZ");
-            put("E8601DZ", "yyyy-MM-dd'T'HH:mm:ssZ");
-            put("E8601LX", "yyyy-MM-dd'T'HH:mm:ssZ");
-            put("DATEAMPM", "ddMMMyyyy:HH:mm:ss.SS a");
-            put("DATETIME", "ddMMMyyyy:HH:mm:ss.SS");
-            put("DTDATE", "ddMMMyyyy");
-            put("DTMONYY", "MMMyyyy");
-            put("DTWKDATX", "EEEE, dd MMMM, yyyy");
-            put("DTYEAR", "yyyy");
-            put("MDYAMPM", "MM/dd/yyyy H:mm a");
-            put("TOD", "HH:mm:ss.SS");
-        }
-    });
 
     /**
      * Empty private constructor for preventing instances.
@@ -291,7 +202,7 @@ public final class DataWriterUtil {
         if (valueToPrint.length() > ROUNDING_LENGTH) {
             int lengthBeforeDot = (int) Math.ceil(Math.log10(Math.abs(value)));
             BigDecimal bigDecimal = new BigDecimal(value);
-            bigDecimal = bigDecimal.setScale(ACCURACY - lengthBeforeDot, BigDecimal.ROUND_HALF_UP);
+            bigDecimal = bigDecimal.setScale(ACCURACY - lengthBeforeDot, RoundingMode.HALF_UP);
             valueToPrint = String.valueOf(bigDecimal.doubleValue());
         }
         valueToPrint = trimZerosFromEnd(valueToPrint);
@@ -335,7 +246,7 @@ public final class DataWriterUtil {
      */
     public static List<String> getRowValues(List<Column> columns, Object[] row, Locale locale,
                                             Map<Integer, Format> columnFormatters) throws IOException {
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         for (int currentColumnIndex = 0; currentColumnIndex < columns.size(); currentColumnIndex++) {
             values.add(getValue(columns.get(currentColumnIndex), row[currentColumnIndex], locale, columnFormatters));
         }
@@ -403,16 +314,19 @@ public final class DataWriterUtil {
      * The function to get a formatter to convert date elements into a string.
      *
      * @param columnFormat the (@link ColumnFormat) class variable that stores the format name that must belong to
-     *                     the set of {@link DataWriterUtil#DATE_OUTPUT_FORMAT_STRINGS} mapping keys.
+     *                     the set of {@link com.epam.parso.impl.DateTimeConstants#DATE_FORMAT_STRINGS} or
+     *                     {@link com.epam.parso.impl.DateTimeConstants#DATETIME_FORMAT_STRINGS} mapping keys.
      * @param locale       locale for parsing date elements.
      * @return a formatter to convert date elements into a string.
      */
     private static Format getDateFormatProcessor(ColumnFormat columnFormat, Locale locale) {
-        if (!DATE_OUTPUT_FORMAT_STRINGS.containsKey(columnFormat.getName())) {
+        String pattern = DATE_FORMAT_STRINGS.containsKey(columnFormat.getName())
+                ? DATE_FORMAT_STRINGS.get(columnFormat.getName())
+                : DATETIME_FORMAT_STRINGS.get(columnFormat.getName());
+        if (pattern == null) {
             throw new NoSuchElementException(UNKNOWN_DATE_FORMAT_EXCEPTION);
         }
-        SimpleDateFormat dateFormat =
-                new SimpleDateFormat(DATE_OUTPUT_FORMAT_STRINGS.get(columnFormat.getName()), locale);
+        SimpleDateFormat dateFormat = new SimpleDateFormat(pattern, locale);
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         return dateFormat;
     }

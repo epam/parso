@@ -1,0 +1,47 @@
+# Used Github Actions:
+# - Checkout - https://github.com/marketplace/actions/checkout
+# - Setup Java JDK - https://github.com/marketplace/actions/setup-java-jdk
+#
+# Important notice - this is a separate workflow from "Parso CI" even if they share the similar steps due to the following:
+# - "pull_request" provides access to github token with read permissions only for code from
+#   fork pull request (untrusted source) and shared steps can be mistakenly used on untrusted source that
+#   require write permissions in order to publish checkstyle and validation results
+# - used actions as a reaction on "pull_request" event are supposed to do only limited set of activities
+#   with minimal security footprint (don't cache, don't expose secrets to environment variables, etc.)
+# - signing / artifact publishing / etc. should be done only from trusted source (target source of pull request - merged code)
+#
+# More to read:
+# - https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request
+# - https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request_target
+# - https://securitylab.github.com/research/github-actions-preventing-pwn-requests
+name: Parso Pull Request
+on:
+  # provides an ability to run workflows against pull requests from forks with token that has read access only
+  # therefore there is no ability to comment pull request about related checkstyle errors and failed tests due to the security reasons
+  pull_request:
+jobs:
+  build-pr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5 # reasonable limits to be on the safe side
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      # don't cache ~/.m2 directory in order to avoid security issues related to "pull_request" event
+      # https://securitylab.github.com/research/github-actions-preventing-pwn-requests
+
+      - name: Validate
+        run: mvn -B -V clean validate -Dcheckstyle.failOnViolation=true
+
+      - name: Compile
+        run: mvn -B -V clean compile -Dcheckstyle.skip=true
+
+      - name: Test
+        run: mvn -B -V clean verify -Dcheckstyle.skip=true
