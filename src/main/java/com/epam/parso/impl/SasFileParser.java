@@ -194,7 +194,7 @@ public final class SasFileParser {
     /**
      * The index of the current byte when reading the file.
      */
-    private int currentFilePosition;
+    private long currentFilePosition;
     /**
      * The index of the current column when reading the file.
      */
@@ -202,7 +202,7 @@ public final class SasFileParser {
     /**
      * The index of the current row when reading the file.
      */
-    private int currentRowInFileIndex;
+    private long currentRowInFileIndex;
     /**
      * The index of the current row when reading the page.
      */
@@ -603,6 +603,7 @@ public final class SasFileParser {
         if (currentRowInFileIndex++ >= sasFileProperties.getRowCount() || eof) {
             return null;
         }
+        currentRowInFileIndex++;
         int bitOffset = sasFileProperties.isU64() ? PAGE_BIT_OFFSET_X64 : PAGE_BIT_OFFSET_X86;
         currentRow = null;
         switch (currentPageType) {
@@ -944,7 +945,7 @@ public final class SasFileParser {
                 } catch (EOFException e) {
                     eof = true;
                 }
-                currentFilePosition = (int) (long) offset[i] + length[i];
+                currentFilePosition = offset[i] + length[i];
                 vars.add(temp);
             }
         } else {
@@ -967,13 +968,24 @@ public final class SasFileParser {
      * for convenience.
      */
     private long correctLongProcess(ByteBuffer byteBuffer) {
-        if (sasFileProperties.isU64()) {
-            return byteBuffer.getLong();
-        } else {
-            return byteBuffer.getInt();
+    if (sasFileProperties.isU64()) {
+        return byteBuffer.getLong();
+    } else {
+        return byteBuffer.getInt();   // signed
         }
     }
+    /**
+     * Reads a 32-bit unsigned integer from the provided {@link ByteBuffer} and returns it as a {@code long}.
+     * <p>
+     * SAS stores some counters (e.g., rowCount) as 32-bit values that should be interpreted as unsigned.
+     *
+     * @param byteBuffer buffer positioned at the start of the 4-byte unsigned int
+     * @return unsigned 32-bit value widened to long (0..4294967295)
+     */
 
+    private long readUnsignedInt(ByteBuffer byteBuffer) {
+        return ((long) byteBuffer.getInt()) & 0xFFFFFFFFL;
+    }
     /**
      * The function to convert an array of bytes with any order of bytes into {@link ByteBuffer}.
      * {@link ByteBuffer} has the order of bytes defined in the file located at the
@@ -1456,13 +1468,21 @@ public final class SasFileParser {
             if (sasFileProperties.getRowLength() == 0) {
                 sasFileProperties.setRowLength(bytesToLong(vars.get(0)));
             }
+            // if (sasFileProperties.getRowCount() == 0) {
+            //     sasFileProperties.setRowCount(bytesToLong(vars.get(1)));
+            // }
             if (sasFileProperties.getRowCount() == 0) {
-                sasFileProperties.setRowCount(bytesToLong(vars.get(1)));
+                ByteBuffer bb = byteArrayToByteBuffer(vars.get(1));
+                long rc = sasFileProperties.isU64() ? bb.getLong() : readUnsignedInt(bb);
+                sasFileProperties.setRowCount(rc);
             }
             if (sasFileProperties.getMixPageRowCount() == 0) {
-                sasFileProperties.setMixPageRowCount(bytesToLong(vars.get(2)));
+                ByteBuffer bb = byteArrayToByteBuffer(vars.get(2));
+                long mrc = sasFileProperties.isU64()
+                        ? bb.getLong()
+                        : readUnsignedInt(bb);
+                sasFileProperties.setMixPageRowCount(mrc);
             }
-
             fileLabelOffset = bytesToShort(vars.get(3));
             fileLabelLength = bytesToShort(vars.get(4));
 
